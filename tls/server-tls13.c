@@ -36,16 +36,32 @@
 #endif
 
 /* wolfSSL */
+
 #include <wolfssl/options.h>
 #include <wolfssl/ssl.h>
 #include <wolfssl/wolfio.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>
 
+
+/*
+#include "\\wsl$\Ubuntu\home\gojimmypi\workspace\wolfssl\wolfssl\options.h"
+#include "\\wsl$\Ubuntu\home\gojimmypi\workspace\wolfssl\wolfssl\ssl.h"
+#include "\\wsl$\Ubuntu\home\gojimmypi\workspace\wolfssl\wolfssl\wolfio.h"
+#include "\\wsl$\Ubuntu\home\gojimmypi\workspace\wolfssl\wolfssl\wolfcrypt\error-crypt.h"
+*/
+
+/*
+#include "/home/gojimmypi/workspace/wolfssl/wolfssl/options.h"
+#include "/home/gojimmypi/workspace/wolfssl/wolfssl/ssl.h"
+#include "/home/gojimmypi/workspace/wolfssl/wolfssl/wolfio.h"
+#include "/home/gojimmypi/workspace/wolfssl/wolfssl/wolfcrypt/error-crypt.h"
+*/
+
 #define DEFAULT_PORT 11111
 
-#define CERT_FILE "../certs/server-cert.pem"
-#define KEY_FILE  "../certs/server-key.pem"
-#define CA_FILE   "../certs/client-cert.pem"
+#define CERT_FILE "../../../../certs/server-cert.pem"
+#define KEY_FILE  "../../../../certs/server-key.pem"
+#define CA_FILE   "../../../../certs/client-cert.pem"
 
 
 #if defined(WOLFSSL_TLS13) && defined(HAVE_SECRET_CALLBACK)
