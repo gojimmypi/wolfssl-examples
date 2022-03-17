@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <VisualGDBProjectSettings2 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Project xsi:type="com.visualgdb.project.external.esp-idf">
+    <CustomSourceDirectories>
+      <Directories />
+      <PathStyle>Unknown</PathStyle>
+    </CustomSourceDirectories>
     <AutoProgramSPIFFSPartition>true</AutoProgramSPIFFSPartition>
     <ProjectModeSettings>
       <ProjectGUID>608dba68-9989-4f9a-b206-499688443459</ProjectGUID>
@@ -186,11 +190,7 @@
   </Configurations>
   <ProgramArgumentsSuggestions />
   <Debug xsi:type="com.visualgdb.debug.embedded">
-    <AdditionalStartupCommands>
-      <GDBPreStartupCommands />
-      <GDBStartupCommands />
-      <GDBFinalizationCommands />
-    </AdditionalStartupCommands>
+    <AdditionalStartupCommands />
     <AdditionalGDBSettings>
       <Features>
         <DisableAutoDetection>false</DisableAutoDetection>
@@ -228,7 +228,7 @@
     <DebugMethod>
       <ID>openocd</ID>
       <Configuration xsi:type="com.visualgdb.edp.openocd.settings.esp32">
-        <CommandLine>-f interface/jlink.cfg -c "adapter_khz 4000" -f target/esp32.cfg</CommandLine>
+        <CommandLine>-f interface/jlink.cfg -c "adapter_khz 5000" -f target/esp32.cfg</CommandLine>
         <ExtraParameters>
           <Frequency xsi:nil="true" />
           <BoostedFrequency xsi:nil="true" />
@@ -237,7 +237,7 @@
         <LoadProgressGUIThreshold>131072</LoadProgressGUIThreshold>
         <ProgramMode>Enabled</ProgramMode>
         <StartupCommands>
-          <string>set remotetimeout 60</string>
+          <string>set remotetimeout 90</string>
           <string>target remote :$$SYS:GDB_PORT$$</string>
           <string>mon gdb_breakpoint_override hard</string>
           <string>mon reset halt</string>

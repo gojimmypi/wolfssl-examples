@@ -38,6 +38,6 @@
 
 #define TLS_SMP_WIFI_SSID                "SSID"
 #define TLS_SMP_WIFI_PASS                "password"
-#define TLS_SMP_TARGET_HOST              "192.168.75.38"
+#define TLS_SMP_TARGET_HOST              "192.168.75.55"
 
 #endif

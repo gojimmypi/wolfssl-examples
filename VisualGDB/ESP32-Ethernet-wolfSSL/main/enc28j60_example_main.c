@@ -7,6 +7,10 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
+#define WOLFSSL_ESPIDF
+#define WOLFSSL_ESPWROOM32
+#define WOLFSSL_USER_SETTINGS
+
 /* the usual suspects */
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,7 +43,7 @@
 #include "lwip/sockets.h"
 
 /* wolfSSL */
-#include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/settings.h> // make sure this appears before any other wolfSSL headers
 #include <wolfssl/ssl.h>
 #define USE_CERT_BUFFERS_2048
 #include <wolfssl/certs_test.h>
@@ -48,12 +52,21 @@
 #include <wolfssl/wolfcrypt/mem_track.h>
 #endif
 
+#include "embedded_CERT_FILE.h"
+#include "embedded_CA_FILE.h"
+#include "embedded_KEY_FILE.h"
 
 static const char *TAG = "eth_example";
 
 // #define TLS_SMP_TARGET_HOST              "192.168.1.1"
 // #define DEFAULT_PORT                     11111
 
+TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
+  
+
+/* sed 's/\(.*\)\r/"\1\\n"/g' client-cert.pem */
+
+    
 
 int tls_smp_client_task()
 {
@@ -76,15 +89,14 @@ int tls_smp_client_task()
     WOLFSSL_ENTER("tls_smp_client_task");
 
     doPeerCheck = 0;
-    sendGet = 0;
+    sendGet = 1;
 
 #ifdef DEBUG_WOLFSSL
     WOLFSSL_MSG("Debug ON");
     wolfSSL_Debugging_ON();
-    ShowCiphers();
+    //ShowCiphers();
 #endif
-    /* Initialize wolfSSL */
-    wolfSSL_Init();
+
 
     esp_log_level_set("*", ESP_LOG_VERBOSE); 
     
@@ -93,8 +105,22 @@ int tls_smp_client_task()
      * 0 means choose the default protocol. */
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         ESP_LOGE(TAG, "ERROR: failed to create the socket\n");
+        for (;;)
+        {
+            ESP_LOGI(TAG, "socket fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }
     }
+    
+    /* Initialize the server address struct with zeros */
+    memset(&servAddr, 0, sizeof(servAddr));
 
+    /* Fill in the server address */
+    servAddr.sin_family = AF_INET; /* using IPv4      */
+    servAddr.sin_port   = htons(DEFAULT_PORT); /* on DEFAULT_PORT */    
+
+    
+    
     ESP_LOGI(TAG, "get target IP address");
 
     hp = gethostbyname(TLS_SMP_TARGET_HOST);
@@ -107,49 +133,7 @@ int tls_smp_client_task()
         ip4_addr = (struct ip4_addr *)hp->h_addr;
         ESP_LOGI(TAG, IPSTR, IP2STR(ip4_addr));
     }
-    /* Create and initialize WOLFSSL_CTX */
-    if ((ctx = wolfSSL_CTX_new(wolfSSLv23_client_method())) == NULL) {
-        ESP_LOGE(TAG, "ERROR: failed to create WOLFSSL_CTX\n");
-    }
-    WOLFSSL_MSG("Loading...cert");
-    /* Load client certificates into WOLFSSL_CTX */
-    if ((ret = wolfSSL_CTX_load_verify_buffer(ctx,
-        ca_cert_der_2048,
-        sizeof_ca_cert_der_2048,
-        WOLFSSL_FILETYPE_ASN1)) != SSL_SUCCESS) {
-        ESP_LOGE(TAG, "ERROR: failed to load %d, please check the file.\n", ret);
-    }
-    /* not peer check */
-    if (doPeerCheck == 0) {
-        wolfSSL_CTX_set_verify(ctx, WOLFSSL_VERIFY_NONE, 0);
-    }
-    else {
-        WOLFSSL_MSG("Loading... our cert");
-        /* load our certificate */
-        if ((ret = wolfSSL_CTX_use_certificate_chain_buffer_format(ctx,
-            client_cert_der_2048,
-            sizeof_client_cert_der_2048,
-            WOLFSSL_FILETYPE_ASN1)) != SSL_SUCCESS) {
-            ESP_LOGE(TAG, "ERROR: failed to load chain %d, please check the file.\n", ret);
-        }
-
-        if ((ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx,
-            client_key_der_2048,
-            sizeof_client_key_der_2048,
-            WOLFSSL_FILETYPE_ASN1))  != SSL_SUCCESS) {
-            wolfSSL_CTX_free(ctx); ctx = NULL;
-            ESP_LOGE(TAG, "ERROR: failed to load key %d, please check the file.\n", ret);
-        }
-
-        wolfSSL_CTX_set_verify(ctx, WOLFSSL_VERIFY_PEER, 0);
-    }
-
-    /* Initialize the server address struct with zeros */
-    memset(&servAddr, 0, sizeof(servAddr));
-
-    /* Fill in the server address */
-    servAddr.sin_family = AF_INET; /* using IPv4      */
-    servAddr.sin_port = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
+    
 
     if (*ch >= '1' && *ch <= '9') {
         /* Get the server IPv4 address from the command line call */
@@ -158,89 +142,145 @@ int tls_smp_client_task()
             TLS_SMP_TARGET_HOST,
             &servAddr.sin_addr)) != 1) {
             ESP_LOGE(TAG, "ERROR: invalid address ret=%d\n", ret);
+            for (;;) {
+                ESP_LOGI(TAG, "inet_pton file loop");
+                vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+            }                
         }
     }
     else {
         servAddr.sin_addr.s_addr = ip4_addr->addr;
     }
-
+    
     /* Connect to the server */
-    sprintf(buff,
-        "Connecting to server....%s(port:%d)",
-        TLS_SMP_TARGET_HOST,
-        DEFAULT_PORT);
-    WOLFSSL_MSG(buff);
-    printf("%s\n", buff);
-    if ((ret = connect(sockfd,
-        (struct sockaddr *)&servAddr,
-        sizeof(servAddr))) == -1) {
-        ESP_LOGE(TAG, "ERROR: failed to connect ret=%d\n", ret);
+    if ((ret = connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)))
+         == -1) {
+             for (;;) {
+                 ESP_LOGI(TAG, "connect fail loop");
+                 vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+             }
+         }
+    
+    /* Initialize wolfSSL */
+    if ((ret = wolfSSL_Init()) != WOLFSSL_SUCCESS) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_CTX_new fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }
+    }
+    
+    /* Create and initialize WOLFSSL_CTX */
+//    if ((ctx = wolfSSL_CTX_new(wolfSSLv23_client_method())) == NULL) {
+    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())) == NULL) {
+        ESP_LOGE(TAG, "ERROR: failed to create WOLFSSL_CTX\n");
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_CTX_new fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }
+    }
+    
+    
+    /* Load client certificate into WOLFSSL_CTX */
+    if ((ret = wolfSSL_CTX_use_certificate_buffer(ctx, CERT_FILE, sizeof_CERT_FILE(), WOLFSSL_FILETYPE_PEM))
+        != WOLFSSL_SUCCESS) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_CTX_load_verify_buffer file loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
+    }    
+    
+    WOLFSSL_MSG("Loading...cert");
+    /* Load client certificates into WOLFSSL_CTX */
+    /* Load client key into WOLFSSL_CTX */
+    if ((ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx, KEY_FILE, sizeof_KEY_FILE(), WOLFSSL_FILETYPE_PEM))
+        != WOLFSSL_SUCCESS) {
+            for (;;) {
+                ESP_LOGI(TAG, "wolfSSL_CTX_use_PrivateKey_buffer fail loop");
+                vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+            }    
     }
 
-    WOLFSSL_MSG("Create a WOLFSSL object");
+    /* Load CA certificate into WOLFSSL_CTX */
+    if ((ret = wolfSSL_CTX_load_verify_buffer(ctx, CA_FILE, sizeof_CA_FILE(), WOLFSSL_FILETYPE_PEM))
+         != WOLFSSL_SUCCESS) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_CTX_load_verify_locations fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
+
+    }
+    
     /* Create a WOLFSSL object */
     if ((ssl = wolfSSL_new(ctx)) == NULL) {
-        ESP_LOGE(TAG, "ERROR: failed to create WOLFSSL object\n");
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_new fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
     }
 
-    /* when using atecc608a on esp32-wroom-32se */
-#if defined(WOLFSSL_ESPWROOM32SE) && defined(HAVE_PK_CALLBACKS) \
-                                              && defined(WOLFSSL_ATECC508A)
-    atcatls_set_callbacks(ctx);
-    /* when using custom slot-allocation */
-#if defined(CUSTOM_SLOT_ALLOCATION)
-    my_atmel_slotInit();
-    atmel_set_slot_allocator(my_atmel_alloc, my_atmel_free);
-#endif
-#endif
-
     /* Attach wolfSSL to the socket */
-    wolfSSL_set_fd(ssl, sockfd);
+    if ((ret = wolfSSL_set_fd(ssl, sockfd)) != WOLFSSL_SUCCESS) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_set_fd fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
+    }    
 
-    WOLFSSL_MSG("Connect to wolfSSL on the server side");
     /* Connect to wolfSSL on the server side */
-    if (wolfSSL_connect(ssl) != SSL_SUCCESS) {
-        ESP_LOGE(TAG, "ERROR: failed to connect to wolfSSL\n");
+    if ((ret = wolfSSL_connect(ssl)) != WOLFSSL_SUCCESS) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_connect fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
     }
 
     /* Get a message for the server from stdin */
-    WOLFSSL_MSG("Message for server: ");
+    printf("Message for server: ");
     memset(buff, 0, sizeof(buff));
+    
+    char msg[] = "Hello World"; 
+    len = strnlen(msg, sizeof(msg));
 
-    if (sendGet) {
-        printf("SSL connect ok, sending GET...\n");
-        len = XSTRLEN(sndMsg);
-        strncpy(buff, sndMsg, len);
-        buff[len] = '\0';
-    }
-    else {
-        sprintf(buff, "message from esp32 tls client\n");
-        len = strnlen(buff, sizeof(buff));
-    }
     /* Send the message to the server */
-    if (wolfSSL_write(ssl, buff, len) != len) {
-        ESP_LOGE(TAG, "ERROR: failed to write\n");
+    if ((ret = wolfSSL_write(ssl, msg, len)) != len) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_write fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
     }
 
     /* Read the server data into our buff array */
     memset(buff, 0, sizeof(buff));
-    if (wolfSSL_read(ssl, buff, sizeof(buff) - 1) == -1) {
-        ESP_LOGE(TAG, "ERROR: failed to read\n");
+    if ((ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1)) < 0) {
+        for (;;) {
+            ESP_LOGI(TAG, "wolfSSL_read fail loop");
+            vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        }    
     }
+    
+    goto exit;
 
     /* Print to stdout any data the server sends */
-    printf("Server:");
-    printf("%s", buff);
-    /* Cleanup and return */
-    wolfSSL_free(ssl); /* Free the wolfSSL object                  */
-    wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
-    wolfSSL_Cleanup(); /* Cleanup the wolfSSL environment          */
-    close(sockfd); /* Close the connection to the server       */
+    ESP_LOGI(TAG,"Server:");
+    ESP_LOGI(TAG, "buff here");
 
-    vTaskDelete(NULL);
+exit:    
+    /* Cleanup and return */
+    if (sockfd != SOCKET_INVALID) {
+        close(sockfd); /* Close the connection to the server       */
+    }
+    
+    if (ssl) {
+        wolfSSL_free(ssl); /* Free the wolfSSL object                  */
+    }
+    
+    if (ctx) {
+        wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
+    }
+    
+    wolfSSL_Cleanup(); /* Cleanup the wolfSSL environment          */
 
     return 0;                /* Return reporting a success               */
-    
 }
 
 
@@ -308,9 +348,9 @@ void app_main(void)
     struct tm tm;
     tm.tm_year = 2022 - 1900;
     tm.tm_mon = 3;
-    tm.tm_mday = 5;
-    tm.tm_hour = 19;
-    tm.tm_min = 51;
+    tm.tm_mday = 15;
+    tm.tm_hour = 8;
+    tm.tm_min = 03;
     tm.tm_sec = 10;
     time_t t = mktime(&tm);
     // printf("Setting time: %s", asctime(&tm));
@@ -386,14 +426,10 @@ void app_main(void)
     /* start Ethernet driver state machine */
     ESP_ERROR_CHECK(esp_eth_start(eth_handle));
     
-    for (;;)
-    {
-        ESP_LOGI(TAG, "loop");
-        TickType_t ticks = 5000 / portTICK_PERIOD_MS;
-  
-        vTaskDelay(ticks ? ticks : 1); /* Minimum delay = 1 tick */     
+    for (;;) {
+        ESP_LOGI(TAG, "main loop");
+        vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
         tls_smp_client_task();
-        
     }
 }
 
