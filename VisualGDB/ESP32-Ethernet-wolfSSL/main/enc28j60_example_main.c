@@ -42,6 +42,9 @@
 #include "lwip/netdb.h"
 #include "lwip/sockets.h"
 
+/* time */
+#include  <lwip/apps/sntp.h>
+
 /* wolfSSL */
 #include <wolfssl/wolfcrypt/settings.h> // make sure this appears before any other wolfSSL headers
 #include <wolfssl/ssl.h>
@@ -61,9 +64,18 @@ static const char *TAG = "eth_example";
 // #define TLS_SMP_TARGET_HOST              "192.168.1.1"
 // #define DEFAULT_PORT                     11111
 
+// see https://tf.nist.gov/tf-cgi/servers.cgi
+const int NTP_SERVER_COUNT = 3;
+const char* ntpServer1[] = { "pool.ntp.org",
+                             "time.nist.gov",
+                             "utcnist.colorado.edu"
+                           };
+const char * TIME_ZONE = "PST-8";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;
+
 TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
   
-
 /* sed 's/\(.*\)\r/"\1\\n"/g' client-cert.pem */
 
     
@@ -82,12 +94,19 @@ int tls_smp_client_task()
     struct ip4_addr *ip4_addr;
     const char sndMsg[] = "GET /index.html HTTP/1.0\r\n\r\n";
 
+    struct timeval tv_now;
+    
+    /* see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system_time.html#overview */
+    ret = gettimeofday(&tv_now, NULL);
+    int64_t time_us = (int64_t)tv_now.tv_sec * 1000000L + (int64_t)tv_now.tv_usec;
+    
     /* declare wolfSSL objects */
     WOLFSSL_CTX *ctx;
     WOLFSSL *ssl;
 
     WOLFSSL_ENTER("tls_smp_client_task");
 
+    
     doPeerCheck = 0;
     sendGet = 1;
 
@@ -326,8 +345,7 @@ static void eth_event_handler(void *arg,
 static void got_ip_event_handler(void *arg,
     esp_event_base_t event_base,
     int32_t event_id,
-    void *event_data)
-{
+    void *event_data) {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
     const esp_netif_ip_info_t *ip_info = &event->ip_info;
 
@@ -339,24 +357,52 @@ static void got_ip_event_handler(void *arg,
     ESP_LOGI(TAG, "~~~~~~~~~~~");
 }
 
+int set_time() {
+    /* we'll also return a result code of zero */
+    int res = 0;
+    
+    //*ideally, we'd like to set time from network, but let's set a defaul time, just in case */
+    struct tm timeinfo;
+    timeinfo.tm_year = 2022 - 1900;
+    timeinfo.tm_mon = 3;
+    timeinfo.tm_mday = 15;
+    timeinfo.tm_hour = 8;
+    timeinfo.tm_min = 03;
+    timeinfo.tm_sec = 10;
+    time_t t;
+    t = mktime(&timeinfo);
 
+    struct timeval now = { .tv_sec = t };
+    settimeofday(&now, NULL);   
+
+    /* set timezone */
+    setenv("TZ", TIME_ZONE, 1);
+    tzset();
+
+    /* next, let's setup NTP time servers 
+     * 
+     * see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system_time.html#sntp-time-synchronization
+    */
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    
+    int i = 0;
+    for (i = 0; i < NTP_SERVER_COUNT; i++) {
+        const char* thisServer = ntpServer1[i];
+        if (strncmp(thisServer,"\x00",1)) {
+            /* just in case we run out of NTP servers */
+            break;
+        }
+        sntp_setservername(i, thisServer);
+    }
+    sntp_init();
+    return res;
+}
 
 
 void app_main(void)
 {
-    // set time
-    struct tm tm;
-    tm.tm_year = 2022 - 1900;
-    tm.tm_mon = 3;
-    tm.tm_mday = 15;
-    tm.tm_hour = 8;
-    tm.tm_min = 03;
-    tm.tm_sec = 10;
-    time_t t = mktime(&tm);
-    // printf("Setting time: %s", asctime(&tm));
-    struct timeval now = { .tv_sec = t };
-    settimeofday(&now, NULL);    
-    
+    // one of the most important aspects of security is the time and date values
+    set_time();
     
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
     // Initialize TCP/IP network interface (should be called only once in application)
