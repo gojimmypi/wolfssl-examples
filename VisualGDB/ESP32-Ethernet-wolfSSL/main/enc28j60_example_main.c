@@ -401,9 +401,6 @@ int set_time() {
 
 void app_main(void)
 {
-    // one of the most important aspects of security is the time and date values
-    set_time();
-    
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
     // Initialize TCP/IP network interface (should be called only once in application)
     ESP_ERROR_CHECK(esp_netif_init());
@@ -411,11 +408,7 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_netif_config_t netif_cfg = ESP_NETIF_DEFAULT_ETH();
     esp_netif_t *eth_netif = esp_netif_new(&netif_cfg);
-    // Set default handlers to process TCP/IP stuffs
-    ESP_ERROR_CHECK(esp_eth_set_default_handlers(eth_netif));
-    // Register user defined event handers
-    ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
+
 
     spi_bus_config_t buscfg = {
         .miso_io_num = CONFIG_EXAMPLE_ENC28J60_MISO_GPIO,
@@ -469,8 +462,18 @@ void app_main(void)
 
     /* attach Ethernet driver to TCP/IP stack */
     ESP_ERROR_CHECK(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)));
+
+    /* Register user defined event handers 
+     * "ensure that they register the user event handlers as the last thing prior to starting the Ethernet driver." 
+    */
+    ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
+    
     /* start Ethernet driver state machine */
     ESP_ERROR_CHECK(esp_eth_start(eth_handle));
+    
+    // one of the most important aspects of security is the time and date values
+    set_time();
     
     for (;;) {
         ESP_LOGI(TAG, "main loop");
