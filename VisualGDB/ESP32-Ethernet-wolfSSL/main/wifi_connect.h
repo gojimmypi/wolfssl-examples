@@ -30,14 +30,7 @@
 #include "esp_event_loop.h"
 #endif
 
-#define DEFAULT_PORT                     11111
-
-#define TLS_SMP_CLIENT_TASK_NAME         "tls_client_example"
-#define TLS_SMP_CLIENT_TASK_WORDS        10240
-#define TLS_SMP_CLIENT_TASK_PRIORITY     8
-
 #define TLS_SMP_WIFI_SSID                "SSID"
 #define TLS_SMP_WIFI_PASS                "password"
-#define TLS_SMP_TARGET_HOST              "192.168.75.55"
 
 #endif
