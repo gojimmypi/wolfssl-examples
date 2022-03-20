@@ -59,12 +59,15 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 /dtls/server-dtls
 /dtls/server-udp
 
+/psk/client-psk-bio-custom
 /psk/client-psk-nonblocking
 /psk/client-psk-resume
+/psk/client-psk-tls13-multi-id
 /psk/client-psk
 /psk/client-tcp
 /psk/server-psk-nonblocking
 /psk/server-psk-threaded
+/psk/server-psk-tls13-multi-id
 /psk/server-psk
 /psk/server-tcp
 
@@ -104,6 +107,8 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 
 crypto/3des/3des-file-encrypt
 crypto/aes/aes-file-encrypt
+crypto/aes/aescfb-file-encrypt
+crypto/aes/aesctr-file-encrypt
 crypto/camellia/camellia-encrypt
 crypto/pkcs12/pkcs12-create-example
 crypto/pkcs12/pkcs12-example
