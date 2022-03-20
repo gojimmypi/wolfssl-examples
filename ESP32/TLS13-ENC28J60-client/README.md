@@ -1,5 +1,16 @@
+# wolfSSL TLS 1.3 ENC28J60 Client Example
+
+This TLS1.3 example expands the [Expressif ENC28J60 Ethernet Example](https://github.com/espressif/esp-idf/tree/master/examples/ethernet/enc28j60)
+to connect a wolfSSL TLS1.3 TCP Client to a wolfSSL TLS1.3 TCP Server.
+
+To open this solution in Visual Studio with the VisualGDB extension, see the [Solution File]()
+
+With wolfSSL debugging turned on, sample serial output of the ESP32 can been found in the [example output](./README-output.txt)
+
+
 # ENC28J60 Example
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+(See the Espressif [README.md](https://github.com/espressif/esp-idf/tree/master/examples#readme) file in the upper level '[examples](https://github.com/espressif/esp-idf/tree/master/examples)' 
+directory for more information about Espressif examples.)
 
 ## Overview
 
