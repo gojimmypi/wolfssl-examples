@@ -67,7 +67,6 @@
 #define TLS_SMP_CLIENT_TASK_WORDS        10240
 #define TLS_SMP_CLIENT_TASK_PRIORITY     8
 
-#define TLS_SMP_TARGET_HOST              "192.168.75.155"
 
 
 /* include certificates. Note that there is an experiation date! 
@@ -83,8 +82,8 @@
 /* 
 * for reference, client uses:
 * 
-* #include "embedded_CERT_FILE.h"
 * #include "embedded_CA_FILE.h"
+* #include "embedded_CERT_FILE.h"
 * #include "embedded_KEY_FILE.h"
 */
 
@@ -162,10 +161,7 @@ int tls_smp_client_task() {
     struct sockaddr_in servAddr;
     const int BUFF_SIZE = 256;
     char buff[BUFF_SIZE];
-    const char* targetServer = TLS_SMP_TARGET_HOST;
     size_t len; /* we'll be looking at the length of messages sent and received */
-    struct hostent *hp;
-    struct ip4_addr *ip4_addr;
 
     struct sockaddr_in clientAddr;
     socklen_t          size = sizeof(clientAddr);
@@ -188,7 +184,7 @@ int tls_smp_client_task() {
 
 #ifdef DEBUG_WOLFSSL
     wolfSSL_Debugging_ON();
-    WOLFSSL_MSG("Debug ON v0.1");
+    WOLFSSL_MSG("Debug ON v0.2b");
     //ShowCiphers();
 #endif
     
@@ -233,25 +229,132 @@ int tls_smp_client_task() {
     }
 
 
-    
+    /*
+    ***************************************************************************
+    * set SO_REUSEADDR on socket
+    * 
+    *  #include <sys/types.h>
+    *  # include <sys / socket.h>
+    *  int getsockopt(int sockfd,
+    *    int level,
+    *    int optname,
+    *    void *optval,
+    *    socklen_t *optlen); int setsockopt(int sockfd,
+    *    int level,
+    *    int optname,
+    *    const void *optval,
+    *    socklen_t optlen);
+    *    
+    *  setsockopt() manipulates options for the socket referred to by the file 
+    *  descriptor sockfd. Options may exist at multiple protocol levels; they 
+    *  are always present at the uppermost socket level.
+    *  
+    *  When manipulating socket options, the level at which the option resides 
+    *  and the name of the option must be specified. To manipulate options at 
+    *  the sockets API level, level is specified as SOL_SOCKET. To manipulate 
+    *  options at any other level the protocol number of the appropriate 
+    *  protocol controlling the option is supplied. For example, to indicate 
+    *  that an option is to be interpreted by the TCP protocol, level should 
+    *  be set to the protocol number of TCP
+    *  
+    *  Return Value
+    *    On success, zero is returned. On error, -1 is returned, and errno is set appropriately.
+    *
+    *  Errors
+    *    EBADF       The argument sockfd is not a valid descriptor.
+    *    EFAULT      The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), this error may also be returned if optlen is not in a valid part of the process address space.
+    *    EINVAL      optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval (e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).
+    *    ENOPROTOOPT The option is unknown at the level indicated.
+    *    ENOTSOCK    The argument sockfd is a file, not a socket.
+    *
+    *  see: https://linux.die.net/man/2/setsockopt
+    ***************************************************************************
+    */
     if (ret == WOLFSSL_SUCCESS) {
         /* make sure server is setup for reuse addr/port */
         on = 1;
-        setsockopt(sockfd,
+        int soc_ret = setsockopt(sockfd,
             SOL_SOCKET,
             SO_REUSEADDR,
             (char*)&on,
             (socklen_t)sizeof(on));
+        
+        if (soc_ret == 0) {
+            WOLFSSL_MSG("setsockopt re-use addr successful\n");
+        }
+        else {
+            // TODO show errno 
+            ret = WOLFSSL_FAILURE;
+            WOLFSSL_ERROR_MSG("ERROR: failed to setsockopt addr on socket.\n");
+        }
+    }
+    else {
+        WOLFSSL_ERROR_MSG("Skipping setsockopt addr\n");
+    }
+        
 #ifdef SO_REUSEPORT
-        setsockopt(sockfd,
+    /* see above for details on getsockopt  */
+    if (ret == WOLFSSL_SUCCESS) {
+        int soc_ret = setsockopt(sockfd,
             SOL_SOCKET,
             SO_REUSEPORT,
             (char*)&on,
             (socklen_t)sizeof(on));
-#endif
+            
+        if (soc_ret == 0) {
+            WOLFSSL_MSG("setsockopt re-use port successful\n");
+        }
+        else {
+            // TODO show errno 
+            // ret = WOLFSSL_FAILURE;
+            // TODO what's up with the error?
+            WOLFSSL_ERROR_MSG("ERROR: failed to setsockopt port on socket.  >> IGNORED << \n");
+        }
+    } 
+    else {
+        WOLFSSL_ERROR_MSG("Skipping setsockopt port\n");
     }
+#else
+    WOLFSSL_MSG("SO_REUSEPORT not configured for setsockopt to re-use port\n");
+#endif
     
-
+    /*
+    ***************************************************************************
+    *  #include <sys/types.h>  
+    *  #include <sys/socket.h>
+    *  
+    *  int bind(int sockfd,
+    *      const struct sockaddr *addr,
+    *      socklen_t addrlen);
+    *      
+    *  Description
+    *  
+    *  When a socket is created with socket(2), it exists in a name 
+    *  space(address family) but has no address assigned to it.
+    * 
+    *  bind() assigns the address specified by addr to the socket referred to 
+    *  by the file descriptor sockfd.addrlen specifies the size, in bytes, of 
+    *  the address structure pointed to by addr.Traditionally, this operation 
+    *  is called "assigning a name to a socket".
+    *  
+    *   It is normally necessary to assign a local address using bind() before
+    *   a SOCK_STREAM socket may receive connections.
+    *
+    *  Return Value
+    *    On success, zero is returned. On error, -1 is returned, and errno is set appropriately.
+    *
+    *  Errors
+    *    EACCES     The address is protected, and the user is not the superuser.
+    *    EADDRINUSE The given address is already in use.
+    *    EBADF      sockfd is not a valid descriptor.
+    *    EINVAL     The socket is already bound to an address.
+    *    ENOTSOCK   sockfd is a descriptor for a file, not a socket.
+    *
+    *   see: https://linux.die.net/man/2/bind
+    *   
+    *       https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/lwip.html
+    ***************************************************************************
+    */
     if (ret == WOLFSSL_SUCCESS) {
         /* Bind the server socket to our port */
         int soc_ret = bind(sockfd, (struct sockaddr*)&servAddr, sizeof(servAddr));
@@ -264,8 +367,43 @@ int tls_smp_client_task() {
         }
     }
 
-    /* Listen for a new connection, allow 5 pending connections */
-    if (ret == WOLFSSL_SUCCESS) {
+    /* 
+    ***************************************************************************
+    *  Listen for a new connection, allow 5 pending connections 
+    *
+    *  #include <sys/types.h>  
+    *  #include <sys/socket.h>
+    *  int listen(int sockfd, int backlog);
+    *
+    *  Description
+    *  
+    *  listen() marks the socket referred to by sockfd as a passive socket, 
+    *  that is, as a socket that will be used to accept incoming connection 
+    *  requests using accept.
+    *
+    *  The sockfd argument is a file descriptor that refers to a socket of 
+    *  type SOCK_STREAM or SOCK_SEQPACKET.
+    *  
+    *  The backlog argument defines the maximum length to which the queue of 
+    *  pending connections for sockfd may grow.If a connection request arrives 
+    *  when the queue is full, the client may receive an error with an indication
+    *  of ECONNREFUSED or, if the underlying protocol supports retransmission, 
+    *  the request may be ignored so that a later reattempt at connection 
+    *  succeeds.
+    *
+    *   Return Value
+    *     On success, zero is returned.
+    *     On Error, -1 is returned, and errno is set appropriately.
+    *   Errors  
+    *     EADDRINUSE   Another socket is already listening on the same port.
+    *     EBADF        The argument sockfd is not a valid descriptor.
+    *     ENOTSOCK     The argument sockfd is not a socket.
+    *     EOPNOTSUPP   The socket is not of a type that supports the listen() operation.
+    *
+    *  ses: https://linux.die.net/man/2/listen
+    */
+    
+    if(ret == WOLFSSL_SUCCESS) {
         int soc_ret = listen(sockfd, 5);
         if (soc_ret > -1) {
             WOLFSSL_MSG("socket listen successful\n");
@@ -309,8 +447,6 @@ int tls_smp_client_task() {
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_Init\n");
     }
 
-    WOLFSSL_MSG("Next! 1");
-    
     /* 
     ***************************************************************************
     * Create and initialize WOLFSSL_CTX (aka the context)
@@ -352,8 +488,6 @@ int tls_smp_client_task() {
     else {
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_new\n");
     }
-
-    WOLFSSL_MSG("Next! 2");
 
     /* 
     ***************************************************************************
@@ -533,15 +667,17 @@ int tls_smp_client_task() {
 
     
     /* Continue to accept clients until mShutdown is issued */
-    while (!mShutdown) {
-        // printf("Waiting for a connection...\n");
-
+    while (!mShutdown && (ret == WOLFSSL_SUCCESS)) {
+        WOLFSSL_MSG("Waiting for a connection...\n");
+        
         /* Accept client connections */
         if ((mConnd = accept(sockfd, (struct sockaddr*)&clientAddr, &size))
             == -1) {
             // fprintf(stderr, "ERROR: failed to accept the connection\n\n");
             ret = -1; 
             // TODO    goto exit;
+                WOLFSSL_ERROR_MSG("ERROR: failed socket accept\n");
+                ret = WOLFSSL_FAILURE;
         }
 
         /* Create a WOLFSSL object */
@@ -549,7 +685,9 @@ int tls_smp_client_task() {
             // fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
             ret = -1; 
             //TODO goto exit;
-        }
+            WOLFSSL_ERROR_MSG("ERROR: filed wolfSSL_new during loop\n");
+            ret = WOLFSSL_FAILURE;
+    }
 
         /* Attach wolfSSL to the socket */
         wolfSSL_set_fd(ssl, mConnd);
@@ -566,13 +704,17 @@ int tls_smp_client_task() {
 
         /* Establish TLS connection */
         if ((ret = wolfSSL_accept(ssl)) != WOLFSSL_SUCCESS) {
+            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_accept\n");
+            ret = WOLFSSL_FAILURE;
             // fprintf(stderr,
             //       "wolfSSL_accept error = %d\n",
             //    wolfSSL_get_error(ssl, ret));
             // TODO goto exit;
         }
+        else {
+            WOLFSSL_MSG("Client connected successfully\n");
+        }
 
-        // printf("Client connected successfully\n");
 
 #ifdef HAVE_SECRET_CALLBACK
         wolfSSL_FreeArrays(ssl);
@@ -617,7 +759,7 @@ int tls_smp_client_task() {
         }
     }
 
-    // printf("Shutdown complete\n");
+    WOLFSSL_MSG("Shutdown complete\n");
 
     /* 
     ***************************************************************************
