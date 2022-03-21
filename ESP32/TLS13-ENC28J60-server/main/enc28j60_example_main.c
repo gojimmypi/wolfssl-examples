@@ -67,7 +67,7 @@
 #define TLS_SMP_CLIENT_TASK_WORDS        10240
 #define TLS_SMP_CLIENT_TASK_PRIORITY     8
 
-#define TLS_SMP_TARGET_HOST              "192.168.75.55"
+#define TLS_SMP_TARGET_HOST              "192.168.75.155"
 
 
 /* include certificates. Note that there is an experiation date! 
@@ -79,9 +79,26 @@
     #define USE_CERT_BUFFERS_2048
     #include <wolfssl/certs_test.h>
 */
-//#include "embedded_CERT_FILE.h"
-//#include "embedded_CA_FILE.h"
-//#include "embedded_KEY_FILE.h"
+
+/* 
+* for reference, client uses:
+* 
+* #include "embedded_CERT_FILE.h"
+* #include "embedded_CA_FILE.h"
+* #include "embedded_KEY_FILE.h"
+*/
+
+/*
+server file versions:
+#define CA_FILE   "../../../../certs/client-cert.pem"
+#define CERT_FILE "../../../../certs/server-cert.pem"
+#define KEY_FILE  "../../../../certs/server-key.pem"
+*/
+
+#include "embedded_CLIENT_CERT_FILE.h"
+#include "embedded_SERVER_CERT_FILE.h"
+#include "embedded_SERVER_KEY_FILE.h"
+
 
 static const char *TAG = "eth_example";
 
@@ -122,6 +139,23 @@ TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
  **/
   
 
+
+#ifdef HAVE_SIGNAL
+static void sig_handler(const int sig) {
+//    fprintf(stderr, "SIGINT handled = %d.\n", sig);
+
+    mShutdown = 1;
+    if (mConnd != SOCKET_INVALID) {
+        close(mConnd); /* Close the connection to the client   */
+        mConnd = SOCKET_INVALID;
+    }
+    if (mSockfd != SOCKET_INVALID) {
+        close(mSockfd); /* Close the socket listening for clients   */
+        mSockfd = SOCKET_INVALID;
+    }
+}
+#endif
+
 int tls_smp_client_task() {
     int ret = WOLFSSL_SUCCESS; /* assume success until proven wrong */
     int sockfd = 0; /* the socket that will carry our secure connection */
@@ -132,69 +166,41 @@ int tls_smp_client_task() {
     size_t len; /* we'll be looking at the length of messages sent and received */
     struct hostent *hp;
     struct ip4_addr *ip4_addr;
-    
 
-    struct timeval tv_now;
-    
-    WOLFSSL_ENTER("tls_smp_client_task");
+    struct sockaddr_in clientAddr;
+    socklen_t          size = sizeof(clientAddr);
+    const char*        reply = "I hear ya fa shizzle!\n";
+    int                on;
 
-    /* see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system_time.html#overview */
-    // ret = gettimeofday(&tv_now, NULL);
-    /* 0x0005dcacd95af765 */
-    // int64_t time_us = (int64_t)tv_now.tv_sec * 1000000L + (int64_t)tv_now.tv_usec;
-    
-    // WOLFSSL_MSG(time_us) ;
-    
+    static int mConnd = SOCKET_INVALID;
+    static int mShutdown = 0;
+
+
+#ifdef WOLFSSL_TLS13
+
     /* declare wolfSSL objects */
     WOLFSSL_CTX *ctx = NULL; /* the wolfSSL context object*/
     WOLFSSL *ssl = NULL; /* although called "ssl" is is the secure object for reading and writings data*/
 
-
-#ifdef DEBUG_WOLFSSL
-    WOLFSSL_MSG("Debug ON");
-    wolfSSL_Debugging_ON();
-    //ShowCiphers();
+#ifdef HAVE_SIGNAL
+    signal(SIGINT, sig_handler);
 #endif
 
-   
+#ifdef DEBUG_WOLFSSL
+    wolfSSL_Debugging_ON();
+    WOLFSSL_MSG("Debug ON v0.1");
+    //ShowCiphers();
+#endif
+    
+    
     /* Initialize the server address struct with zeros */
     memset(&servAddr, 0, sizeof(servAddr));
 
     /* Fill in the server address */
-    servAddr.sin_family = AF_INET; /* using IPv4      */
-    servAddr.sin_port   = htons(DEFAULT_PORT); /* on DEFAULT_PORT */    
+    servAddr.sin_family      = AF_INET; /* using IPv4      */
+    servAddr.sin_port        = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
+    servAddr.sin_addr.s_addr = INADDR_ANY; /* from anywhere   */
 
-    
-    
-    ESP_LOGI(TAG, "get target IP address");
-
-    hp = gethostbyname(TLS_SMP_TARGET_HOST);
-    if (!hp) {
-        ESP_LOGE(TAG, "Failed to get host name.");
-        ip4_addr = NULL;
-    }
-    else {
-        ip4_addr = (struct ip4_addr *)hp->h_addr;
-        ESP_LOGI(TAG, IPSTR, IP2STR(ip4_addr));
-    }
-    
-
-    if (*targetServer >= '1' && *targetServer <= '9') {
-        /* Get the server IPv4 address from the command line call */
-        WOLFSSL_MSG("inet_pton");
-        if ((ret = inet_pton(AF_INET,
-            TLS_SMP_TARGET_HOST,
-            &servAddr.sin_addr)) != 1) {
-            ESP_LOGE(TAG, "ERROR: invalid address ret=%d\n", ret);
-
-            ret = WOLFSSL_FAILURE;
-            WOLFSSL_ERROR_MSG("ERROR: invalid address\n");
-        }
-    }
-    else {
-        servAddr.sin_addr.s_addr = ip4_addr->addr;
-    }
-    
     /* 
     ***************************************************************************
     * Create a socket that uses an internet IPv4 address,
@@ -225,40 +231,50 @@ int tls_smp_client_task() {
     else {
         WOLFSSL_ERROR_MSG("Skipping socket create.\n");
     }
+
+
+    
+    if (ret == WOLFSSL_SUCCESS) {
+        /* make sure server is setup for reuse addr/port */
+        on = 1;
+        setsockopt(sockfd,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            (char*)&on,
+            (socklen_t)sizeof(on));
+#ifdef SO_REUSEPORT
+        setsockopt(sockfd,
+            SOL_SOCKET,
+            SO_REUSEPORT,
+            (char*)&on,
+            (socklen_t)sizeof(on));
+#endif
+    }
     
 
-    /* 
-    ***************************************************************************
-    *  Connect the TCP socket to the server (no encryption yet!) 
-    *  
-    *  #include <sys/socket.h>
-    *  int connect(int socket, const struct sockaddr *address, socklen_t address_len);
-    *  
-    *  See https://linux.die.net/man/3/connect
-    ***************************************************************************
-    */
     if (ret == WOLFSSL_SUCCESS) {
-        /*
-         * Upon successful completion, socket() shall return a non-negative integer, 
-         * the socket file descriptor. 
-         * 
-         * Upon successful completion, connect() shall return 0; otherwise, 
-         * -1 shall be returned and errno set to indicate the error.
-         */
-        int connectResult = connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr));
-        if (0 == connectResult) {
-            WOLFSSL_MSG("sockfd connect successful\n");
+        /* Bind the server socket to our port */
+        int soc_ret = bind(sockfd, (struct sockaddr*)&servAddr, sizeof(servAddr));
+        if (soc_ret > -1) {
+            WOLFSSL_MSG("socket bind successful\n");
         }
         else {
-            // TODO show errno
-            WOLFSSL_ERROR_MSG("ERROR: socket connect failed\n");
             ret = WOLFSSL_FAILURE;
+            WOLFSSL_ERROR_MSG("ERROR: failed to bind to socket.\n");
         }
     }
-    else {
-        WOLFSSL_ERROR_MSG("Skipping socket connect.\n");
-    }
-    
+
+    /* Listen for a new connection, allow 5 pending connections */
+    if (ret == WOLFSSL_SUCCESS) {
+        int soc_ret = listen(sockfd, 5);
+        if (soc_ret > -1) {
+            WOLFSSL_MSG("socket listen successful\n");
+        }
+        else {
+            ret = WOLFSSL_FAILURE;
+            WOLFSSL_ERROR_MSG("ERROR: failed to listen to socket.\n");
+        }
+    }    
     
     /* 
     ***************************************************************************
@@ -293,6 +309,7 @@ int tls_smp_client_task() {
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_Init\n");
     }
 
+    WOLFSSL_MSG("Next! 1");
     
     /* 
     ***************************************************************************
@@ -316,13 +333,15 @@ int tls_smp_client_task() {
     ***************************************************************************
     */
     if (ret == WOLFSSL_SUCCESS) {
-        WOLFSSL_METHOD* method = wolfTLSv1_3_client_method();
+        WOLFSSL_METHOD* method = wolfTLSv1_3_server_method();
+        WOLFSSL_MSG("calling wolfTLSv1_3_server_method");
         if (method == NULL) {
-            WOLFSSL_ERROR_MSG("ERROR : failed to get  wolfTLSv1_3_client_method.\n");
+            WOLFSSL_ERROR_MSG("ERROR : failed to get wolfTLSv1_3_server_method.\n");
             ret = WOLFSSL_FAILURE;
         }
         else {
-            ctx = wolfSSL_CTX_new(method);
+            WOLFSSL_MSG("calling wolfSSL_CTX_new");
+                ctx = wolfSSL_CTX_new(method);
 
             if (ctx == NULL) {
                 WOLFSSL_ERROR_MSG("ERROR : failed to create WOLFSSL_CTX\n");
@@ -333,8 +352,9 @@ int tls_smp_client_task() {
     else {
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_new\n");
     }
-    
-    
+
+    WOLFSSL_MSG("Next! 2");
+
     /* 
     ***************************************************************************
     *  load CERT_FILE 
@@ -373,23 +393,23 @@ int tls_smp_client_task() {
     *  see https://www.wolfssl.com/doxygen/group__CertsKeys.html#gaf4e8d912f3fe2c37731863e1cad5c97e
     ***************************************************************************
     */
-//    if (ret == WOLFSSL_SUCCESS) {
-//        WOLFSSL_MSG("Loading cert");
-//        ret = wolfSSL_CTX_use_certificate_buffer(ctx, 
-//            CERT_FILE, 
-//            sizeof_CERT_FILE(), 
-//            WOLFSSL_FILETYPE_PEM);
-//
-//        if (ret == WOLFSSL_SUCCESS) {
-//            WOLFSSL_MSG("wolfSSL_CTX_use_certificate_buffer successful\n");
-//        }
-//        else {
-//            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_CTX_use_certificate_buffer failed\n");
-//        }
-//    }
-//    else {
-//        WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_use_certificate_buffer\n");
-//    }
+    if (ret == WOLFSSL_SUCCESS) {
+        WOLFSSL_MSG("Loading cert");
+        ret = wolfSSL_CTX_use_certificate_buffer(ctx, 
+            CERT_FILE, 
+            sizeof_CERT_FILE(), 
+            WOLFSSL_FILETYPE_PEM);
+
+        if (ret == WOLFSSL_SUCCESS) {
+            WOLFSSL_MSG("wolfSSL_CTX_use_certificate_buffer successful\n");
+        }
+        else {
+            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_CTX_use_certificate_buffer failed\n");
+        }
+    }
+    else {
+        WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_use_certificate_buffer\n");
+    }
         
     
     /* 
@@ -434,22 +454,22 @@ int tls_smp_client_task() {
     *  see: https://www.wolfssl.com/doxygen/group__CertsKeys.html#ga71850887b87138b7c2d794bf6b1eafab
     ***************************************************************************
     */
-//    if (ret == WOLFSSL_SUCCESS) {
-//        ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx, 
-//                                                KEY_FILE, 
-//                                                sizeof_KEY_FILE(), 
-//                                                WOLFSSL_FILETYPE_PEM);
-//        if (ret == WOLFSSL_SUCCESS) {
-//            WOLFSSL_MSG("wolfSSL_CTX_use_PrivateKey_buffer successful\n");
-//        }
-//        else {
-//            /* TODO fetch and print expiration date since it is a common fail */
-//            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_CTX_use_PrivateKey_buffer failed\n");
-//        }
-//    }
-//    else {
-//        WOLFSSL_ERROR_MSG("Skipping wolfSSL_CTX_use_PrivateKey_buffer\n");
-//    }
+    if (ret == WOLFSSL_SUCCESS) {
+        ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx, 
+                                                KEY_FILE, 
+                                                sizeof_KEY_FILE(), 
+                                                WOLFSSL_FILETYPE_PEM);
+        if (ret == WOLFSSL_SUCCESS) {
+            WOLFSSL_MSG("wolfSSL_CTX_use_PrivateKey_buffer successful\n");
+        }
+        else {
+            /* TODO fetch and print expiration date since it is a common fail */
+            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_CTX_use_PrivateKey_buffer failed\n");
+        }
+    }
+    else {
+        WOLFSSL_ERROR_MSG("Skipping wolfSSL_CTX_use_PrivateKey_buffer\n");
+    }
 
     
     /* 
@@ -491,306 +511,113 @@ int tls_smp_client_task() {
     * see https://www.wolfssl.com/doxygen/group__CertsKeys.html#gaa37539cce3388c628ac4672cf5606785
     ***************************************************************************
     */
-//    if (ret == WOLFSSL_SUCCESS) {
-//        ret = wolfSSL_CTX_load_verify_buffer(ctx, CA_FILE, sizeof_CA_FILE(), WOLFSSL_FILETYPE_PEM);
-//        if (ret == WOLFSSL_SUCCESS) {
-//            WOLFSSL_MSG("wolfSSL_CTX_load_verify_buffer successful\n");
-//        }
-//        else {
-//            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_CTX_load_verify_buffer failed\n");
-//        }
-//    }
-//    else {
-//        WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_load_verify_buffer\n");
-//    }
-    
-    
-    /* 
-    ***************************************************************************
-    *  Create a WOLFSSL object 
-    *  
-    *  The wolfSSL_new() function creates a new SSL session, taking an already 
-    *  created SSL context as input.
-    *
-    *  wolfSSL_new() Returns:
-    *  
-    *     If successful the call will return a pointer to the newly-created 
-    *     wolfSSL structure.
-    *     
-    *     NULL Upon failure.
-    *     
-    *  Parameters: WOLFSSL_API WOLFSSL* wolfSSL_new(WOLFSSL_CTX *)
-    *  
-    *    ctx  pointer to the SSL context, created with wolfSSL_CTX_new().
-    *
-    *  See: https://www.wolfssl.com/doxygen/group__Setup.html#ga3b1873a50ef7fcee4e2cc8968c81b6c9
-    *  
-    ***************************************************************************
-    */
     if (ret == WOLFSSL_SUCCESS) {
-        ssl = wolfSSL_new(ctx);
-        if (ssl == NULL) {
-            WOLFSSL_ERROR_MSG("ERROR : failed to create WOLFSSL object\n");
-            ret = WOLFSSL_FAILURE;
-        }
-    }
-    else {
-        WOLFSSL_ERROR_MSG("skipping wolfSSL_new\n");
-    }
-
-
-    /* 
-    ***************************************************************************
-    *  Attach wolfSSL to the socket using wolfSSL_set_fd()
-    *  
-    *  This function assigns a file descriptor (fd) as the input/output 
-    *  facility for the SSL connection. Typically this will be a socket 
-    *  file descriptor.
-    *  
-    *  wolfSSL_set_fd returns:
-    *  
-    *    SSL_SUCCESS upon success.
-    *    Bad_FUNC_ARG upon failure.
-    *    
-    *  Parameters:
-    *  
-    *    ssl  pointer to the SSL session, created with wolfSSL_new().
-    *    fd   file descriptor to use with SSL/TLS connection.
-    *    
-    *  see https://www.wolfssl.com/doxygen/group__Setup.html#ga4f23ec6e60cc92e0e899071653d3188b
-    ***************************************************************************
-    */
-    if (ret == WOLFSSL_SUCCESS) {
-        ret = wolfSSL_set_fd(ssl, sockfd);
+        ret = wolfSSL_CTX_load_verify_buffer(ctx, CA_FILE, sizeof_CA_FILE(), WOLFSSL_FILETYPE_PEM);
         if (ret == WOLFSSL_SUCCESS) {
-            WOLFSSL_MSG("wolfSSL_set_fd successful\n");
+            WOLFSSL_MSG("wolfSSL_CTX_load_verify_buffer successful\n");
         }
         else {
-            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_set_fd failed\n");
+            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_CTX_load_verify_buffer failed\n");
         }
     }
     else {
-        WOLFSSL_ERROR_MSG("skipping wolfSSL_set_fd\n");
+        WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_load_verify_buffer\n");
     }
+ 
+    /* Require mutual authentication */
+    wolfSSL_CTX_set_verify(ctx,
+        WOLFSSL_VERIFY_PEER | WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+        NULL);
 
-
-    /* 
-    ***************************************************************************
-    *  Connect to wolfSSL on the server side 
-    *  
-    *  This function is called on the client side and initiates an SSL/TLS 
-    *  handshake with a server. When this function is called, the underlying 
-    *  communication channel has already been set up. wolfSSL_connect() works 
-    *  with both blocking and non-blocking I/O. When the underlying I/O is 
-    *  non-blocking, wolfSSL_connect() will return when the underlying I/O 
-    *  could not satisfy the needs of wolfSSL_connect to continue the 
-    *  handshake. 
-    *  
-    *  In this case, a call to wolfSSL_get_error() will yield either 
-    *  SSL_ERROR_WANT_READ or SSL_ERROR_WANT_WRITE. The calling process must 
-    *  then repeat the call to wolfSSL_connect() when the underlying I/O 
-    *  is ready and wolfSSL will pick up where it left off. 
-    *  
-    *  When using a non-blocking socket, nothing needs to be done, 
-    *  but select() can be used to check for the required condition. 
-    *  
-    *  If the underlying I/O is blocking, wolfSSL_connect() will only return 
-    *  once the handshake has been finished or an error occurred. wolfSSL takes 
-    *  a different approach to certificate verification than OpenSSL does. 
-    *  
-    *  The default policy for the client is to verify the server, this means 
-    *  that if you don't load CAs to verify the server you'll get a connect 
-    *  error, unable to verify (-155). 
-    *  
-    *  If you want to mimic OpenSSL behavior of having SSL_connect succeed even 
-    *  if verifying the server fails and reducing security you can do this by 
-    *  calling: SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, 0); before 
-    *  calling SSL_new(); Though it's not recommended.
-    *  
-    *  Returns:
-    *  
-    *    SSL_SUCCESS       If successful.
-    *    SSL_FATAL_ERROR   will be returned if an error occurred. To get a more 
-    *                      detailed error code, call wolfSSL_get_error().
-    *    
-    *  Parameters:
-    *  
-    *    ssl   a pointer to a WOLFSSL structure, created using wolfSSL_new().
-    *
-    *  see: https://www.wolfssl.com/doxygen/group__IO.html#ga5b8f41cca120758d1860c7bc959755dd
-    ***************************************************************************
-    */
-    if (ret == WOLFSSL_SUCCESS) {
-        ret = wolfSSL_connect(ssl);
-        if (ret == WOLFSSL_SUCCESS) {
-            WOLFSSL_MSG("wolfSSL_connect successful\n");
-        }
-        else {
-            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_connect failed\n");
-        }
-    }
-    else {
-        WOLFSSL_ERROR_MSG("skipping wolfSSL_connect\n");
-    }
     
 
-    /*
-    ***************************************************************************
-    *  send the message to the server 
-    *  
-    *  The wolfSSL_write() function writes sz bytes from the buffer, data, to 
-    *  the SSL connection, ssl. If necessary, wolfSSL_write() will negotiate an 
-    *  SSL/TLS session if the handshake has not already been performed yet by 
-    *  wolfSSL_connect() or wolfSSL_accept(). wolfSSL_write() works with both 
-    *  blocking and non-blocking I/O. 
-    *  
-    *  When the underlying I/O is non-blocking, wolfSSL_write() will return 
-    *  when the underlying I/O could not satisfy the needs of wolfSSL_write() 
-    *  to continue. In this case, a call to wolfSSL_get_error() will yield 
-    *  either SSL_ERROR_WANT_READ or SSL_ERROR_WANT_WRITE. The calling process 
-    *  must then repeat the call to wolfSSL_write() when the underlying I/O is 
-    *  ready. 
-    *  
-    *  If the underlying I/O is blocking, wolfSSL_write() will only return once 
-    *  the buffer data of size sz has been completely written or an error 
-    *  occurred.
-    *  
-    *  wolfSSL_write() Returns:
-    *  
-    *    >0 the number of bytes written upon success.
-    *    
-    *    0 will be returned upon failure. Call wolfSSL_get_error() for 
-    *    the specific error code.
-    *    
-    *    SSL_FATAL_ERROR will be returned upon failure when either an error 
-    *    occurred or, when using non-blocking sockets, the SSL_ERROR_WANT_READ 
-    *    or SSL_ERROR_WANT_WRITE error was received and and the application
-    *    needs to call wolfSSL_write() again. Use wolfSSL_get_error() 
-    *    to get a specific error code.
-    *
-    *  Parameters: 
-    *  
-    *    ssl    pointer to the SSL session, created with wolfSSL_new().
-    *    data    data buffer which will be sent to peer.
-    *    sz    size, in bytes, of data to send to the peer (data).
-    *    
-    *  see: https://www.wolfssl.com/doxygen/group__IO.html#ga74b924a81e9efdf66d074690e5f53ef1
-    *
-    ***************************************************************************
-    */
-    if (ret == WOLFSSL_SUCCESS) {
-
-        memset(buff, 0, BUFF_SIZE);
     
-        /* get the length of our message, never longer than the declared size */
-        
-        /* TODO check for zero length */
-        
-        len = strnlen(sendMessage, sendMessageSize);
-        
-        /* write the message over secure connection to the server */
-        if (wolfSSL_write(ssl, sendMessage, len) == len) {
+    /* Continue to accept clients until mShutdown is issued */
+    while (!mShutdown) {
+        // printf("Waiting for a connection...\n");
 
-            WOLFSSL_MSG("wolfSSL_write message sent successfully:\n");
-            WOLFSSL_MSG(sendMessage);
+        /* Accept client connections */
+        if ((mConnd = accept(sockfd, (struct sockaddr*)&clientAddr, &size))
+            == -1) {
+            // fprintf(stderr, "ERROR: failed to accept the connection\n\n");
+            ret = -1; 
+            // TODO    goto exit;
         }
-        else {
 
-            int err = 0;
-            err = wolfSSL_get_error(ssl, 0);
-
-            char err_buff[80];
-            wolfSSL_ERR_error_string(err, err_buff);
-            WOLFSSL_ERROR_MSG(err_buff);
-
-            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_write FAILED.\n");
-            ret = WOLFSSL_FAILURE;
+        /* Create a WOLFSSL object */
+        if ((ssl = wolfSSL_new(ctx)) == NULL) {
+            // fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
+            ret = -1; 
+            //TODO goto exit;
         }
-    }
-    else {
-        WOLFSSL_ERROR_MSG("Skipping wolfSSL_write\n");
-    }
-   
 
-    /* 
-    ***************************************************************************
-    * 
-    *  Read the server data into our buff array 
-    *  
-    *  The wolfSSL_read() function reads sz bytes from the SSL session (ssl) 
-    *  internal read buffer into the buffer data. The bytes read are removed 
-    *  from the internal receive buffer. If necessary wolfSSL_read() will 
-    *  negotiate an SSL/TLS session if the handshake has not already been 
-    *  performed yet by wolfSSL_connect() or wolfSSL_accept(). The SSL/TLS 
-    *  protocol uses SSL records which have a maximum size of 16kB (the max 
-    *  record size can be controlled by the MAX_RECORD_SIZE define in 
-    *  <wolfssl_root>/wolfssl/internal.h). 
-    *  
-    *  As such, wolfSSL needs to read an entire SSL record internally before 
-    *  it is able to process and decrypt the record. Because of this, a call 
-    *  to wolfSSL_read() will only be able to return the maximum buffer size 
-    *  which has been decrypted at the time of calling. There may be additional
-    *  not-yet-decrypted data waiting in the internal wolfSSL receive buffer 
-    *  which will be retrieved and decrypted with the next call to 
-    *  wolfSSL_read(). 
-    *  
-    *  If sz is larger than the number of bytes in the internal read buffer, 
-    *  SSL_read() will return the bytes available in the internal read buffer. 
-    *  If no bytes are buffered in the internal read buffer yet, a call to 
-    *  wolfSSL_read() will trigger processing of the next record.
+        /* Attach wolfSSL to the socket */
+        wolfSSL_set_fd(ssl, mConnd);
 
-    *  Returns
-    *  
-    *   >0 the number of bytes read upon success.
-    *   
-    *   0 will be returned upon failure. This may be caused by a either a clean
-    *   (close notify alert) shutdown or just that the peer closed the 
-    *   connection. Call wolfSSL_get_error() for the specific error code.
-    *   
-    *   SSL_FATAL_ERROR will be returned upon failure when either an error 
-    *   occurred or, when using non-blocking sockets, the 
-    *   SSL_ERROR_WANT_READ or SSL_ERROR_WANT_WRITE error was received and 
-    *   the application needs to call wolfSSL_read() again. 
-    *   
-    *   Use wolfSSL_get_error() to get a specific error code.
-    *   
-    *  Parameters
-    *  
-    *   ssl    pointer to the SSL session, created with wolfSSL_new().
-    *   data    buffer where wolfSSL_read() will place data read.
-    *   sz    number of bytes to read into data.
-    *   
-    ***************************************************************************
-    */
-    if (ret == WOLFSSL_SUCCESS) {
-        /* even though the result should be a zero-terminated string, 
-         * we'll clear the receive buffer */
-        memset(buff, 0, BUFF_SIZE);
-        
-        /* read the response data from our secure connection */
-        if (wolfSSL_read(ssl, buff, BUFF_SIZE - 1) > 0) {
-            
-            /* one or more bytes received is considered success */
-            
-            /* Print to stdout any data the server sends */
-            WOLFSSL_MSG("wolfSSL_read received message:\n");    
-            WOLFSSL_MSG(buff);
+#ifdef HAVE_SECRET_CALLBACK
+        /* required for getting random used */
+        wolfSSL_KeepArrays(ssl);
+
+        /* optional logging for wireshark */
+        wolfSSL_set_tls13_secret_cb(ssl,
+            Tls13SecretCallback,
+            (void*)WOLFSSL_SSLKEYLOGFILE_OUTPUT);
+#endif
+
+        /* Establish TLS connection */
+        if ((ret = wolfSSL_accept(ssl)) != WOLFSSL_SUCCESS) {
+            // fprintf(stderr,
+            //       "wolfSSL_accept error = %d\n",
+            //    wolfSSL_get_error(ssl, ret));
+            // TODO goto exit;
         }
-        else {
-            /* get the integer error value */
-            int err = 0;
-            err = wolfSSL_get_error(ssl, 0);
 
-            /* get the human-readable error string. */
-            char err_buff[80] = "\x0";
-            wolfSSL_ERR_error_string(err, err_buff);
-            WOLFSSL_ERROR_MSG(err_buff);
-            
-            WOLFSSL_ERROR_MSG("ERROR: wolfSSL_read FAILED.\n");
-            ret = WOLFSSL_FAILURE;
+        // printf("Client connected successfully\n");
+
+#ifdef HAVE_SECRET_CALLBACK
+        wolfSSL_FreeArrays(ssl);
+#endif
+
+        /* Read the client data into our buff array */
+        memset(buff, 0, sizeof(buff));
+        if ((ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1)) < 0) {
+            // fprintf(stderr, "ERROR: failed to read\n");
+            //TODO goto exit;
+        }
+
+        /* Print to stdout any data the client sends */
+        // printf("Client: %s\n", buff);
+
+        /* Check for server shutdown command */
+        if (strncmp(buff, "shutdown", 8) == 0) {
+            // printf("Shutdown command issued!\n");
+            mShutdown = 1;
+        }
+
+        /* Write our reply into buff */
+        memset(buff, 0, sizeof(buff));
+        memcpy(buff, reply, strlen(reply));
+        len = strnlen(buff, sizeof(buff));
+
+        /* Reply back to the client */
+        if ((ret = wolfSSL_write(ssl, buff, len)) != len) {
+            // fprintf(stderr, "ERROR: failed to write\n");
+            // TODO goto exit;
+        }
+
+        /* Cleanup after this connection */
+        wolfSSL_shutdown(ssl);
+        if (ssl) {
+            wolfSSL_free(ssl); /* Free the wolfSSL object              */
+            ssl = NULL;
+        }
+        if (mConnd != SOCKET_INVALID) {
+            close(mConnd); /* Close the connection to the client   */
+            mConnd = SOCKET_INVALID;
         }
     }
-    
+
+    // printf("Shutdown complete\n");
 
     /* 
     ***************************************************************************
@@ -799,13 +626,20 @@ int tls_smp_client_task() {
     *    
     ***************************************************************************
     */
+    if (mConnd != SOCKET_INVALID) {
+        close(mConnd); /* Close the connection to the client   */
+        mConnd = SOCKET_INVALID;
+    }
+
     if (sockfd != SOCKET_INVALID) {
-        close(sockfd); /* Close the connection to the server       */
+        close(sockfd); /* Close the socket listening for clients   */
+        sockfd = SOCKET_INVALID;
     }
     
     if (ssl) {
-        wolfSSL_free(ssl); /* Free the wolfSSL object                  */
+        wolfSSL_free(ssl); /* Free the wolfSSL object */
     }
+
     
     if (ctx) {
         wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
@@ -813,8 +647,9 @@ int tls_smp_client_task() {
     
     wolfSSL_Cleanup(); /* Cleanup the wolfSSL environment          */
 
-    WOLFSSL_LEAVE("tls_smp_client_task", ret);
-    WOLFSSL_MSG("tls_smp_client_task done!\n");
+#else
+    printf("Example requires TLS v1.3\n");
+#endif /* WOLFSSL_TLS13 */
     return ret;
 }
 
@@ -939,6 +774,7 @@ int set_time() {
 }
 
 
+
 int init_ENC28J60() {
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
     // Initialize TCP/IP network interface (should be called only once in application)
@@ -1004,6 +840,7 @@ int init_ENC28J60() {
     
     return 0;
 }
+
 
 void app_main(void) {
     init_ENC28J60();
