@@ -7,6 +7,10 @@ example to generate this CERT_FILE text for a new file:
 
 sed 's/\(.*\)\r/"\1\\n"/g' client-cert.pem
 
+see also this DER to C script:
+
+https://github.com/wolfSSL/wolfssl/blob/master/scripts/dertoc.pl
+
 */
 
 #pragma GCC diagnostic push

@@ -11,6 +11,10 @@ paste into file: embedded_SERVER_CERT.h
 
 sed 's/\(.*\)\r/"\1\\n"/g' ../../../certs/server-cert.pem 
 
+see also this DER to C script:
+
+https://github.com/wolfSSL/wolfssl/blob/master/scripts/dertoc.pl
+
 */
 
 
