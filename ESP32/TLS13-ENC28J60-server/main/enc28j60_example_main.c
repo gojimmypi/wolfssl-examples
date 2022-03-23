@@ -61,6 +61,21 @@
  ******************************************************************************
  **/
 
+/* ENC28J60 doesn't burn any factory MAC address, we need to set it manually.
+   02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
+*/
+uint8_t myMacAddress[] = {
+    0x02,
+    0x00,
+    0x00,
+    0x12,
+    0x34,
+    0x56
+};
+
+/* ESP lwip */
+#define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
+
 #define DEFAULT_PORT                     11111
 
 #define TLS_SMP_CLIENT_TASK_NAME         "tls_server_example"
@@ -80,7 +95,7 @@
 */
 
 /* 
-* for reference, client uses:
+* for reference, embedded client uses:
 * 
 * #include "embedded_CA_FILE.h"
 * #include "embedded_CERT_FILE.h"
@@ -88,7 +103,7 @@
 */
 
 /*
-server file versions:
+server file system versions:
 #define CA_FILE   "../../../../certs/client-cert.pem"
 #define CERT_FILE "../../../../certs/server-cert.pem"
 #define KEY_FILE  "../../../../certs/server-key.pem"
@@ -101,18 +116,6 @@ server file versions:
 
 static const char *TAG = "eth_example";
 
-/* ENC28J60 doesn't burn any factory MAC address, we need to set it manually.
-   02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
-*/
-uint8_t myMacAddress[] = {
-    0x02,
-    0x00,
-    0x00,
-    0x12,
-    0x34,
-    0x56
-};
-
 // see https://tf.nist.gov/tf-cgi/servers.cgi
 const int NTP_SERVER_COUNT = 3;
 const char* ntpServerList[] = {
@@ -123,10 +126,6 @@ const char* ntpServerList[] = {
 const char * TIME_ZONE = "PST-8";
 const long  gmtOffset_sec = 3600;
 const int   daylightOffset_sec = 3600;
-
-/* const char sndMsg[] = "GET /index.html HTTP/1.0\r\n\r\n"; */
-const char sendMessage[] = "Hello World\n";
-const int sendMessageSize = sizeof(sendMessage);
 
 TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
 /**
@@ -155,7 +154,7 @@ static void sig_handler(const int sig) {
 }
 #endif
 
-int tls_smp_client_task() {
+int tls_smp_server_task() {
     int ret = WOLFSSL_SUCCESS; /* assume success until proven wrong */
     int sockfd = 0; /* the socket that will carry our secure connection */
     struct sockaddr_in servAddr;
@@ -171,9 +170,6 @@ int tls_smp_client_task() {
     static int mConnd = SOCKET_INVALID;
     static int mShutdown = 0;
 
-
-#ifdef WOLFSSL_TLS13
-
     /* declare wolfSSL objects */
     WOLFSSL_CTX *ctx = NULL; /* the wolfSSL context object*/
     WOLFSSL *ssl = NULL; /* although called "ssl" is is the secure object for reading and writings data*/
@@ -186,8 +182,12 @@ int tls_smp_client_task() {
     wolfSSL_Debugging_ON();
     WOLFSSL_MSG("Debug ON v0.2b");
     //ShowCiphers();
-#endif
-    
+#endif /* DEBUG_WOLFSSL */
+
+#ifndef WOLFSSL_TLS13
+    ret = WOLFSSL_FAILURE;
+    WOLFSSL_ERROR_MSG("ERROR: Example requires TLS v1.3.\n");
+#endif /* WOLFSSL_TLS13 */
     
     /* Initialize the server address struct with zeros */
     memset(&servAddr, 0, sizeof(servAddr));
@@ -207,6 +207,71 @@ int tls_smp_client_task() {
     *
     *  int socket(int domain, int type, int protocol);  
     *  
+    *  The socket() function shall create an unbound socket in a communications 
+    *  domain, and return a file descriptor that can be used in later function 
+    *  calls that operate on sockets.
+    *  
+    *  The socket() function takes the following arguments:
+    *    domain     Specifies the communications domain in which a 
+    *                 socket is to be created.
+    *    type       Specifies the type of socket to be created.
+    *    protocol   Specifies a particular protocol to be used with the socket. 
+    *               Specifying a protocol of 0 causes socket() to use an 
+    *               unspecified default protocol appropriate for the 
+    *               requested socket type.
+    *               
+    *    The domain argument specifies the address family used in the 
+    *    communications domain. The address families supported by the system 
+    *    are implementation-defined.
+    *    
+    *    Symbolic constants that can be used for the domain argument are
+    *    defined in the <sys/socket.h> header.
+    *
+    *  The type argument specifies the socket type, which determines the semantics 
+    *  of communication over the socket. The following socket types are defined; 
+    *  implementations may specify additional socket types:
+    *
+    *    SOCK_STREAM    Provides sequenced, reliable, bidirectional, 
+    *                   connection-mode byte streams, and may provide a 
+    *                   transmission mechanism for out-of-band data.
+    *    SOCK_DGRAM     Provides datagrams, which are connectionless-mode,
+    *                   unreliable messages of fixed maximum length.
+    *    SOCK_SEQPACKET Provides sequenced, reliable, bidirectional, 
+    *                   connection-mode transmission paths for records. 
+    *                   A record can be sent using one or more output 
+    *                   operations and received using one or more input 
+    *                   operations, but a single operation never transfers 
+    *                   part of more than one record. Record boundaries 
+    *                   are visible to the receiver via the MSG_EOR flag.
+    *    
+    *                   If the protocol argument is non-zero, it shall 
+    *                   specify a protocol that is supported by the address 
+    *                   family. If the protocol argument is zero, the default
+    *                   protocol for this address family and type shall be
+    *                   used. The protocols supported by the system are 
+    *                   implementation-defined.
+    *    
+    *    The process may need to have appropriate privileges to use the socket() function or to create some sockets.
+    *    
+    *  Return Value
+    *    Upon successful completion, socket() shall return a non-negative integer, 
+    *    the socket file descriptor. Otherwise, a value of -1 shall be returned 
+    *    and errno set to indicate the error.
+    *    
+    *  Errors; The socket() function shall fail if:
+    *  
+    *    EAFNOSUPPORT    The implementation does not support the specified address family.
+    *    EMFILE          No more file descriptors are available for this process.
+    *    ENFILE          No more file descriptors are available for the system.
+    *    EPROTONOSUPPORT The protocol is not supported by the address family, or the protocol is not supported by the implementation.
+    *    EPROTOTYPE      The socket type is not supported by the protocol.
+    *    
+    *  The socket() function may fail if:
+    *  
+    *    EACCES  The process does not have appropriate privileges.
+    *    ENOBUFS Insufficient resources were available in the system to perform the operation.
+    *    ENOMEM  Insufficient memory was available to fulfill the request.
+    *    
     *  see: https://linux.die.net/man/3/socket
     ***************************************************************************
     */
@@ -789,9 +854,6 @@ int tls_smp_client_task() {
     
     wolfSSL_Cleanup(); /* Cleanup the wolfSSL environment          */
 
-#else
-    printf("Example requires TLS v1.3\n");
-#endif /* WOLFSSL_TLS13 */
     return ret;
 }
 
@@ -993,6 +1055,6 @@ void app_main(void) {
     for (;;) {
         ESP_LOGI(TAG, "main loop");
         vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
-        tls_smp_client_task();
+        tls_smp_server_task();
     }
 }
