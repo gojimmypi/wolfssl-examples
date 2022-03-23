@@ -4,4 +4,4 @@ cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 # include(/SysGCC/esp32/esp-idf/v4.4/tools/cmake/project.cmake)
-project(TLS13-enc28j60-client)
+project(ESP32-TLS13-enc28j60-client)
