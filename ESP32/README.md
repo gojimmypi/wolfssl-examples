@@ -2,9 +2,28 @@
 
 ## ESP32 TLS 1.3 Server
 
+- [Wireless STA server](./TLS13-wifi_station-server/README.md)
+- [Wired ENC28J60 server](./TLS13-ENC28J60-server/README.md)
+
+coming soon:
+- Wireless AP client
+- Arduino client
+
 ## ESP32 TLS 1.3 Client
 
+- [Wireless STA client](./TLS13-wifi_station-client/README.md)
+- [Wired ENC28J60 client](./TLS13-ENC28J60-client/README.md)
 
+coming soon:
+- Wireless AP server
+- Arduino server
+
+<br />
+# Tips
+
+If JTAG gets into a mode where it is simply always returning an error (app continually resetting)
+try using serial port to program a basic, operational ["hello world"](./ESP32-hello-world/README.md). 
+The Arduino IDE or command-line ESP-IDF can be handy here.
 
 
 ## See also:

@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "TLS13-enc28j60-client", "TLS13-ENC28J60-client\TLS13-enc28j60-client.vgdbproj", "{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}"
-EndProject
 Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "TLS13-ENC28J60-server", "TLS13-ENC28J60-server\TLS13-ENC28J60-server.vgdbproj", "{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}"
+EndProject
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "TLS13-enc28j60-client", "TLS13-ENC28J60-client\TLS13-enc28j60-client.vgdbproj", "{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +21,6 @@ Global
 		Tests (Release)|VisualGDB = Tests (Release)|VisualGDB
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Release|VisualGDB.Build.0 = Release|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Debug)|VisualGDB.ActiveCfg = Tests (Debug)|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Debug)|VisualGDB.Build.0 = Tests (Debug)|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Release)|VisualGDB.ActiveCfg = Tests (Release)|VisualGDB
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Release)|VisualGDB.Build.0 = Tests (Release)|VisualGDB
 		{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
 		{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
 		{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
@@ -37,12 +29,17 @@ Global
 		{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}.Tests (Debug)|VisualGDB.Build.0 = Tests (Debug)|VisualGDB
 		{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}.Tests (Release)|VisualGDB.ActiveCfg = Tests (Release)|VisualGDB
 		{78B33F2B-5B03-4D34-BAF6-82060DD9FA8F}.Tests (Release)|VisualGDB.Build.0 = Tests (Release)|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Release|VisualGDB.Build.0 = Release|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Debug)|VisualGDB.ActiveCfg = Tests (Debug)|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Debug)|VisualGDB.Build.0 = Tests (Debug)|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Release)|VisualGDB.ActiveCfg = Tests (Release)|VisualGDB
+		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC}.Tests (Release)|VisualGDB.Build.0 = Tests (Release)|VisualGDB
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{67AFCF00-979E-40FB-AE8A-CDEB4F8EE7DC} = {7087FBCD-E3BF-44F5-BA16-5A9B41782406}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {65BE29BE-BAE2-4235-9F23-0B1E199AB7BB}
