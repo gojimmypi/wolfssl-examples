@@ -1,3 +1,6 @@
+# user sensitive config files
+**/my_private_config.h
+
 # Object files
 *.o
 *.ko
