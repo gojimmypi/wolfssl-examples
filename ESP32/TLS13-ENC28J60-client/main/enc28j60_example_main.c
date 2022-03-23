@@ -158,7 +158,11 @@ int tls_smp_client_task() {
     wolfSSL_Debugging_ON();
     //ShowCiphers();
 #endif
-
+    
+#ifndef WOLFSSL_TLS13
+    ret = WOLFSSL_FAILURE;
+    WOLFSSL_ERROR_MSG("ERROR: Example requires TLS v1.3.\n");
+#endif /* WOLFSSL_TLS13 */
    
     /* Initialize the server address struct with zeros */
     memset(&servAddr, 0, sizeof(servAddr));
@@ -226,6 +230,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("Skipping socket create.\n");
     }
     
@@ -259,6 +264,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("Skipping socket connect.\n");
     }
     
@@ -293,6 +299,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_Init\n");
     }
 
@@ -334,6 +341,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_new\n");
     }
     
@@ -391,6 +399,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_use_certificate_buffer\n");
     }
         
@@ -451,6 +460,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_CTX_use_PrivateKey_buffer\n");
     }
 
@@ -504,6 +514,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_load_verify_buffer\n");
     }
     
@@ -538,6 +549,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("skipping wolfSSL_new\n");
     }
 
@@ -573,6 +585,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("skipping wolfSSL_set_fd\n");
     }
 
@@ -633,6 +646,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("skipping wolfSSL_connect\n");
     }
     
@@ -711,6 +725,7 @@ int tls_smp_client_task() {
         }
     }
     else {
+        /* a prior error occured */
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_write\n");
     }
    
