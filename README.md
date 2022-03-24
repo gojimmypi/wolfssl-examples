@@ -20,6 +20,7 @@ Please see the [android/README.md](android/README.md) for further usage and
 details.
 
 <br />
+
 #### BTLE
 
 This directory contains examples for securing a Bluetooth Low Energy Link (BTLE).
@@ -29,6 +30,7 @@ way to exchange data securely without BTLE pairing.
 Please see the [btle/README.md](btle/README.md) for further usage and details.
 
 <br />
+
 #### can-bus
 
 This directory contains an example echo server/client using wolfSSL over
@@ -38,6 +40,7 @@ in Linux.
 Please see the [can-bus/README.md](can-bus/README.md) for further usage and details.
 
 <br />
+
 #### certfields (X509 field extraction)
 
 This directory contains an example that demonstrate using wolfSSL
@@ -49,6 +52,7 @@ and details.
 
 
 <br />
+
 #### certgen (wolfSSL Certificate Generation)
 
 This directory contains examples that demonstrate using wolfSSL to
@@ -59,6 +63,7 @@ details.
 
 
 <br />
+
 #### certmanager (wolfSSL CertManager)
 
 This directory contains examples that demonstrate using 
@@ -69,6 +74,7 @@ and details.
 
 
 <br />
+
 #### crypto (wolfCrypt Examples)
 
 This directory contains examples that demonstrate using the wolfCrypt functionality
@@ -78,6 +84,7 @@ Please see the [crypto/README.md](crypto/README.md) for further usage and detail
 
 
 <br />
+
 #### custom-io-callbacks (wolfSSL Custom IO Callbacks)
 
 This directory contains examples that demonstrate how the custom IO callbacks
@@ -88,6 +95,7 @@ for further usage and details.
 
 
 <br />
+
 #### DTLS (Datagram TLS)
 
 This directory contains examples of using DTLS, with client and server
@@ -113,6 +121,7 @@ Please see the [dtls/README.md](dtls/README.md) for further usage and details.
 
 
 <br />
+
 #### ecc (Elliptic Curve Cryptography)
 
 This directory contains examples that demonstrate the various use-cases of 
@@ -121,6 +130,7 @@ wolfcrypt ECC.
 Please see the [ecc/README.md](ecc/README.md) for further usage and details.
 
 <br />
+
 #### ESP32 (Espressif)
 
 This directory contains examples for the Espressif ESP32 chips.
@@ -129,6 +139,7 @@ Please see the [ESP32/README.md](ecc/README.md) for further usage and details.
 
 
 <br />
+
 #### embedded (Embedded Systems)
 
 This directory contains examples that demonstrate TLS client/servers communicating
@@ -139,6 +150,7 @@ details.
 
 
 <br />
+
 #### hash (wolfCrypt Hash Examples)
 
 This directory contains examples that demonstrate how to hash an input file using 
@@ -148,6 +160,7 @@ Please see the [hash/README.md](hash/README.md) for further usage and details.
 
 
 <br />
+
 #### java (wolfJSSE Examples)
 
 This directory contains examples that demonstrate HTTPS URL use with wolfJSSE
@@ -157,6 +170,7 @@ Please see the [java/README.md](java/README.md) for further usage and details.
 
 
 <br />
+
 #### mynewt (Apache Mynewt Examples)
 
 This directory contains examples that demonstrate using wolfSSL with Apache 
@@ -167,6 +181,7 @@ details.
 
 
 <br />
+
 #### picotcp (picoTCP Examples)
 
 This directory contains a TLS server created by using picoTCP via wolfSSL 
@@ -177,6 +192,7 @@ details.
 
 
 <br />
+
 #### picotcp (picoTCP Examples)
 
 This directory contains a TLS server created by using picoTCP via wolfSSL 
@@ -187,6 +203,7 @@ details.
 
 
 <br />
+
 #### pk (Public-Key)
 
 This directory contains examples that demonstrate various wolfCrypt public-key 
@@ -197,6 +214,7 @@ Please see the [pk/README.md](pk/README.md) for further usage and details.
 
 
 <br />
+
 #### pkcs11 (PKCS #11)
 
 This directory contains examples of using wolfSSL's PKCS #11 feature and a TLS
@@ -206,6 +224,7 @@ Please see the [pkcs11/README.md](pkcs11/README.md) for further usage and detail
 
 
 <br />
+
 #### pkcs7 (PKCS #7)
 
 This directory contains example applications that demonstrate usage of the 
@@ -219,6 +238,7 @@ Please see the [pkcs7/README.md](pkcs7/README.md) for further usage and details.
 
 
 <br />
+
 #### PSK (Pre-Shared Keys)
 
 This directory contains examples of using PSK, with client and server examples 
@@ -243,6 +263,7 @@ Please see the [psk/README.md](psk/README.md) for further usage and details.
 
 
 <br />
+
 #### riot-os-posix-lwip (RIOT-OS)
 
 This directory contains examples that demonstrate how to use wolfSSL TLS sockets
@@ -253,6 +274,7 @@ further usage and details.
 
 
 <br />
+
 #### RT1060 (i.MX RT1060-EVK)
 
 This directory contains a wolfCrypt benchmark test application for i.MX RT1060-EVK.
@@ -261,6 +283,7 @@ Please see the [RT1060/README.md](RT1060/README.md) for further usage and detail
 
 
 <br />
+
 #### SGX_Linux (Linux Enclave)
 
 This directory contains an example application, written in C, which demonstrates
@@ -272,6 +295,7 @@ details.
 
 
 <br />
+
 #### SGX_Windows (Windows Enclave)
 
 This directory contains an example application, written in C++, which demonstrates
@@ -283,6 +307,7 @@ and details.
 
 
 <br />
+
 #### signature (Sign and Verify Examples)
 
 This directory contains examples that demonstrate using wolfSSL to sign and
@@ -294,6 +319,7 @@ details.
 
 
 <br />
+
 #### tirtos_ccs_examples (TI-RTOS)
 
 This directory contains a client/server examples that demonstrates using wolfSSL
@@ -304,6 +330,7 @@ further usage and details.
 
 
 <br />
+
 #### TLS
 
 This directory contains examples of using SSL/TLS, with client and server
@@ -321,6 +348,7 @@ Please see the [tls/README.md](tls/README.md) for further usage and details.
 
 
 <br />
+
 #### utasker (uTasker wolfSSL Example Tasks)
 
 This directory contains example uTasker client and server tasks  that
@@ -332,6 +360,7 @@ details.
 
 
 <br />
+
 ## Notes
 
 
@@ -339,7 +368,10 @@ When necessary, examples will use the example certificates and keys located
 in the ./certs directory. These certificates and keys have been pulled in from
 the main wolfSSL repository.
 
+To generate your own cert text, see the [DER to C script](https://github.com/wolfSSL/wolfssl/blob/master/scripts/dertoc.pl).
+
 <br />
+
 ## Support
 
 Please contact wolfSSL at support@wolfssl.com with any questions, bug fixes,

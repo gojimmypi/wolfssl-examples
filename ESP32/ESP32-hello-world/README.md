@@ -34,3 +34,10 @@ namespace TestdriveSHA256
     }
 }
 ```
+
+<br />
+
+## Support
+
+Please contact wolfSSL at support@wolfssl.com with any questions, bug fixes,
+or suggested feature additions.

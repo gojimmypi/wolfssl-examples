@@ -94,3 +94,10 @@ Now you can ping your ESP32 in the terminal by entering `ping 192.168.2.34` (it 
 ## Troubleshooting
 
 (For any technical queries, please open an [issue](https://github.com/espressif/esp-idf/issues) on GitHub. We will get back to you as soon as possible.)
+
+<br />
+
+## Support
+
+Please contact wolfSSL at support@wolfssl.com with any questions, bug fixes,
+or suggested feature additions.

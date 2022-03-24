@@ -53,7 +53,7 @@ The userPin must be supplied to login into a session.
  *
  * @param  token      [in]  Token object.
  * @param  dev        [in]  PKCS#11 device object.
- * @param  slotId     [in]  Slot number of the token.<br>
+ * @param  slotId     [in]  Slot number of the token.
  *                          Passing -1 uses the first available slot.
  * @param  tokenName  [in]  Name of token to initialize.
  * @param  userPin    [in]  PIN to use to login as user.

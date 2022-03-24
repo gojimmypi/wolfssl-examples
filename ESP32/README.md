@@ -19,6 +19,41 @@ coming soon:
 - Arduino server
 
 <br />
+
+## Creating VisualGDB Projects
+
+![VisualGDB-create-new-project.png](./images/VisualGDB-create-new-project.png)
+
+![VisualGDB-configure-new-project.png](./images/VisualGDB-configure-new-project.png)
+
+![VisualGDB-new-espressif-project.png](./images/VisualGDB-new-espressif-project.png)
+
+![VisualGDB-new-espressif-project-toolchain.png](./images/VisualGDB-new-espressif-project-toolchain.png)
+
+![VisualGDB-new-espressif-project-eth_enc28j60.png](./images/VisualGDB-new-espressif-project-eth_enc28j60.png)
+
+![VisualGDB-new-espressif-project-debug.png](./images/VisualGDB-new-espressif-project-debug.png)
+
+<br />
+
+## ESP-IDF
+
+Although the examples were created using VisualGDB extension for Visual Studio, the 
+examples can be compiled using the ESP-IDF.
+
+Once the EDP-IDF is installed, use the [setp_win.bat]() to copy wolfSSL files to
+the `esp-idf\components` directory, typically in 
+`C:\Users\%username%\esp\esp-idf\components` or `C:\Users\%username%\Desktop\esp-idf\components`.
+Be sure to run the `ESP-IDY X.Y CMD` command prompt that has `%IDF_PATH%` defined.
+
+
+```
+cd \workspace\
+git clone https://github.com/wolfSSL/wolfssl.git
+cd wolfssl\IDE\Espressif\ESP-IDF\
+.\setup_win.bat
+```
+
 # Tips
 
 If JTAG gets into a mode where it is simply always returning an error (app continually resetting)
@@ -54,3 +89,10 @@ The Arduino IDE or command-line ESP-IDF can be handy here.
 - [VisualGDB Extension for Visual Studio](https://visualgdb.com/)
 - [Wireshark](https://www.wireshark.org/)
 - [WSL](https://docs.microsoft.com/en-us/windows/wsl/)
+
+<br />
+
+## Support
+
+Please contact wolfSSL at support@wolfssl.com with any questions, bug fixes,
+or suggested feature additions.

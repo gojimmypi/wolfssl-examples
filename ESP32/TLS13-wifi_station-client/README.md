@@ -129,3 +129,11 @@ I (10299) wifi station: Failed to connect to SSID:myssid, password:mypassword
 ## Troubleshooting
 
 For any technical queries, please open an [issue](https://github.com/espressif/esp-idf/issues) on GitHub. We will get back to you soon.
+
+
+<br />
+
+## Support
+
+Please contact wolfSSL at support@wolfssl.com with any questions, bug fixes,
+or suggested feature additions.
