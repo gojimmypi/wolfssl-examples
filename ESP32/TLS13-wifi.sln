@@ -11,6 +11,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "TLS13-wifi_station-client", "TLS13-wifi_station-client\TLS13-wifi_station-client.vgdbproj", "{4904362E-3B9F-44CC-9C44-740B27FDFBE5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VisualGDB Components", "VisualGDB Components", "{04751710-E482-4678-9B51-73B903DD171E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\CMakeLists.txt = ..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\CMakeLists.txt
+		..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\component.mk = ..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\component.mk
+		..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\include\config.h = ..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\include\config.h
+		..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\include\user_settings.h = ..\..\..\SysGCC\esp32\esp-idf\v4.4.1\components\wolfssl\include\user_settings.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|VisualGDB = Debug|VisualGDB
