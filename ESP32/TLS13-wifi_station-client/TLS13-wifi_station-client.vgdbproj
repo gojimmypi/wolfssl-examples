@@ -20,9 +20,10 @@
       <Version>
         <GCC>8.4.0</GCC>
         <GDB>8.1.0</GDB>
-        <Revision>7</Revision>
+        <Revision>9</Revision>
       </Version>
     </ToolchainID>
+    <RelativeSourceDirectory />
     <ConfigurationType>DEBUG</ConfigurationType>
     <BinaryDirectory>build/$(PlatformName)/$(ConfigurationName)</BinaryDirectory>
     <MakeCommandTemplate>
@@ -57,6 +58,7 @@
         <BuildAllTargetsInSubdir>false</BuildAllTargetsInSubdir>
         <FoldSingleItemPathLevels>true</FoldSingleItemPathLevels>
       </ProjectItemSettings>
+      <TargetSpecificSettings />
       <SetLDLibraryPathFromDependentArtifacts>true</SetLDLibraryPathFromDependentArtifacts>
       <ProjectGUID>4904362e-3b9f-44cc-9c44-740b27fdfbe5</ProjectGUID>
       <VirtualFolders />
@@ -65,8 +67,8 @@
       <EnableFastUpToDateCheck>true</EnableFastUpToDateCheck>
       <ESPIDFExtension>
         <IDFCheckout>
-          <Version>release/v4.4</Version>
-          <Subdirectory>esp-idf/v4.4</Subdirectory>
+          <Version>v4.4.1</Version>
+          <Subdirectory>esp-idf/v4.4.1</Subdirectory>
           <Type>ESPIDF</Type>
         </IDFCheckout>
         <COMPort>COM20</COMPort>
@@ -155,6 +157,7 @@
     <ShowMessageAfterExecuting>true</ShowMessageAfterExecuting>
   </CustomShortcuts>
   <UserDefinedVariables />
+  <ImportedPropertySheets />
   <CodeSense>
     <Enabled>Unknown</Enabled>
     <ExtraSettings>
@@ -177,6 +180,7 @@
       <BuildSettingsExtension xsi:type="com.visualgdb.build.external.esp-idf.cmake.extension" />
     </VisualGDBConfiguration>
   </Configurations>
+  <ProgramArgumentsSuggestions />
   <Debug xsi:type="com.visualgdb.debug.embedded">
     <AdditionalStartupCommands />
     <AdditionalGDBSettings>
@@ -216,7 +220,7 @@
     <DebugMethod>
       <ID>openocd</ID>
       <Configuration xsi:type="com.visualgdb.edp.openocd.settings.esp32">
-        <CommandLine>-f interface/jlink.cfg -c "adapter_khz 3000" -f target/esp32.cfg</CommandLine>
+        <CommandLine>-f interface/tigard.cfg -c "adapter_khz 29500" -f target/esp32.cfg</CommandLine>
         <ExtraParameters>
           <Frequency xsi:nil="true" />
           <BoostedFrequency xsi:nil="true" />
