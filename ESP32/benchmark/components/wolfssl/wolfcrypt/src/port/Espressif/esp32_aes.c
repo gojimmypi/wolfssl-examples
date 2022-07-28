@@ -1,6 +1,6 @@
 /* esp32_aes.c
  *
- * Copyright (C) 2006-2022 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -19,10 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-/*
- * WOLFSSL_SUCCESS and WOLFSSL_FAILURE values should only
- * be used in the ssl layer, not in wolfCrypt
- **/
 #include <string.h>
 #include <stdio.h>
 
@@ -40,18 +36,13 @@
 #include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
 
 static const char* TAG = "wolf_hw_aes";
-
 /* mutex */
 static wolfSSL_Mutex aes_mutex;
-
-/* keep track as to whether esp aes is initialized */
 static int espaes_CryptHwMutexInit = 0;
 
 /*
 * lock hw engine.
 * this should be called before using engine.
-*
-* returns 0 if the hw lock was initialized and mutex lock
 */
 static int esp_aes_hw_InUse()
 {
@@ -59,29 +50,21 @@ static int esp_aes_hw_InUse()
 
     ESP_LOGV(TAG, "enter esp_aes_hw_InUse");
 
-    if (espaes_CryptHwMutexInit == 0) {
+    if(espaes_CryptHwMutexInit == 0) {
         ret = esp_CryptHwMutexInit(&aes_mutex);
-        if (ret == 0) {
-            /* flag esp aes as initialized */
+        if(ret == 0){
             espaes_CryptHwMutexInit = 1;
-        }
-        else {
-            ESP_LOGE(TAG, "aes mutex initialization failed.");
+        } else {
+            ESP_LOGE(TAG, "aes mutx initialization failed.");
             return -1;
         }
     }
-    else {
-        /* esp aes has already been initialized */
-    }
-
     /* lock hardware */
     ret = esp_CryptHwMutexLock(&aes_mutex, portMAX_DELAY);
-
     if(ret != 0) {
         ESP_LOGE(TAG, "aes engine lock failed.");
         return -1;
     }
-
     /* Enable AES hardware */
     periph_module_enable(PERIPH_AES_MODULE);
 
@@ -109,27 +92,23 @@ static void esp_aes_hw_Leave( void )
  */
 static void esp_aes_hw_Set_KeyMode(Aes *ctx, ESP32_AESPROCESS mode)
 {
-    word32 i;
+    int i;
     word32 mode_ = 0;
 
-    ESP_LOGV(TAG, "  enter esp_aes_hw_Set_KeyMode");
+    ESP_LOGV(TAG, "enter esp_aes_hw_Set_KeyMode");
 
     /* check mode */
     if(mode == ESP32_AES_UPDATEKEY_ENCRYPT) {
         mode_ = 0;
-    }
-    else {
-        if (mode == ESP32_AES_UPDATEKEY_DECRYPT) {
-            mode_ = 4;
-        }
-        else {
-            ESP_LOGE(TAG, "  >> unexpected error.");
-            return;
-        }
+    } else if(mode == ESP32_AES_UPDATEKEY_DECRYPT){
+        mode_ = 4;
+    } else {
+        ESP_LOGE(TAG, "unexpected error.");
+        return;
     }
 
     /* update key */
-    for(i=0; i<(ctx->keylen)/sizeof(word32); i++){
+    for(i=0;i<(ctx->keylen)/sizeof(word32);i++){
         DPORT_REG_WRITE(AES_KEY_BASE + (i*4), *(((word32*)ctx->key) + i));
     }
 
@@ -148,7 +127,7 @@ static void esp_aes_hw_Set_KeyMode(Aes *ctx, ESP32_AESPROCESS mode)
     }
 
     DPORT_REG_WRITE(AES_MODE_REG, mode_);
-    ESP_LOGV(TAG, "  leave esp_aes_hw_Setkey");
+    ESP_LOGV(TAG, "leave esp_aes_hw_Setkey");
 }
 
 /*
@@ -202,7 +181,6 @@ int wc_esp32AesEncrypt(Aes *aes, const byte* in, byte* out)
     esp_aes_hw_Leave();
     return 0;
 }
-
 /*
 * wc_esp32AesDecrypt
 * @brief: a one block decrypt of the input block, into the output block
@@ -224,7 +202,6 @@ int wc_esp32AesDecrypt(Aes *aes, const byte* in, byte* out)
     esp_aes_hw_Leave();
     return 0;
 }
-
 /*
 * wc_esp32AesCbcEncrypt
 * @brief: Encrypts a plain text message from the input buffer, and places the
@@ -304,9 +281,8 @@ int wc_esp32AesCbcDecrypt(Aes* aes, byte* out, const byte* in, word32 sz)
         esp_aes_bk((in + offset), (out + offset));
 
         /* XOR block with IV for CBC */
-        for (i = 0; i < AES_BLOCK_SIZE; i++) {
+        for (i = 0; i < AES_BLOCK_SIZE; i++)
             (out + offset)[i] ^= iv[i];
-        }
 
         /* store IV for next block */
         XMEMCPY(iv, temp_block, AES_BLOCK_SIZE);
