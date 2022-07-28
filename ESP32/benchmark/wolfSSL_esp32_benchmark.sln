@@ -5,6 +5,15 @@ VisualStudioVersion = 16.0.32602.291
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "wolfSSL_esp32_benchmark", "wolfSSL_esp32_benchmark.vgdbproj", "{17D1413C-7FFC-478D-A96E-7D35E32204EF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wolfssl", "wolfssl", "{A77B3870-FA92-4004-AB78-F7198DBB70BD}"
+	ProjectSection(SolutionItems) = preProject
+		components\wolfssl\CMakeLists.txt = components\wolfssl\CMakeLists.txt
+		components\wolfssl\component.mk = components\wolfssl\component.mk
+		components\wolfssl\install_wolfssl.cmd = components\wolfssl\install_wolfssl.cmd
+		components\wolfssl\README.md = components\wolfssl\README.md
+		components\wolfssl\include\user_settings.h = components\wolfssl\include\user_settings.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|VisualGDB = Debug|VisualGDB

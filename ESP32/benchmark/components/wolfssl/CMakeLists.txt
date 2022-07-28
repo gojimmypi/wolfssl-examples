@@ -1,4 +1,4 @@
-#
+
 #  Copyright (C) 2006-2022 wolfSSL Inc.
 #
 #  This file is part of wolfSSL.
@@ -74,6 +74,8 @@ set(COMPONENT_SRCEXCLUDE
     "./wolfcrypt/src/evp.c"
     "./wolfcrypt/src/misc.c"
     )
+set(COMPONENT_PRIV_INCLUDEDIRS ../../../../../../SysGCC/esp32/esp-idf/v4.4.1/components/bootloader_support/include ../../../../../../SysGCC/esp32/esp-idf/v4.4.1/components/bootloader_support/include_bootloader)
+set(COMPONENT_SRCS wolfcrypt/benchmark/benchmark.c)
 
 register_component()
 
