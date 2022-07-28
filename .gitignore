@@ -245,26 +245,53 @@ sslkeylog.log
 
 tpm/evp_tpm
 
-# Visual Studio / VisualGDB
-
-/tls/VisualGDB-tls/.visualgdb/*
-/tls/VisualGDB-tls/.vs
-/tls/VisualGDB-tls/*/.vs/*
-/tls/VisualGDB-tls/*/Debug/*
-/tls/VisualGDB-tls/*/Release/*
-/tls/VisualGDB-tls/*/VisualGDB/Debug/*
-/tls/VisualGDB-tls/*/VisualGDB/Release/*
-/tls/VisualGDB-tls/*/x64/Debug
-/tls/VisualGDB-tls/*/x64/Release
-/tls/VisualGDB-tls/*/Makefile.old
-/tls/VisualGDB-tls/*/debug.mak.old
-/tls/VisualGDB-tls/*/release.mak.old
-/tls/VisualGDB-tls/*/*.vgdbsettings.*.user
-
-/tls/build/VisualGDB/Debug
+# VS debris
+*.sdf
+*.v11.suo
+*.vcxproj.filters
+*.opensdf
+*.pdb
+Debug
+Release
+DLL Debug
+DLL Release
 
 # vscode user directories
-*.vs/*
+**/.vs/*
 
+# Visual Studio / VisualGDB
 
+**/.visualgdb/*
+**/*/Makefile.old
+**/*/debug.mak.old
+**/*/release.mak.old
+**/*.vgdbsettings.*.user
+**/*.vgdbproj.*.user
+
+**/*/Debug/*
+**/*/Release/*
+**/*/x64/Debug
+**/*/x64/Release
+**/out/build/x64-Debug
+**/out/build/x64-Release
+**/build/VisualGDB/Debug
+**/build/VisualGDB/Release
+
+# VisualGDB auto-generated files
+**/*/gcc_Debug.h
+**/*/gcc_Release.h
+**/*/CMakeLists.txt.old
+**/*/*.vcxproj.filters
+**/*/*.vcxproj.user
+
+# EDP-IDF
+**/main/build/CMakeFiles/*
+**/build/*
+
+# install script backup files
+user_settings_h*.bak
+config_h_*.bak
+
+# eth_enc28j60 has an incompatible license
+**/components/eth_enc28j60/*
 
