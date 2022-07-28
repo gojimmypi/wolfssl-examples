@@ -1,5 +1,4 @@
-/* helper.c
- *
+/*
  * Copyright (C) 2006-2022 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
@@ -149,6 +148,15 @@ int construct_argv()
 }
 #include "unity.h"
 
+#ifndef NO_CRYPT_BENCHMARK
+typedef struct func_args {
+    int    argc;
+    char** argv;
+    int    return_code;
+} func_args;
+
+static func_args args = { 0 };
+#endif
 /* entry point */
 void app_main(void)
 {
@@ -158,28 +166,28 @@ void app_main(void)
     /* when using atecc608a on esp32-wroom-32se */
 #if defined(WOLFSSL_ESPWROOM32SE) && defined(HAVE_PK_CALLBACKS) \
                                       && defined(WOLFSSL_ATECC508A)
-#if defined(CUSTOM_SLOT_ALLOCATION)
-    my_atmel_slotInit();
-    /* to register the callback, it needs to be initialized. */
-    if ((wolfCrypt_Init()) != 0) {
-        ESP_LOGE(TAG, "wolfCrypt_Init failed");
-        return;
-    }
-    atmel_set_slot_allocator(my_atmel_alloc, my_atmel_free);
+    #if defined(CUSTOM_SLOT_ALLOCATION)
+        my_atmel_slotInit();
+        /* to register the callback, it needs to be initialized. */
+        if ((wolfCrypt_Init()) != 0) {
+            ESP_LOGE(TAG, "wolfCrypt_Init failed");
+            return;
+        }
+        atmel_set_slot_allocator(my_atmel_alloc, my_atmel_free);
+    #endif
 #endif
-#endif
-    //wolf_benchmark_task();
-    // int ret;
+
 #ifndef NO_CRYPT_BENCHMARK
-    wolfCrypt_Init();
+    while (1) {
+        wolfCrypt_Init();
 
-    void* args;
-    printf("\nBenchmark Test\n");
-    wolf_benchmark_task(&args);
-    //ret = args.return_code;
-    //printf("Benchmark Test: Return code %d\n", ret);
+        printf("\nBenchmark Test\n");
 
-    wolfCrypt_Cleanup();
+        wolf_benchmark_task(&args);
+
+        wolfCrypt_Cleanup();
+
+    }
 #else
     ret = NOT_COMPILED_IN;
 #endif
