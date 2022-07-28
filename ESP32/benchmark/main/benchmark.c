@@ -24,7 +24,7 @@
 
 
 #ifdef HAVE_CONFIG_H
-   // #include <config.h>
+   #include <config.h>
 #endif
 
 #ifndef WOLFSSL_USER_SETTINGS
@@ -1785,6 +1785,10 @@ static void* benchmarks_do(void* args)
     bench_key = (byte*)bench_key_buf;
     bench_iv = (byte*)bench_iv_buf;
 #endif
+
+    bench_sha(0);
+    bench_sha256(0);
+    bench_sha512(0);
 
 #ifndef WC_NO_RNG
     if (bench_all || (bench_other_algs & BENCH_RNG))
