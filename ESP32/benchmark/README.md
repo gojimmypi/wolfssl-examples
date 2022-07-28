@@ -1,4 +1,33 @@
-# Blink Example
+# Benchmark
+
+ESP32-C3 RISC-V (no hardware accleration)
+
+```
+Benchmark Test
+------------------------------------------------------------------------------
+ wolfSSL version 5.4.0
+------------------------------------------------------------------------------
+wolfCrypt Benchmark (block bytes 1024, min 1.0 sec each)
+RNG                  6 MB took 1.002 seconds,    6.286 MB/s
+AES-128-CBC-enc     11 MB took 1.000 seconds,   10.986 MB/s
+AES-128-CBC-dec     10 MB took 1.000 seconds,   10.059 MB/s
+AES-192-CBC-enc     10 MB took 1.000 seconds,    9.888 MB/s
+AES-192-CBC-dec      9 MB took 1.002 seconds,    9.137 MB/s
+AES-256-CBC-enc      9 MB took 1.000 seconds,    9.009 MB/s
+AES-256-CBC-dec      8 MB took 1.002 seconds,    8.382 MB/s
+AES-128-GCM-enc      3 MB took 1.005 seconds,    2.551 MB/s
+AES-128-GCM-dec      3 MB took 1.005 seconds,    2.551 MB/s
+AES-192-GCM-enc      2 MB took 1.002 seconds,    2.485 MB/s
+AES-192-GCM-dec      2 MB took 1.003 seconds,    2.483 MB/s
+AES-256-GCM-enc      2 MB took 1.006 seconds,    2.427 MB/s
+AES-256-GCM-dec      2 MB took 1.007 seconds,    2.424 MB/s
+GMAC Default         3 MB took 1.000 seconds,    3.348 MB/s
+3DES                 3 MB took 1.001 seconds,    3.171 MB/s
+MD5                103 MB took 1.001 seconds,  102.510 MB/s
+SHA                 49 MB took 1.000 seconds,   48.828 MB/s
+SHA-256             15 MB took 1.000 seconds,   14.844 MB/s
+SHA-512             13 MB took 1.001 seconds,   12.927 MB/s
+```
 
 (See the README.md file in the upper level 'examples' directory for more information about examples.)
 
