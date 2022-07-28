@@ -36,7 +36,9 @@
 
 #define WOLFSSL_ESPWROOM32
 
-/* #define DEBUG_WOLFSSL_VERBOSE */
+/* optional verbose debugging
+*/
+#define DEBUG_WOLFSSL_VERBOSE
 
 #define BENCH_EMBEDDED
 #define USE_CERT_BUFFERS_2048
@@ -66,9 +68,9 @@
 /* #define HAVE_PKCS7 */
 
 #if defined(HAVE_PKCS7)
-    #define HAVE_AES_KEYWRAP
-    #define HAVE_X963_KDF
-    #define WOLFSSL_AES_DIRECT
+#define HAVE_AES_KEYWRAP
+#define HAVE_X963_KDF
+#define WOLFSSL_AES_DIRECT
 #endif
 
 /* when you want to use aes counter mode */
@@ -77,8 +79,8 @@
 
 /* esp32-wroom-32se specific definition */
 #if defined(WOLFSSL_ESPWROOM32SE)
-    #define WOLFSSL_ATECC508A
-    #define HAVE_PK_CALLBACKS
+#define WOLFSSL_ATECC508A
+#define HAVE_PK_CALLBACKS
     /* when you want to use a custom slot allocation for ATECC608A */
     /* unless your configuration is unusual, you can use default   */
     /* implementation.                                             */
@@ -88,12 +90,12 @@
 /* rsa primitive specific definition */
 #if defined(WOLFSSL_ESPWROOM32) || defined(WOLFSSL_ESPWROOM32SE)
     /* Define USE_FAST_MATH and SMALL_STACK                        */
-    #define ESP32_USE_RSA_PRIMITIVE
+#define ESP32_USE_RSA_PRIMITIVE
     /* threshold for performance adjustment for hw primitive use   */
     /* X bits of G^X mod P greater than                            */
-    #define EPS_RSA_EXPT_XBTIS           36
+#define EPS_RSA_EXPT_XBTIS           36
     /* X and Y of X * Y mod P greater than                         */
-    #define ESP_RSA_MULM_BITS            2000
+#define ESP_RSA_MULM_BITS            2000
 #endif
 
 /* debug options */
@@ -108,10 +110,10 @@
 /* #define XTIME time */
 
 /* when you want not to use HW acceleration */
-/* #define NO_ESP32WROOM32_CRYPT */
-/* #define NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH*/
-/* #define NO_WOLFSSL_ESP32WROOM32_CRYPT_AES */
-/* #define NO_WOLFSSL_ESP32WROOM32_CRYPT_RSA_PRI */
+#define NO_ESP32WROOM32_CRYPT
+#define NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH
+#define NO_WOLFSSL_ESP32WROOM32_CRYPT_AES
+#define NO_WOLFSSL_ESP32WROOM32_CRYPT_RSA_PRI
 
 /* adjust wait-timeout count if you see timeout in rsa hw acceleration */
 #define ESP_RSA_TIMEOUT_CNT    0x249F00
