@@ -295,3 +295,4 @@ config_h_*.bak
 # eth_enc28j60 has an incompatible license
 **/components/eth_enc28j60/*
 
+/ESP32/benchmark/components/wolfssl/x.git
