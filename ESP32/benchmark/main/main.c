@@ -24,10 +24,11 @@
 
 #include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include <wolfcrypt/benchmark/benchmark.h>
+#include <benchmark.h>
 
 #include "sdkconfig.h"
 #include "esp_log.h"
+#include "benchmark.h"
 
 #define WOLFSSL_BENCH_ARGV                 CONFIG_BENCH_ARGV
 
@@ -168,13 +169,13 @@ void app_main(void)
 #endif
 #endif
     //wolf_benchmark_task();
-    int ret;
+    // int ret;
 #ifndef NO_CRYPT_BENCHMARK
     wolfCrypt_Init();
 
     void* args;
     printf("\nBenchmark Test\n");
-    benchmark_test(&args);
+    wolf_benchmark_task(&args);
     //ret = args.return_code;
     //printf("Benchmark Test: Return code %d\n", ret);
 
@@ -182,7 +183,7 @@ void app_main(void)
 #else
     ret = NOT_COMPILED_IN;
 #endif
-    
+
 
 #else
 #endif /* NO_CRYPT_BENCHMARK */

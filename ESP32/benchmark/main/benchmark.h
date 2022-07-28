@@ -1,6 +1,6 @@
 /* wolfcrypt/benchmark/benchmark.h
  *
- * Copyright (C) 2006-2022 wolfSSL Inc.
+ * Copyright (C) 2006-2021 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -113,7 +113,6 @@ void bench_pqcKemEncapDecap(word32 alg);
 
 void bench_stats_print(void);
 
-        int        wolf_benchmark_task();
 
 #ifdef __cplusplus
     }  /* extern "C" */

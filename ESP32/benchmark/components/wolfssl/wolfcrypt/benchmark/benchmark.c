@@ -36,6 +36,9 @@
 #include <wolfssl/wolfcrypt/wc_port.h>
 #include <wolfssl/wolfcrypt/ecc.h>
 
+#include <wolfssl/wolfcrypt/wc_encrypt.h>
+
+
 #ifdef HAVE_PTHREAD
     #include <pthread.h>
 #endif
