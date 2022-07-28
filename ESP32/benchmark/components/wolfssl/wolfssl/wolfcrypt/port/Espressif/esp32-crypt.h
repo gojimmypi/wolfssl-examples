@@ -37,7 +37,12 @@
 #endif
 
 #include <freertos/FreeRTOS.h>
-#include "soc/dport_reg.h"
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+    #include "dport_access.h"
+#else
+    #include "soc/dport_reg.h"
+    #include "soc/hwcrypto_reg.h"
+#endif
 #include "soc/hwcrypto_reg.h"
 
 #if ESP_IDF_VERSION_MAJOR < 5
