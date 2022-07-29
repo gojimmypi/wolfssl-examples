@@ -6,6 +6,10 @@ Support for the ESP32-WROOM-32 on-board crypto hardware acceleration for symmetr
 
 For detail about ESP32 HW Acceleration, you can find in [Technical Reference Manual](https://espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf)
 
+## Options
+
+
+
 ### Building
 
 To enable hw acceleration :
