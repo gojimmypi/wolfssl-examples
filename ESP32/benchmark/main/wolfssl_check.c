@@ -77,7 +77,7 @@ int wolfssl_check()
 {
     int ret = 0;
     /* 50KB is a known good stack size with default values of wolfSSL. */
-#ifdef CONFIG_ESP_MAIN_TASK_STACK_SIZEs
+#ifdef CONFIG_ESP_MAIN_TASK_STACK_SIZE
     ESP_LOGI(TAG, "Configured ESP main task stack size: %d", CONFIG_ESP_MAIN_TASK_STACK_SIZE);
     if (CONFIG_ESP_MAIN_TASK_STACK_SIZE < WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE) {
         ESP_LOGI(TAG, "Warning: Stack size lower than known good value.");
@@ -94,6 +94,11 @@ int wolfssl_check()
 #else
     ESP_LOGE(TAG, "ERROR: CONFIG_MAIN_TASK_STACK_SIZE not defined.");
 #endif /* CONFIG_MAIN_TASK_STACK_SIZE */
+
+    /* for WDT watchdog settings, see:
+     *
+     * https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/system/wdts.html
+     */
 
 #ifdef CONFIG_ESP_TASK_WDT_TIMEOUT_S
     ESP_LOGI(TAG, "Configured CONFIG_ESP_TASK_WDT_TIMEOUT_S: %d", CONFIG_ESP_TASK_WDT_TIMEOUT_S);
@@ -123,11 +128,11 @@ int wolfssl_check()
     }
 
 #ifndef NO_CRYPT_TEST
-#ifdef HAVE_STACK_SIZE
-    StackSizeCheck(&args, wolfcrypt_test);
-#else
-    wolfcrypt_test(&args);
-#endif
+    #ifdef HAVE_STACK_SIZE
+        StackSizeCheck(&args, wolfcrypt_test);
+    #else
+        wolfcrypt_test(&args);
+    #endif
 
     ret = args.return_code;
     ESP_LOGI(TAG, "Crypt Test: Return code %d\n", ret);
