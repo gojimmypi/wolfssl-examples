@@ -114,7 +114,7 @@ int construct_argv()
     char *ch; /* char pointer to trace the string */
     char buff[16] = { 0 }; /* buffer for a argument copy       */
 
-    printf("arg:%s\n", CONFIG_BENCH_ARGV);
+    // printf("arg:%s\n", CONFIG_BENCH_ARGV);
     //len = strlen(CONFIG_BENCH_ARGV);
     _argv = (char*)malloc(len + 1);
     if (!_argv) {
@@ -166,19 +166,39 @@ static func_args args = { 0 };
 #endif
 
 #define WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE (50 * 1024)
-int wolfssl_test()
+int wolfssl_check()
 {
     int ret = 0;
     /* 50KB is a known good stack size with default values of wolfSSL. */
-#ifdef CONFIG_ESP_MAIN_TASK_STACK_SIZE
-    ESP_LOGI(TAG, "Configured main task stack size: %d", CONFIG_ESP_MAIN_TASK_STACK_SIZE);
-    if (CONFIG_ESP_MAIN_TASK_STACK_SIZE < WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE)
-    {
+#ifdef CONFIG_ESP_MAIN_TASK_STACK_SIZEs
+    ESP_LOGI(TAG, "Configured ESP main task stack size: %d", CONFIG_ESP_MAIN_TASK_STACK_SIZE);
+    if (CONFIG_ESP_MAIN_TASK_STACK_SIZE < WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE) {
         ESP_LOGI(TAG, "Warning: Stack size lower than known good value.");
     }
 #else
-    ESP_LOGE(TAG, "ERROR: CONFIG_ESP_MAIN_TASK_STACK_SIZE not defined.")
-#endif // CONFIG_ESP_MAIN_TASK_STACK_SIZE
+    ESP_LOGE(TAG, "ERROR: CONFIG_ESP_MAIN_TASK_STACK_SIZE not defined.");
+#endif /* CONFIG_ESP_MAIN_TASK_STACK_SIZE */
+
+#ifdef CONFIG_MAIN_TASK_STACK_SIZE
+    ESP_LOGI(TAG, "Configured main task stack size: %d", CONFIG_MAIN_TASK_STACK_SIZE);
+    if (CONFIG_MAIN_TASK_STACK_SIZE < WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE) {
+        ESP_LOGI(TAG, "Warning: Stack size lower than known good value.");
+    }
+#else
+    ESP_LOGE(TAG, "ERROR: CONFIG_MAIN_TASK_STACK_SIZE not defined.");
+#endif /* CONFIG_MAIN_TASK_STACK_SIZE */
+
+#ifdef CONFIG_ESP_TASK_WDT_TIMEOUT_S
+    ESP_LOGI(TAG, "Configured CONFIG_ESP_TASK_WDT_TIMEOUT_S: %d", CONFIG_ESP_TASK_WDT_TIMEOUT_S);
+#else
+    ESP_LOGE(TAG, "ERROR: CONFIG_ESP_TASK_WDT_TIMEOUT_S not defined.");
+#endif /* CONFIG_ESP_TASK_WDT_TIMEOUT_S */
+
+#ifdef CONFIG_ESP_INT_WDT_TIMEOUT_MS
+    ESP_LOGI(TAG, "Configured CONFIG_ESP_INT_WDT_TIMEOUT_MS: %d", CONFIG_ESP_INT_WDT_TIMEOUT_MS);
+#else
+    ESP_LOGE(TAG, "ERROR: CONFIG_ESP_INT_WDT_TIMEOUT_MS not defined.");
+#endif /* CONFIG_ESP_INT_WDT_TIMEOUT_MS */
 
 
 #if defined(NO_CRYPT_TEST) && defined(NO_CRYPT_BENCHMARK)
@@ -250,7 +270,8 @@ void app_main(void)
     /* some tests will need a valid time value */
     set_time();
 
-    ret = wolfssl_test();
+    ret = wolfssl_check();
+    ESP_LOGI(TAG, "wolfssl_check: %d", ret);
 
     for (;;) {
         /* we're not actually doing anything here, other than a heartbeat message */

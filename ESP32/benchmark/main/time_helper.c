@@ -25,9 +25,10 @@
 #include "sdkconfig.h"
 #include "esp_log.h"
 
-const static char* TAG = "Time Helper";
+#include "time_helper.h"
 
-static int set_time(void)
+const static char* TAG = "Time Helper";
+int set_time(void)
 {
     /* we'll also return a result code of zero */
     int res = 0;
