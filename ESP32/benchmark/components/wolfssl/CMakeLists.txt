@@ -30,6 +30,8 @@ set(COMPONENT_SRCDIRS "./src/"
                       "./wolfcrypt/src/"
                       "./wolfcrypt/src/port/Espressif/"
                       "./wolfcrypt/src/port/atmel/"
+                      "./wolfcrypt/test/"
+                      "./wolfcrypt/benchmark/"
 #                      "$ENV{IDF_PATH}/components/soc/esp32s3/include/soc"
                       )
 

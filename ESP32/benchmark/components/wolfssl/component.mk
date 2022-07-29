@@ -28,6 +28,8 @@ COMPONENT_ADD_INCLUDEDIRS += "$ENV{IDF_PATH}/components/freertos/include/freerto
 COMPONENT_SRCDIRS := src wolfcrypt/src
 COMPONENT_SRCDIRS += wolfcrypt/src/port/Espressif
 COMPONENT_SRCDIRS += wolfcrypt/src/port/atmel
+COMPONENT_SRCDIRS += wolfcrypt/test
+COMPONENT_SRCDIRS += wolfcrypt/benchmark
 
 CFLAGS +=-DWOLFSSL_USER_SETTINGS
 
