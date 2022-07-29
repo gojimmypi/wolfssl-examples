@@ -22,17 +22,20 @@
 #include <string.h>
 
 #include <wolfssl/wolfcrypt/settings.h>
+#include <wolfssl/wolfcrypt/logging.h>
+#include <wolfssl/wolfcrypt/error-crypt.h>
 #include <wolfssl/wolfcrypt/types.h>
-#include <benchmark.h>
+
+#include <wolfcrypt/test/test.h>
+#include <wolfcrypt/benchmark/benchmark.h>
 
 #include "sdkconfig.h"
 #include "esp_log.h"
 #include "benchmark.h"
+#include "unity.h"
 
 #define WOLFSSL_BENCH_ARGV                 CONFIG_BENCH_ARGV
 
-/* proto-type */
-extern void wolf_benchmark_task();
 static const char* const TAG = "wolfbenchmark";
 char* __argv[22];
 
@@ -146,7 +149,6 @@ int construct_argv()
 
     return (cnt);
 }
-#include "unity.h"
 
 #ifndef NO_CRYPT_BENCHMARK
 typedef struct func_args {
@@ -161,6 +163,29 @@ static func_args args = { 0 };
 void app_main(void)
 {
     (void) TAG;
+    int ret;
+
+#ifndef NO_CRYPT_TEST
+    if ((ret = wolfCrypt_Init()) != 0) {
+        printf("wolfCrypt_Init failed %d\n", ret);
+    }
+
+#ifdef HAVE_STACK_SIZE
+    StackSizeCheck(&args, wolfcrypt_test);
+#else
+    wolfcrypt_test(&args);
+#endif
+
+	printf("\nCrypt Test\n");
+	wolfcrypt_test(&args);
+    ret = args.return_code;
+	printf("Crypt Test: Return code %d\n", ret);
+
+	//wolfCrypt_Cleanup();
+#else
+    ret = NOT_COMPILED_IN;
+#endif
+
 #ifndef NO_CRYPT_BENCHMARK
 
     /* when using atecc608a on esp32-wroom-32se */
@@ -179,13 +204,13 @@ void app_main(void)
 
 #ifndef NO_CRYPT_BENCHMARK
     while (1) {
-        wolfCrypt_Init();
+        //wolfCrypt_Init();
 
         printf("\nBenchmark Test\n");
 
-        wolf_benchmark_task(&args);
+        //wolf_benchmark_task();
 
-        wolfCrypt_Cleanup();
+        //wolfCrypt_Cleanup();
 
     }
 #else
