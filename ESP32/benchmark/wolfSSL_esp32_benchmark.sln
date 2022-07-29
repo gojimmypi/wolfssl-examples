@@ -14,6 +14,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wolfssl", "wolfssl", "{A77B
 		components\wolfssl\include\user_settings.h = components\wolfssl\include\user_settings.h
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wolfcrypt", "wolfcrypt", "{E6C5CA6C-D894-4766-86AB-A716B42E2E49}"
+	ProjectSection(SolutionItems) = preProject
+		components\wolfssl\wolfssl\wolfcrypt\port\Espressif\esp32-crypt.h = components\wolfssl\wolfssl\wolfcrypt\port\Espressif\esp32-crypt.h
+		components\wolfssl\wolfcrypt\src\port\Espressif\esp32_aes.c = components\wolfssl\wolfcrypt\src\port\Espressif\esp32_aes.c
+		components\wolfssl\wolfcrypt\src\port\Espressif\esp32_mp.c = components\wolfssl\wolfcrypt\src\port\Espressif\esp32_mp.c
+		components\wolfssl\wolfcrypt\src\port\Espressif\esp32_rng.c = components\wolfssl\wolfcrypt\src\port\Espressif\esp32_rng.c
+		components\wolfssl\wolfcrypt\src\port\Espressif\esp32_sha.c = components\wolfssl\wolfcrypt\src\port\Espressif\esp32_sha.c
+		components\wolfssl\wolfcrypt\src\port\Espressif\esp32_util.c = components\wolfssl\wolfcrypt\src\port\Espressif\esp32_util.c
+		components\wolfssl\wolfcrypt\src\port\Espressif\README.md = components\wolfssl\wolfcrypt\src\port\Espressif\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|VisualGDB = Debug|VisualGDB
@@ -33,6 +44,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E6C5CA6C-D894-4766-86AB-A716B42E2E49} = {A77B3870-FA92-4004-AB78-F7198DBB70BD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E2E0D763-5FF0-4459-80AD-AFDC42B1C8B0}
