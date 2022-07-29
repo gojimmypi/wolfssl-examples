@@ -113,7 +113,9 @@ void bench_pqcKemEncapDecap(word32 alg);
 
 void bench_stats_print(void);
 
-        int        wolf_benchmark_task();
+#if defined(WOLFSSL_ESPIDF) || defined(_WIN32_WCE)
+    int wolf_benchmark_task(void);
+#endif
 
 #ifdef __cplusplus
     }  /* extern "C" */
@@ -121,4 +123,3 @@ void bench_stats_print(void);
 
 
 #endif /* WOLFCRYPT_BENCHMARK_H */
-
