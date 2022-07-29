@@ -18,13 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
+
+/* this file is for the Espressif ESP-IDF environment*/
 #undef WOLFSSL_ESPIDF
+#define WOLFSSL_ESPIDF
+
 #undef WOLFSSL_ESPWROOM32
 #undef WOLFSSL_ESPWROOM32SE
 #undef WOLFSSL_ESPWROOM32
 #undef WOLFSSL_ESP8266
 
-#define WOLFSSL_ESPIDF
+/* needed for benchmarks and tests, is the NO MAIN DRIVER setting
+*  otherwise those includes will cause multiple definition of app_main()
+*/
+#define NO_MAIN_DRIVER
+
 
 /*
  * choose ONE of these Espressif chips to define:
@@ -110,8 +118,8 @@
 /* #define XTIME time */
 
 /* when you want not to use HW acceleration */
-#define NO_ESP32WROOM32_CRYPT
-#define NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH
+// #define NO_ESP32WROOM32_CRYPT
+#define NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH /* SHA */
 #define NO_WOLFSSL_ESP32WROOM32_CRYPT_AES
 #define NO_WOLFSSL_ESP32WROOM32_CRYPT_RSA_PRI
 
