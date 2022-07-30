@@ -118,8 +118,12 @@
 /* #define XTIME time */
 
 /* when you want not to use HW acceleration */
-// #define NO_ESP32WROOM32_CRYPT
-#define NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH /* SHA */
+
+/* disable all hardware acceleration: */
+/* #define NO_ESP32WROOM32_CRYPT */
+
+/* or disable individual components of hardware acceleration: */
+// #define NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH /* SHA */
 #define NO_WOLFSSL_ESP32WROOM32_CRYPT_AES
 #define NO_WOLFSSL_ESP32WROOM32_CRYPT_RSA_PRI
 

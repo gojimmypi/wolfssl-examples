@@ -34,8 +34,8 @@
 #include "esp_log.h"
 
 #ifdef WOLFSSL_ESP32WROOM32_CRYPT_DEBUG
-#undef LOG_LOCAL_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+    #undef LOG_LOCAL_LEVEL
+    #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #else
     #undef LOG_LOCAL_LEVEL
     #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
@@ -44,6 +44,7 @@
 #include <freertos/FreeRTOS.h>
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
     /* RISC-V */
+    #include <rom/sha.h>
     #include "dport_access.h"
 #else
     #include "soc/dport_reg.h"
@@ -51,19 +52,22 @@
 #endif
 
 #if ESP_IDF_VERSION_MAJOR < 5
-#include "soc/cpu.h"
+    #if defined(CONFIG_IDF_TARGET_ESP32C3)
+    #else
+        #include "soc/cpu.h"
+    #endif
 #endif
 
 #if ESP_IDF_VERSION_MAJOR >= 5
- #include "esp_private/periph_ctrl.h"
+    #include "esp_private/periph_ctrl.h"
 #else
- #include "driver/periph_ctrl.h"
+    #include "driver/periph_ctrl.h"
 #endif
 
 #if ESP_IDF_VERSION_MAJOR >= 4
- #include <esp32/rom/ets_sys.h>
+    #include <esp32/rom/ets_sys.h>
 #else
- #include <rom/ets_sys.h>
+    #include <rom/ets_sys.h>
 #endif
 
 #ifdef __cplusplus
@@ -77,9 +81,9 @@ int esp_CryptHwMutexUnLock(wolfSSL_Mutex* mutex);
 #ifndef NO_AES
 
 #if ESP_IDF_VERSION_MAJOR >= 4
-#include "esp32/rom/aes.h"
+    #include "esp32/rom/aes.h"
 #else
-#include "rom/aes.h"
+    #include "rom/aes.h"
 #endif
 
 typedef enum tagES32_AES_PROCESS {
@@ -135,8 +139,9 @@ uint64_t  wc_esp32elapsedTime();
         /* we'll keep track of our own locks.
          * actual enable/disable only occurs for ref_counts[periph] == 0 */
         int lockDepth; /* see ref_counts[periph] in periph_ctrl.c */
-
+#if defined(CONFIG_IDF_TARGET_ESP32)
         enum SHA_TYPE sha_type;
+#else        SHA_TYPE sha_type;#endif
     } WC_ESP32SHA;
 
     int esp_sha_try_hw_lock(WC_ESP32SHA* ctx);

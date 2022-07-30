@@ -18,6 +18,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
+
+/*
+ * ESP32-C3: https://www.espressif.com/sites/default/files/documentation/esp32-c3_technical_reference_manual_en.pdf
+ *  see page 335: no SHA-512
+ *
+ */
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #endif
@@ -38,13 +44,15 @@
    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
 
 /* TODO this may be chip type dependent: add support for others */
-#include <hal/clk_gate_ll.h> /* ESP32-WROOM */
+// #include <hal/clk_gate_ll.h> /* ESP32-WROOM */
+
+#include    <hal/sha_ll.h>
 
 #include <wolfssl/wolfcrypt/sha.h>
 #include <wolfssl/wolfcrypt/sha256.h>
 #include <wolfssl/wolfcrypt/sha512.h>
 
-#include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
+//#include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
 #include "wolfssl/wolfcrypt/error-crypt.h"
 
 #ifdef NO_INLINE
@@ -86,7 +94,11 @@ static const char* TAG = "wolf_hw_sha";
         SHA_INVALID = -1,
     };
 */
+#if CONFIG_IDF_TARGET_ESP32
 static word32 wc_esp_sha_digest_size(enum SHA_TYPE type)
+#else
+static word32 wc_esp_sha_digest_size(SHA_TYPE type)
+#endif
 {
     ESP_LOGV(TAG, "  esp_sha_digest_size");
 
@@ -101,12 +113,16 @@ static word32 wc_esp_sha_digest_size(enum SHA_TYPE type)
                 return WC_SHA256_DIGEST_SIZE;
         #endif
 
-        #ifdef WOLFSSL_SHA384
+        #if defined(WOLFSSL_SHA384)  && !defined(CONFIG_IDF_TARGET_ESP32C3)
             case SHA2_384:
                 return WC_SHA384_DIGEST_SIZE;
         #endif
 
-        #ifdef WOLFSSL_SHA512
+        #if defined( WOLFSSL_SHA512) && !defined(CONFIG_IDF_TARGET_ESP32C3)
+        /*  not defined in C:\SysGCC\esp32\esp-idf\v4.4.1\components\esp_rom\include\esp32c3\rom\sha.h
+         *
+         *  see page 335 of esp32-c3_technical_reference_manual_en.pdf (no SHA-512 for C3)
+         */
             case SHA2_512: /* typically 64 bytes */
                 return WC_SHA512_DIGEST_SIZE;
         #endif
@@ -123,12 +139,18 @@ static word32 wc_esp_sha_digest_size(enum SHA_TYPE type)
 */
 static void wc_esp_wait_until_idle()
 {
-    while((DPORT_REG_READ(SHA_1_BUSY_REG)   != 0) ||
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    while ((DPORT_REG_READ(SHA_1_BUSY_REG)  != 0) ||
           (DPORT_REG_READ(SHA_256_BUSY_REG) != 0) ||
           (DPORT_REG_READ(SHA_384_BUSY_REG) != 0) ||
           (DPORT_REG_READ(SHA_512_BUSY_REG) != 0)) {
         /* do nothing while waiting. */
     }
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    while (sha_ll_busy()) {
+        /* do nothing while waiting. */
+    }
+#endif
 }
 
 /*
@@ -472,7 +494,7 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     /* load [len] words of message data into hw */
     for (i = 0; i < word32_to_save; i++) {
         /* by using DPORT_REG_WRITE, we avoid the need
-         * to call __builtin_bswap32 to address endiness
+         * to call __builtin_bswap32 to address endianness
          *
          * a useful watch array cast to watch at runtime:
          *   ((uint32_t[32])  (*(volatile uint32_t *)(SHA_TEXT_BASE)))
@@ -503,7 +525,11 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
     }
 
     /* sanity check */
+#if defined(CONFIG_IDF_TARGET_ESP32)
     if (ctx->sha_type == SHA_INVALID) {
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    if (ctx->sha_type == SHA_TYPE_MAX) {
+#endif // CONFIG_IDF_TARGET_ESP32)
         ctx->mode = ESP32_SHA_FAIL_NEED_UNROLL;
         ESP_LOGE(TAG, "unexpected error. sha_type is invalid.");
         return -1;
@@ -533,7 +559,7 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
             break;
     #endif
 
-    #if defined(WOLFSSL_SHA512)
+    #if defined(WOLFSSL_SHA512) && !defined(CONFIG_IDF_TARGET_ESP32C3)
         case SHA2_512:
             DPORT_REG_WRITE(SHA_512_LOAD_REG, 1);
             break;
@@ -573,11 +599,12 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
      */
     esp_dport_access_read_buffer(
         (word32*)(hash), /* the result will be found in hash upon exit     */
-        SHA_TEXT_BASE,   /* there's a fixed reg addy for all SHA           */
+        SHA_TEXT_BASE,   /* there's a fixed reg address for all SHA        */
         wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32) /* # 4-byte */
     );
 
-#if defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)
+#if (defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C3)
     if (ctx->sha_type == SHA2_384 || ctx->sha_type == SHA2_512) {
         word32  i;
         word32* pwrd1 = (word32*)(hash);
