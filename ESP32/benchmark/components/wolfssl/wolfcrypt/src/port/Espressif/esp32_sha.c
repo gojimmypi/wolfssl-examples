@@ -143,6 +143,7 @@ static word32 wc_esp_sha_digest_size(SHA_TYPE type)
 */
 static void wc_esp_wait_until_idle()
 {
+    int loop_ct = 100;
 #if defined(CONFIG_IDF_TARGET_ESP32)
     while ((DPORT_REG_READ(SHA_1_BUSY_REG)  != 0) ||
           (DPORT_REG_READ(SHA_256_BUSY_REG) != 0) ||
@@ -151,8 +152,14 @@ static void wc_esp_wait_until_idle()
         /* do nothing while waiting. */
     }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    while (sha_ll_busy()) {
+
+    while ((sha_ll_busy() == true) && (loop_ct > 0)) {
+        loop_ct--;
         /* do nothing while waiting. */
+    }
+    if (loop_ct <= 0)
+    {
+        ESP_LOGI(TAG, "too long to exit wc_esp_wait_until_idle");
     }
 #endif
 }
@@ -201,6 +208,9 @@ int esp_unroll_sha_module_enable(WC_ESP32SHA* ctx)
             break;
         }
     }
+#else
+    /* we're not keeping track on non Xtensa hardware */
+    actual_unroll_count = ctx->lockDepth;
 #endif
 
     if (ret == 0) {
