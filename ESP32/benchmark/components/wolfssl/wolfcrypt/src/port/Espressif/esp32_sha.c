@@ -45,14 +45,18 @@
 
 /* TODO this may be chip type dependent: add support for others */
 // #include <hal/clk_gate_ll.h> /* ESP32-WROOM */
-
-#include    <hal/sha_ll.h>
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    #include <hal/sha_ll.h>
+    #include <hal/clk_gate_ll.h>
+#else
+    #include <hal/clk_gate_ll.h> /* ESP32-WROOM */
+#endif
 
 #include <wolfssl/wolfcrypt/sha.h>
 #include <wolfssl/wolfcrypt/sha256.h>
 #include <wolfssl/wolfcrypt/sha512.h>
 
-//#include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
+#include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
 #include "wolfssl/wolfcrypt/error-crypt.h"
 
 #ifdef NO_INLINE
@@ -171,9 +175,11 @@ int esp_unroll_sha_module_enable(WC_ESP32SHA* ctx)
     /* if we end up here, there was a prior unexpected fail and
      * we need to unroll enables */
     int ret = 0; /* assume success unless proven otherwise */
-    uint32_t this_sha_mask; /* this is the bit-mask for our SHA CLK_EN_REG */
     int actual_unroll_count = 0;
+
+#if defined(CONFIG_IDF_TARGET_ESP32)
     int max_unroll_count = 1000; /* never get stuck in a hardware wait loop */
+    uint32_t this_sha_mask; /* this is the bit-mask for our SHA CLK_EN_REG */
 
     this_sha_mask = periph_ll_get_clk_en_mask(PERIPH_SHA_MODULE);
 
@@ -195,6 +201,7 @@ int esp_unroll_sha_module_enable(WC_ESP32SHA* ctx)
             break;
         }
     }
+#endif
 
     if (ret == 0) {
         if (ctx->lockDepth != actual_unroll_count) {
@@ -329,10 +336,10 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
 */
 int esp_sha_hw_unlock(WC_ESP32SHA* ctx)
 {
-    uint32_t this_sha_mask; /* this is the bit-mask for our SHA CLK_EN_REG */
-
     ESP_LOGV(TAG, "enter esp_sha_hw_unlock");
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
+    uint32_t this_sha_mask; /* this is the bit-mask for our SHA CLK_EN_REG */
     if (ctx->mode == ESP32_SHA_FAIL_NEED_UNROLL) {
         /* unwind prior calls to THIS ctx. decrement ref_counts[periph] */
         /* only when ref_counts[periph] == 0 does something actually happen */
@@ -351,7 +358,7 @@ int esp_sha_hw_unlock(WC_ESP32SHA* ctx)
     else {
         ESP_LOGI(TAG, "periph_module_disable skipped");
     }
-
+#endif
 
     #if defined(SINGLE_THREADED)
         InUse = 0;
@@ -395,11 +402,22 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
          */
         switch (sha->sha_type) {
             case SHA1:
-                DPORT_REG_WRITE(SHA_1_START_REG, 1);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+            DPORT_REG_WRITE(SHA_1_START_REG, 1);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            DPORT_REG_WRITE(SHA_MODE_REG, 0); /* 0 = SHA-1; see page 336  */
+            DPORT_REG_WRITE(SHA_START_REG, 1);
+#endif // CONFIG_IDF_TARGET_ESP32)
+
                 break;
 
             case SHA2_256:
-                DPORT_REG_WRITE(SHA_256_START_REG, 1);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+            DPORT_REG_WRITE(SHA_256_START_REG, 1);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            DPORT_REG_WRITE(SHA_MODE_REG, 2); /* 2 = SHA-256; see page 336 */
+            DPORT_REG_WRITE(SHA_START_REG, 1);
+#endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
         #if defined(WOLFSSL_SHA384)
@@ -408,11 +426,13 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
                 break;
         #endif
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
         #if defined(WOLFSSL_SHA512)
             case SHA2_512:
                 DPORT_REG_WRITE(SHA_512_START_REG, 1);
             break;
         #endif
+#endif
 
             default:
                 sha->mode = ESP32_SHA_FAIL_NEED_UNROLL;
@@ -436,11 +456,19 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
          */
         switch (sha->sha_type) {
             case SHA1:
-                DPORT_REG_WRITE(SHA_1_CONTINUE_REG, 1);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+            DPORT_REG_WRITE(SHA_1_CONTINUE_REG, 1);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
+#endif // CONFIG_IDF_TARGET_ESP32)
                 break;
 
             case SHA2_256:
-                DPORT_REG_WRITE(SHA_256_CONTINUE_REG, 1);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+            DPORT_REG_WRITE(SHA_256_CONTINUE_REG, 1);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
+#endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
         #if defined(WOLFSSL_SHA384)
@@ -449,12 +477,13 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
                 break;
         #endif
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
         #if defined(WOLFSSL_SHA512)
             case SHA2_512:
                 DPORT_REG_WRITE(SHA_512_CONTINUE_REG, 1);
             break;
         #endif
-
+#endif
             default:
                 /* error for unsupported other values */
                 sha->mode = ESP32_SHA_FAIL_NEED_UNROLL;
@@ -491,6 +520,7 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     /* check if there are any busy engine */
     wc_esp_wait_until_idle();
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     /* load [len] words of message data into hw */
     for (i = 0; i < word32_to_save; i++) {
         /* by using DPORT_REG_WRITE, we avoid the need
@@ -501,9 +531,23 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
          *
          * Write value to DPORT register (does not require protecting)
          */
+
+        /* TODO is this the C3 location?? */
+
         DPORT_REG_WRITE(SHA_TEXT_BASE + (i*sizeof(word32)), *(data + i));
         /* memw confirmed auto inserted by compiler here */
     }
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+   /*  SHA_M_1_REG is not a macro:
+    *  DPORT_REG_WRITE(SHA_M_1_REG + (i*sizeof(word32)), *(data + i));
+    *
+    * but we have this HAL: sha_ll_fill_text_block
+    *
+    * Note that unlike the plain ESP32 that has only 1 register, we can write
+    * the entire block.
+    */
+    sha_ll_fill_text_block((void *)(data), len);
+#endif
 
     /* notify hw to start process
      * see ctx->sha_type
@@ -545,11 +589,19 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
     /* each sha_type register is at a different location  */
     switch (ctx->sha_type) {
         case SHA1:
-            DPORT_REG_WRITE(SHA_1_LOAD_REG, 1);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+        DPORT_REG_WRITE(SHA_1_LOAD_REG, 1);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+       // DPORT_REG_WRITE(SHA_START_REG, 1); // we've already started
+#endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
         case SHA2_256:
-            DPORT_REG_WRITE(SHA_256_LOAD_REG, 1);
+#if defined(CONFIG_IDF_TARGET_ESP32)
+        DPORT_REG_WRITE(SHA_256_LOAD_REG, 1);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+       // DPORT_REG_WRITE(SHA_START_REG, 1); // we've already started
+#endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
     #if defined(WOLFSSL_SHA384)
@@ -582,11 +634,13 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
 
     wc_esp_wait_until_idle();
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
     /* MEMW instructions before volatile memory references to guarantee
      * sequential consistency. At least one MEMW should be executed in
      * between every load or store to a volatile variable
      */
     asm volatile("memw");
+#endif
 
     /* put result in hash variable.
      *
@@ -597,11 +651,15 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
      *  example:
      *    DPORT_SEQUENCE_REG_READ(address + i * 4);
      */
+#if defined(CONFIG_IDF_TARGET_ESP32)
     esp_dport_access_read_buffer(
-        (word32*)(hash), /* the result will be found in hash upon exit     */
-        SHA_TEXT_BASE,   /* there's a fixed reg address for all SHA        */
-        wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32) /* # 4-byte */
+            (word32*)(hash), /* the result will be found in hash upon exit     */
+            SHA_TEXT_BASE,   /* there's a fixed reg address for all SHA        */
+            wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32) /* # 4-byte */
     );
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+        sha_ll_read_digest(ctx->sha_type, (void *)hash, wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32));
+#endif
 
 #if (defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)) && \
     !defined(CONFIG_IDF_TARGET_ESP32C3)

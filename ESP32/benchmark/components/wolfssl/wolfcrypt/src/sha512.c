@@ -276,7 +276,8 @@ static int InitSha512(wc_Sha512* sha512)
     sha512->hiLen   = 0;
 
 #if defined(WOLFSSL_ESP32WROOM32_CRYPT) && \
-    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
+    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C3)
 
     sha512->ctx.sha_type = SHA2_512;
      /* always start firstblock = 1 when using hw engine */
@@ -323,7 +324,8 @@ static int InitSha512_224(wc_Sha512* sha512)
     sha512->hiLen   = 0;
 
 #if defined(WOLFSSL_ESP32WROOM32_CRYPT) && \
-    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
+    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C3)
 
     sha512->ctx.sha_type = SHA2_512;
      /* always start firstblock = 1 when using hw engine */
@@ -372,7 +374,8 @@ static int InitSha512_256(wc_Sha512* sha512)
     sha512->hiLen   = 0;
 
 #if defined(WOLFSSL_ESP32WROOM32_CRYPT) && \
-    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
+    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH) && \
+    !defined(CONFIG_IDF_TARGET_ESP32C3)
 
     sha512->ctx.sha_type = SHA2_512;
      /* always start firstblock = 1 when using hw engine */

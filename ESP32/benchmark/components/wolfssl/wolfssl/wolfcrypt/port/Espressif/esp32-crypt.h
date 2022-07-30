@@ -53,6 +53,7 @@
 
 #if ESP_IDF_VERSION_MAJOR < 5
     #if defined(CONFIG_IDF_TARGET_ESP32C3)
+       /* nothing here */
     #else
         #include "soc/cpu.h"
     #endif
