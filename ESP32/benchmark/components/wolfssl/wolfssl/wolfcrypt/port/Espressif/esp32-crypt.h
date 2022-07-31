@@ -31,15 +31,30 @@
 
 #include "esp_idf_version.h"
 #include "esp_types.h"
-#include "esp_log.h"
 
+/* logging
+ *
+ * see
+ *   https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/log.html
+ *   https://github.com/wolfSSL/wolfssl/blob/master/wolfssl/wolfcrypt/logging.h
+ *   typedef enum {
+ *   ESP_LOG_NONE,    // No log output
+*    ESP_LOG_ERROR,   // Critical errors, software module can not recover on its own
+ *   ESP_LOG_WARN,    // Error conditions from which recovery measures have been taken
+ *   ESP_LOG_INFO,    // Information messages which describe normal flow of events
+ *   ESP_LOG_DEBUG,   // Extra information which is not necessary for normal use (values, pointers, sizes, etc).
+ *   ESP_LOG_VERBOSE  // Bigger chunks of debugging information, or frequent messages which can potentially flood the output.
+} esp_log_level_t;
+*/
 #ifdef WOLFSSL_ESP32WROOM32_CRYPT_DEBUG
     #undef LOG_LOCAL_LEVEL
     #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #else
     #undef LOG_LOCAL_LEVEL
-    #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #endif
+#include "esp_log.h"
+
 
 #include <freertos/FreeRTOS.h>
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -62,7 +77,11 @@
 #if ESP_IDF_VERSION_MAJOR >= 5
     #include "esp_private/periph_ctrl.h"
 #else
-    #include "driver/periph_ctrl.h"
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+        #include "driver/periph_ctrl.h"
+    #else
+        // TODO ?? #include "esp32c3"
+    #endif
 #endif
 
 #if ESP_IDF_VERSION_MAJOR >= 4
@@ -142,7 +161,9 @@ uint64_t  wc_esp32elapsedTime();
         int lockDepth; /* see ref_counts[periph] in periph_ctrl.c */
 #if defined(CONFIG_IDF_TARGET_ESP32)
         enum SHA_TYPE sha_type;
-#else        SHA_TYPE sha_type;#endif
+#else
+        SHA_TYPE sha_type;
+#endif
     } WC_ESP32SHA;
 
     int esp_sha_try_hw_lock(WC_ESP32SHA* ctx);

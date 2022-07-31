@@ -42,6 +42,11 @@ on the specific device platform.
     #include <config.h>
 #endif
 
+#if defined(LOG_LOCAL_LEVEL)
+    #undef LOG_LOCAL_LEVEL
+    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#endif
+
 #include <wolfssl/wolfcrypt/settings.h>
 
 /*
@@ -157,6 +162,20 @@ on the specific device platform.
 #else
 
 #include <wolfssl/wolfcrypt/logging.h>
+
+#if defined(WOLFSSL_ESPIDF)
+    /* logging
+     *
+     * see
+     *   https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/log.html
+     *   https://github.com/wolfSSL/wolfssl/blob/master/wolfssl/wolfcrypt/logging.h
+     */
+    #ifdef LOG_LOCAL_LEVEL
+        #undef LOG_LOCAL_LEVEL
+    #endif
+    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+    #include "esp_log.h"
+#endif
 
 #ifdef NO_INLINE
     #include <wolfssl/wolfcrypt/misc.h>
@@ -731,6 +750,16 @@ static int InitSha256(wc_Sha256* sha256)
             return BAD_FUNC_ARG;
 
         XMEMSET(sha256->digest, 0, sizeof(sha256->digest));
+
+
+        /* TODO see page 337 of C3 spec: 16.4.1.3 Setting the Initial Hash Value
+         *
+         * Before hash task begins for any secure hash algorithms, the initial Hash value H(0) must be set based on different
+           algorithms. However, the SHA accelerator uses the initial Hash values (constant C) stored in the hardware for
+           hash tasks
+         * */
+
+
         sha256->digest[0] = 0x6A09E667L;
         sha256->digest[1] = 0xBB67AE85L;
         sha256->digest[2] = 0x3C6EF372L;
@@ -1037,6 +1066,19 @@ static int InitSha256(wc_Sha256* sha256)
     /* do block size increments/updates */
     static WC_INLINE int Sha256Update(wc_Sha256* sha256, const byte* data, word32 len)
     {
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+        if (sha256->ctx.mode == ESP32_SHA_INIT)
+        {
+            ESP_LOGV("sha256", "Sha256Update skipping initial values for ESP32-C3");
+            /* initial values stored in hardware, nothing to do for C3
+             * but try to lock HW for next block
+             *
+             * if HW already locked, this will set ctx->mode = ESP32_SHA_SW
+             **/
+            esp_sha_try_hw_lock(&sha256->ctx);
+            return 0;
+        }
+#endif
         int ret = 0;
         word32 blocksLen;
         byte* local;
@@ -1170,7 +1212,7 @@ static int InitSha256(wc_Sha256* sha256)
                 else {
                     esp_sha256_process(sha256, (const byte*)local32);
                 }
-#else
+            #else
                 ret = XTRANSFORM(sha256, (const byte*)local32);
             #endif
 

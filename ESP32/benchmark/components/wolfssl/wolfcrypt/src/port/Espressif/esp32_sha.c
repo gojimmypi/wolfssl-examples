@@ -29,6 +29,13 @@
 #endif
 
 #include <wolfssl/wolfcrypt/settings.h>
+
+#include <esp_log.h>
+#if defined(LOG_LOCAL_LEVEL)
+    #undef LOG_LOCAL_LEVEL
+    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#endif
+
 /*****************************************************************************/
 /* this entire file content is excluded when NO_SHA, NO_SHA256
  * or when using WC_SHA384 or WC_SHA512
@@ -143,7 +150,7 @@ static word32 wc_esp_sha_digest_size(SHA_TYPE type)
 */
 static void wc_esp_wait_until_idle()
 {
-    int loop_ct = 100;
+    int loop_ct = 10000;
 #if defined(CONFIG_IDF_TARGET_ESP32)
     while ((DPORT_REG_READ(SHA_1_BUSY_REG)  != 0) ||
           (DPORT_REG_READ(SHA_256_BUSY_REG) != 0) ||
@@ -329,7 +336,13 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
 
     if (ret == 0) {
         ctx->lockDepth++; /* depth for THIS ctx (there could be others!) */
+#if defined(CONFIG_IDF_TARGET_ESP32)
         periph_module_enable(PERIPH_SHA_MODULE);
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+        /* TODO - do we need to enable on C3? */
+#else
+        ESP_LOGE(TAG, "unexpected CONFIG_IDF_TARGET_xx not implemented");
+#endif
         ctx->mode = ESP32_SHA_HW;
     }
     else {
@@ -523,7 +536,7 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     int word32_to_save = (len) / (sizeof(word32));
     ESP_LOGV(TAG, "  enter esp_process_block");
     if (word32_to_save > 0x31) {
-        word32_to_save = 0x31;
+        word32_to_save = 0x31; /* TODO can this be 0x32 for C3?*/
         ESP_LOGE(TAG, "  ERROR esp_process_block len exceeds 0x31 words");
     }
 
@@ -634,11 +647,17 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
     }
 
 
+//#if defined(CONFIG_IDF_TARGET_ESP32)
+    /* only the ESP32 needs to have initial values manually loaded.
+     * C3 has values stored in hardware
+     *
+     * TODO - BUT if we disable this, we get error -2306 during tests
+     */
     if(ctx->isfirstblock == 1){
         /* no hardware use yet. Nothing to do yet */
         return 0;
     }
-
+//#endif
 
     /* LOAD final digest */
 
