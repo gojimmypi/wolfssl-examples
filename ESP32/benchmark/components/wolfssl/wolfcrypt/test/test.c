@@ -30,6 +30,10 @@
 #include <wolfssl/version.h>
 #include <wolfssl/wolfcrypt/wc_port.h>
 
+#ifdef WOLFSSL_TRACK_MEMORY
+    #include <wolfssl/wolfcrypt/mem_track.h>
+#endif
+
 #ifndef NO_CRYPT_TEST
 
 #if defined(HAVE_STACK_SIZE) && !defined(HAVE_WOLFCRYPT_TEST_OPTIONS)
@@ -708,6 +712,17 @@ int wolfcrypt_test(void* args)
     printf("------------------------------------------------------------------------------\n");
     printf(" wolfSSL version %s\n", LIBWOLFSSL_VERSION_STRING);
     printf("------------------------------------------------------------------------------\n");
+    if ((ret = sha256_test()) != 0)
+        return err_sys("SHA-256  test failed!\n", ret);
+    else
+        TEST_PASS("SHA-256  test passed!\n");
+
+
+#ifdef WOLFSSL_TRACK_MEMORY
+    ShowMemoryTracker();
+#endif
+
+    return ret;
 
     if (args) {
 #ifdef HAVE_WOLFCRYPT_TEST_OPTIONS
