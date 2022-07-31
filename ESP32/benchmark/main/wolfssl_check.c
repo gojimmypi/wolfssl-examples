@@ -4,6 +4,10 @@
 #include <wolfcrypt/test/test.h>
 #include <wolfcrypt/benchmark/benchmark.h>
 
+#ifdef WOLFSSL_TRACK_MEMORY
+    #include <wolfssl/wolfcrypt/mem_track.h>
+#endif
+
 #include "sdkconfig.h"
 #include "esp_log.h"
 
@@ -76,6 +80,14 @@ static func_args args = { 0 };
 int wolfssl_check()
 {
     int ret = 0;
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
+    ESP_LOGI(TAG, "Verbose mode!");
+
+#ifdef WOLFSSL_TRACK_MEMORY
+    InitMemoryTracker();
+    ShowMemoryTracker();
+#endif
+
     /* 50KB is a known good stack size with default values of wolfSSL. */
 #ifdef CONFIG_ESP_MAIN_TASK_STACK_SIZE
     ESP_LOGI(TAG, "Configured ESP main task stack size: %d", CONFIG_ESP_MAIN_TASK_STACK_SIZE);
@@ -126,6 +138,11 @@ int wolfssl_check()
         ESP_LOGI(TAG, "wolfCrypt_Init failed %d\n", ret);
         return ret;
     }
+
+#ifdef WOLFSSL_TRACK_MEMORY
+    ShowMemoryTracker();
+#endif
+
 
 #ifndef NO_CRYPT_TEST
     #ifdef HAVE_STACK_SIZE

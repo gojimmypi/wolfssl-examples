@@ -25,10 +25,17 @@
 #include <wolfssl/wolfcrypt/logging.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>
 #include <wolfssl/wolfcrypt/types.h>
+#include <wolfssl/wolfcrypt/sha256.h>
 
+/* optional memory tracking */
+/* #define WOLFSSL_TRACK_MEMORY */
+#define WOLFSSL_TRACK_MEMORY
+#ifdef WOLFSSL_TRACK_MEMORY
+    #include <wolfssl/wolfcrypt/mem_track.h>
+#endif
 
+#include <esp_log.h>
 #include "sdkconfig.h"
-#include "esp_log.h"
 
 #include "time_helper.h"
 #include "wolfssl_check.h"
@@ -103,15 +110,35 @@ void my_atmel_free(int slotId)
 #endif /* CUSTOM_SLOT_ALLOCATION                                       */
 #endif /* WOLFSSL_ESPWROOM32SE && HAVE_PK_CALLBACK && WOLFSSL_ATECC508A */
 
+#include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
 
+void test_sha()
+{
+    const char* data = "0/0/0/0/0"; // "Hello world" from web : 64:ec:88:ca:00:b2:68:e5:ba:1a:35:67:8a:1b:53:16:d2:12:f4:f3:66:b2:47:72:32:53:4a:8a:ec:a3:7f:3c
+    Sha256 sha256[1];  // 3 from web - 4e:07:40:85:62:be:db:8b:60:ce:05:c1:de:cf:e3:ad:16:b7:22:30:96:7d:e0:1f:64:0b:7e:47:29:b4:9f:ce
+    byte * hash[100];  // 0 from web - 5f:ec:eb:66:ff:c8:6f:38:d9:52:78:6c:6d:69:6c:79:c2:db:c2:39:dd:4e:91:b4:67:29:d7:3a:27:fb:57:e9
+
+     int ret;
+    if ((ret = wc_InitSha256(sha256)) != 0) {
+        ESP_LOGE(TAG, "wc_InitSha256 failed");
+    }
+
+    wc_Sha256Update(sha256, (byte*)data, sizeof(&data));
+    wc_Sha256GetHash(sha256, hash);
+
+    wc_Sha256Update(sha256, (byte*)data, sizeof(&data));
+    wc_Sha256GetHash(sha256, hash);
+}
 /* entry point */
 void app_main(void)
 {
     (void) TAG;
     int ret;
+//    test_sha();
 
     /* some tests will need a valid time value */
     set_time();
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
 
     ret = wolfssl_check();
     ESP_LOGI(TAG, "wolfssl_check: %d", ret);
