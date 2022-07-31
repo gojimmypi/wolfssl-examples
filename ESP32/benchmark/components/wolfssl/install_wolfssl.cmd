@@ -26,6 +26,7 @@ git pull origin master
 
 mkdir include
 git show master:IDE/Espressif/ESP-IDF/user_settings.h     > include/user_settings.h
+echo TODO PR config.h in libs for ifdef HAVE_CONFIG_H defined elsewhere (see benchmark)
 git show master:IDE/Espressif/ESP-IDF/libs/CMakeLists.txt > CMakeLists.txt
 git show master:IDE/Espressif/ESP-IDF/libs/component.mk   > component.mk
 
