@@ -23,6 +23,9 @@
 #undef WOLFSSL_ESPIDF
 #define WOLFSSL_ESPIDF
 
+#undef WOLFSSL_TRACK_MEMORY
+#define WOLFSSL_TRACK_MEMORY
+
 #undef WOLFSSL_ESPWROOM32
 #undef WOLFSSL_ESPWROOM32SE
 #undef WOLFSSL_ESPWROOM32
@@ -43,6 +46,11 @@
  */
 
 #define WOLFSSL_ESPWROOM32
+
+#if defined(LOG_LOCAL_LEVEL)
+    #undef LOG_LOCAL_LEVEL
+    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#endif
 
 /* optional verbose debugging
 */
