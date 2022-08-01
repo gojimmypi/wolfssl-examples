@@ -45,7 +45,7 @@
 
 
 #define WOLFSSL_BENCH_ARGV                 CONFIG_BENCH_ARGV
-static TickType_t DelayTicks = (10000 / portTICK_PERIOD_MS);
+static TickType_t DelayTicks = (50000 / portTICK_PERIOD_MS);
 
 static const char* const TAG = "wolfbenchmark";
 
@@ -113,7 +113,7 @@ void my_atmel_free(int slotId)
 #include "wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h"
 
 void test_sha()
-{
+{                      // "abc" : ba:78:16:bf:8f:01:cf:ea:41:41:40:de:5d:ae:22:23:b0:03:61:a3:96:17:7a:9c:b4:10:ff:61:f2:00:15:ad
     const char* data = "0/0/0/0/0"; // "Hello world" from web : 64:ec:88:ca:00:b2:68:e5:ba:1a:35:67:8a:1b:53:16:d2:12:f4:f3:66:b2:47:72:32:53:4a:8a:ec:a3:7f:3c
     Sha256 sha256[1];  // 3 from web - 4e:07:40:85:62:be:db:8b:60:ce:05:c1:de:cf:e3:ad:16:b7:22:30:96:7d:e0:1f:64:0b:7e:47:29:b4:9f:ce
     byte * hash[100];  // 0 from web - 5f:ec:eb:66:ff:c8:6f:38:d9:52:78:6c:6d:69:6c:79:c2:db:c2:39:dd:4e:91:b4:67:29:d7:3a:27:fb:57:e9
