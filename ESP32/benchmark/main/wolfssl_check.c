@@ -11,6 +11,13 @@
 #include "sdkconfig.h"
 #include "esp_log.h"
 
+/*
+ * Ensure wolfSSL has enough stack space, currently set to a default of 50KB
+ *
+ * See optimizations to reduce this in other size-constrained environments.
+ */
+#define WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE (50 * 1024)
+
 static const char* const TAG = "wolfssl_check";
 
 char* __argv[22];
@@ -75,19 +82,12 @@ typedef struct func_args {
 static func_args args = { 0 };
 #endif
 
-
-#define WOLFSSL_ESP_IDF_MINIMUM_STACK_SIZE (50 * 1024)
-int wolfssl_check()
+/*
+ * environment_check() ensures some critical environment settings are defined
+ */
+int environment_check()
 {
     int ret = 0;
-    esp_log_level_set("*", ESP_LOG_VERBOSE);
-    ESP_LOGI(TAG, "Verbose mode!");
-
-#ifdef WOLFSSL_TRACK_MEMORY
-    InitMemoryTracker();
-    ShowMemoryTracker();
-#endif
-
     /* 50KB is a known good stack size with default values of wolfSSL. */
 #ifdef CONFIG_ESP_MAIN_TASK_STACK_SIZE
     ESP_LOGI(TAG, "Configured ESP main task stack size: %d", CONFIG_ESP_MAIN_TASK_STACK_SIZE);
@@ -95,6 +95,7 @@ int wolfssl_check()
         ESP_LOGI(TAG, "Warning: Stack size lower than known good value.");
     }
 #else
+    ret = 1;
     ESP_LOGE(TAG, "ERROR: CONFIG_ESP_MAIN_TASK_STACK_SIZE not defined.");
 #endif /* CONFIG_ESP_MAIN_TASK_STACK_SIZE */
 
@@ -104,6 +105,7 @@ int wolfssl_check()
         ESP_LOGI(TAG, "Warning: Stack size lower than known good value.");
     }
 #else
+    ret = 1;
     ESP_LOGE(TAG, "ERROR: CONFIG_MAIN_TASK_STACK_SIZE not defined.");
 #endif /* CONFIG_MAIN_TASK_STACK_SIZE */
 
@@ -115,14 +117,34 @@ int wolfssl_check()
 #ifdef CONFIG_ESP_TASK_WDT_TIMEOUT_S
     ESP_LOGI(TAG, "Configured CONFIG_ESP_TASK_WDT_TIMEOUT_S: %d", CONFIG_ESP_TASK_WDT_TIMEOUT_S);
 #else
+    ret = 1;
     ESP_LOGE(TAG, "ERROR: CONFIG_ESP_TASK_WDT_TIMEOUT_S not defined.");
 #endif /* CONFIG_ESP_TASK_WDT_TIMEOUT_S */
 
 #ifdef CONFIG_ESP_INT_WDT_TIMEOUT_MS
     ESP_LOGI(TAG, "Configured CONFIG_ESP_INT_WDT_TIMEOUT_MS: %d", CONFIG_ESP_INT_WDT_TIMEOUT_MS);
 #else
+    ret = 1;
     ESP_LOGE(TAG, "ERROR: CONFIG_ESP_INT_WDT_TIMEOUT_MS not defined.");
 #endif /* CONFIG_ESP_INT_WDT_TIMEOUT_MS */
+    return ret;
+}
+
+/*
+ * the main wolfSSL Test and Benchmark tests
+ */
+int wolfssl_check()
+{
+    int ret = 0;
+    environment_check();
+
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
+    ESP_LOGI(TAG, "Verbose mode!");
+
+#ifdef WOLFSSL_TRACK_MEMORY
+    InitMemoryTracker();
+    ShowMemoryTracker();
+#endif
 
 
 #if defined(NO_CRYPT_TEST) && defined(NO_CRYPT_BENCHMARK)
@@ -144,46 +166,60 @@ int wolfssl_check()
 #endif
 
 
-#ifndef NO_CRYPT_TEST
+/*
+ * wolfcrypt Tests
+ */
+#if defined(NO_CRYPT_TEST)
+    ret = NOT_COMPILED_IN;
+    ESP_LOGI(TAG, "Skipped wolfcrypt_test; NO_CRYPT_TEST defined.")
+#else
     #ifdef HAVE_STACK_SIZE
         StackSizeCheck(&args, wolfcrypt_test);
     #else
-        wolfcrypt_test(&args);
+        ret = wolfcrypt_test(&args);
     #endif
 
     ret = args.return_code;
     ESP_LOGI(TAG, "Crypt Test: Return code %d\n", ret);
 
-#else
+    #ifdef WOLFSSL_TRACK_MEMORY
+        ShowMemoryTracker();
+    #endif
+
+    return ret;
+#endif
+
+/*
+ * wolfcrypt Benchmark
+ */
+#if defined(NO_CRYPT_BENCHMARK)
+     /* NO_CRYPT_BENCHMARK is defined, so no benchmark */
     ret = NOT_COMPILED_IN;
-    ESP_LOGI(TAG, "Skipped wolfcrypt_test; NO_CRYPT_TEST defined.")
-#endif
-
-#ifndef NO_CRYPT_BENCHMARK
-
+    ESP_LOGI(TAG, "Skipped Benchmark: NO_CRYPT_BENCHMARK defined.");
+#else
     /* when using atecc608a on esp32-wroom-32se */
-#if defined(WOLFSSL_ESPWROOM32SE) && defined(HAVE_PK_CALLBACKS) \
-                                          && defined(WOLFSSL_ATECC508A)
-#if defined(CUSTOM_SLOT_ALLOCATION)
-                my_atmel_slotInit();
-    /* to register the callback, it needs to be initialized. */
-    if ((wolfCrypt_Init()) != 0) {
-        ESP_LOGE(TAG, "wolfCrypt_Init failed");
-        return;
-    }
-    atmel_set_slot_allocator(my_atmel_alloc, my_atmel_free);
-#endif
-#endif
-
-#ifndef NO_CRYPT_BENCHMARK
+    #if defined(WOLFSSL_ESPWROOM32SE) && defined(HAVE_PK_CALLBACKS) \
+                                              && defined(WOLFSSL_ATECC508A)
+        #if defined(CUSTOM_SLOT_ALLOCATION)
+                        my_atmel_slotInit();
+            /* to register the callback, it needs to be initialized. */
+            if ((wolfCrypt_Init()) != 0) {
+                ESP_LOGE(TAG, "wolfCrypt_Init failed");
+                return;
+            }
+            atmel_set_slot_allocator(my_atmel_alloc, my_atmel_free);
+        #endif
+    #endif
     printf("\nBenchmark Test\n");
 
-    benchmark_test(&args);
+    if (ret == 0) {
+        benchmark_test(&args);
+    }
+    else {
+        ESP_LOGI(TAG, "Skipped Benchmark: tests failed");
+    }
 #endif /* NO_CRYPT_BENCHMARK */
 
-#else /* NO_CRYPT_BENCHMARK is defined, so no benchmark */
-    ret = NOT_COMPILED_IN;
-#endif /* NO_CRYPT_BENCHMARK */
 
     wolfCrypt_Cleanup();
 
