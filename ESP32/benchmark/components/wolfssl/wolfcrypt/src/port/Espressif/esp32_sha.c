@@ -30,7 +30,6 @@
 
 #include <wolfssl/wolfcrypt/settings.h>
 
-#include <esp_log.h>
 #if defined(LOG_LOCAL_LEVEL)
     #undef LOG_LOCAL_LEVEL
     #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
@@ -319,6 +318,12 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
              * note the mutex is the gatekeeper not lock depth or hw status
              */
             ret = esp_unroll_sha_module_enable(ctx);
+
+            /* configure SHA mode at lock time
+             *
+             * TODO check SHA type in ctx
+             *
+             **/
             ESP_LOGV(TAG, "Hardware Mode, lock depth = %d", ctx->lockDepth);
         }
         else {
@@ -339,7 +344,17 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
 #if defined(CONFIG_IDF_TARGET_ESP32)
         periph_module_enable(PERIPH_SHA_MODULE);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+        // DPORT_REG_WRITE(SYSTEM_CRYPTO_SHA_CLK_EN, 4); /* this gets stuck, causes panic */
+        // (*(volatile uint32_t *)(0x0014)) = (*(volatile uint32_t *)(0x0014)) | 0x100 | 4;
+        // (*(uint32_t *)(0x0014)) = 0x100 | 4;
+        // DPORT_REG_WRITE(SYSTEM_CRYPTO_SHA_CLK_EN, 4);
+        // SYSTEM_PERIP_CLK_EN1_REG + 0x0014
+        // DR_REG_SHA_BASE = 0x6003b000 see https://github.com/espressif/esp-idf/blob/master/components/soc/esp32c3/include/soc/reg_base.h
+        /*  (DR_REG_SYSTEM_BASE + 0x014) */
+        // DPORT_REG_WRITE(SYSTEM_PERIP_CLK_EN1_REG, 4);
         /* TODO - do we need to enable on C3? */
+        DPORT_REG_WRITE(SHA_MODE_REG, 2); /* 2 = SHA-256; see page 336 */
+        periph_ll_enable_clk_clear_rst((periph_module_t) PERIPH_SHA_MODULE);
 #else
         ESP_LOGE(TAG, "unexpected CONFIG_IDF_TARGET_xx not implemented");
 #endif
@@ -416,6 +431,10 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
     if (sha == NULL) {
         return -1;
     }
+    if (sha->sha_type != SHA2_256)
+    {
+        ESP_LOGV(TAG, "    sha->sha_type != SHA2_256");
+    }
 
     ESP_LOGV(TAG, "    enter esp_sha_start_process");
 
@@ -428,8 +447,11 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_1_START_REG, 1);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-            DPORT_REG_WRITE(SHA_MODE_REG, 0); /* 0 = SHA-1; see page 336  */
+            // DPORT_REG_WRITE(SHA_START_REG, 1);
+            // DPORT_REG_WRITE(SHA_MODE_REG, 0); /* 0 = SHA-1; see page 336  */
+            ESP_LOGV(TAG, "SHA1 SHA_START_REG");
             DPORT_REG_WRITE(SHA_START_REG, 1);
+            // TODO
 #endif // CONFIG_IDF_TARGET_ESP32)
 
                 break;
@@ -438,8 +460,14 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_256_START_REG, 1);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-            DPORT_REG_WRITE(SHA_MODE_REG, 2); /* 2 = SHA-256; see page 336 */
-            DPORT_REG_WRITE(SHA_START_REG, 1);
+            /* note by the time we get here, the mode should have
+             * already been set, for example
+             * DPORT_REG_WRITE(SHA_MODE_REG, 2); // 2 = SHA-256; see page 336
+             */
+            //DPORT_REG_WRITE(SHA_MODE_REG, 2);
+            //DPORT_REG_WRITE(SHA_START_REG, 1);
+            ESP_LOGV(TAG, "SHA2_256 sha_ll_start_block");
+            sha_ll_start_block(2);
 #endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
@@ -483,6 +511,7 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
             DPORT_REG_WRITE(SHA_1_CONTINUE_REG, 1);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
+            ESP_LOGV(TAG, "SHA_CONTINUE_REG");
 #endif // CONFIG_IDF_TARGET_ESP32)
                 break;
 
@@ -568,6 +597,10 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     *
     * Note that unlike the plain ESP32 that has only 1 register, we can write
     * the entire block.
+    * SHA_TEXT_BASE = 0x6003b080
+    * SHA_H_BASE    = 0x6003b040
+    * see hash: ((uint32_t[08])  (*(volatile uint32_t *)(SHA_H_BASE)))
+    *  message: ((uint32_t[16])  (*(volatile uint32_t *)(SHA_TEXT_BASE)))
     */
     sha_ll_fill_text_block((void *)(data), len);
 #endif
@@ -615,7 +648,7 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
 #if defined(CONFIG_IDF_TARGET_ESP32)
         DPORT_REG_WRITE(SHA_1_LOAD_REG, 1);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-       // DPORT_REG_WRITE(SHA_START_REG, 1); // we've already started
+       // TODO DPORT_REG_WRITE(SHA_START_REG, 1); // we've already started
 #endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
@@ -623,7 +656,9 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
 #if defined(CONFIG_IDF_TARGET_ESP32)
         DPORT_REG_WRITE(SHA_256_LOAD_REG, 1);
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-       // DPORT_REG_WRITE(SHA_START_REG, 1); // we've already started
+       // DPORT_REG_WRITE(SHA_START_REG, 1);
+
+       // DPORT_REG_WRITE(SHA_START_REG, 1); // we've already started        // TODO no load reg for ESP32-C3 ?
 #endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
