@@ -85,7 +85,6 @@ int esp_CryptHwMutexUnLock(wolfSSL_Mutex* mutex) {
 #ifdef WOLFSSL_ESP32WROOM32_CRYPT_DEBUG
 
 #include "esp_timer.h"
-#include "esp_log.h"
 
 static uint64_t startTime = 0;
 
