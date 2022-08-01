@@ -353,8 +353,9 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
         /*  (DR_REG_SYSTEM_BASE + 0x014) */
         // DPORT_REG_WRITE(SYSTEM_PERIP_CLK_EN1_REG, 4);
         /* TODO - do we need to enable on C3? */
-        DPORT_REG_WRITE(SHA_MODE_REG, 2); /* 2 = SHA-256; see page 336 */
-        periph_ll_enable_clk_clear_rst((periph_module_t) PERIPH_SHA_MODULE);
+        ets_sha_enable();
+        // periph_ll_enable_clk_clear_rst((periph_module_t) PERIPH_SHA_MODULE);
+        // DPORT_REG_WRITE(SHA_MODE_REG, SHA2_256); /* 2 = SHA-256; see page 336 */
 #else
         ESP_LOGE(TAG, "unexpected CONFIG_IDF_TARGET_xx not implemented");
 #endif
@@ -365,7 +366,7 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
         ctx->mode = ESP32_SHA_SW;
     }
 
-    ESP_LOGV(TAG, "leave esp_sha_hw_lock");
+    ESP_LOGV(TAG, "leave esp_sha_hw_lock. depth = %d", ctx->lockDepth);
     return ret;
 } /* esp_sha_try_hw_lock */
 
@@ -438,7 +439,7 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 
     ESP_LOGV(TAG, "    enter esp_sha_start_process");
 
-    if(sha->isfirstblock){
+    if(sha->isfirstblock) {
         /* start registers for first message block
          * we don't make any relational memory position assumptions.
          */
@@ -450,11 +451,19 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
             // DPORT_REG_WRITE(SHA_START_REG, 1);
             // DPORT_REG_WRITE(SHA_MODE_REG, 0); /* 0 = SHA-1; see page 336  */
             ESP_LOGV(TAG, "SHA1 SHA_START_REG");
-            DPORT_REG_WRITE(SHA_START_REG, 1);
-            // TODO
+            sha_ll_start_block(SHA1);   // SHA1 TODO confirm & change to macro name
 #endif // CONFIG_IDF_TARGET_ESP32)
 
                 break;
+
+        case SHA2_224:
+        #if defined(CONFIG_IDF_TARGET_ESP32)
+            #error "not implemented"
+        #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            ESP_LOGV(TAG, "SHA2_256 sha_ll_start_block");
+            sha_ll_start_block(SHA2_224); // SHA 224
+        #endif // CONFIG_IDF_TARGET_ESP32)
+            break;
 
             case SHA2_256:
 #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -467,7 +476,10 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
             //DPORT_REG_WRITE(SHA_MODE_REG, 2);
             //DPORT_REG_WRITE(SHA_START_REG, 1);
             ESP_LOGV(TAG, "SHA2_256 sha_ll_start_block");
-            sha_ll_start_block(2);
+            sha_ll_start_block(SHA2_256); // SHA 256
+
+            // DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
+
 #endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
@@ -506,28 +518,40 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
          * for future chip architecture changes.
          */
         switch (sha->sha_type) {
-            case SHA1:
-#if defined(CONFIG_IDF_TARGET_ESP32)
+        case SHA1:
+        #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_1_CONTINUE_REG, 1);
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+        #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
             ESP_LOGV(TAG, "SHA_CONTINUE_REG");
-#endif // CONFIG_IDF_TARGET_ESP32)
-                break;
-
-            case SHA2_256:
-#if defined(CONFIG_IDF_TARGET_ESP32)
-            DPORT_REG_WRITE(SHA_256_CONTINUE_REG, 1);
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
-            DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
-#endif // CONFIG_IDF_TARGET_ESP32)
+        #endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
-        #if defined(WOLFSSL_SHA384)
-            case SHA2_384:
+        case SHA2_224:
+        #if defined(CONFIG_IDF_TARGET_ESP32)
+            #error "not implemented"
+        #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            ESP_LOGV(TAG, "SHA2_224 continue");
+            DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
+        #endif // CONFIG_IDF_TARGET_ESP32)
+            break;
+
+        case SHA2_256:
+        #if defined(CONFIG_IDF_TARGET_ESP32)
+            DPORT_REG_WRITE(SHA_256_CONTINUE_REG, 1);
+        #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+            ESP_LOGV(TAG, "SHA2_256 continue");
+            // DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
+            // REG_WRITE(SHA_CONTINUE_REG, 1);
+            sha_ll_continue_block(SHA2_256);
+        #endif // CONFIG_IDF_TARGET_ESP32)
+            break;
+
+    #if defined(WOLFSSL_SHA384)
+        case SHA2_384:
                 DPORT_REG_WRITE(SHA_384_CONTINUE_REG, 1);
                 break;
-        #endif
+    #endif
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
         #if defined(WOLFSSL_SHA512)
@@ -535,6 +559,8 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
                 DPORT_REG_WRITE(SHA_512_CONTINUE_REG, 1);
             break;
         #endif
+#else
+    /* not implemented */
 #endif
             default:
                 /* error for unsupported other values */
@@ -563,7 +589,7 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
 {
     int i;
     int word32_to_save = (len) / (sizeof(word32));
-    ESP_LOGV(TAG, "  enter esp_process_block");
+    ESP_LOGV(TAG, "  enter esp_process_block, len = %d", word32_to_save);
     if (word32_to_save > 0x31) {
         word32_to_save = 0x31; /* TODO can this be 0x32 for C3?*/
         ESP_LOGE(TAG, "  ERROR esp_process_block len exceeds 0x31 words");
@@ -602,12 +628,13 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     * see hash: ((uint32_t[08])  (*(volatile uint32_t *)(SHA_H_BASE)))
     *  message: ((uint32_t[16])  (*(volatile uint32_t *)(SHA_TEXT_BASE)))
     */
-    sha_ll_fill_text_block((void *)(data), len);
+    sha_ll_fill_text_block((void *)(data), word32_to_save);
 #endif
 
     /* notify hw to start process
      * see ctx->sha_type
      * reg data does not change until we are ready to read */
+    ctx->sha_type = SHA2_256; /* TODO */
     esp_sha_start_process(ctx);
 
     ESP_LOGV(TAG, "  leave esp_process_block");
@@ -682,7 +709,7 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
     }
 
 
-//#if defined(CONFIG_IDF_TARGET_ESP32)
+#if defined(CONFIG_IDF_TARGET_ESP32)
     /* only the ESP32 needs to have initial values manually loaded.
      * C3 has values stored in hardware
      *
@@ -692,7 +719,7 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
         /* no hardware use yet. Nothing to do yet */
         return 0;
     }
-//#endif
+#endif
 
     /* LOAD final digest */
 
@@ -819,8 +846,14 @@ int esp_sha256_process(struct wc_Sha256* sha, const byte* data)
 int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 {
     int ret = 0;
-
-    ESP_LOGV(TAG, "enter esp_sha256_digest_process");
+/* we only arrive here during HW digest process */
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+    if (sha->ctx.isfirstblock && (blockprocess == 0)) {
+        ESP_LOGV(TAG, "skip esp_sha256_digest_process for first block");
+        return 0;
+    }
+#endif
+    ESP_LOGV(TAG, "enter esp_sha256_digest_process. depth = %d", &sha->ctx.lockDepth);
 
     if(blockprocess) {
 
@@ -829,7 +862,7 @@ int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 
     wc_esp_digest_state(&sha->ctx, (byte*)sha->digest);
 
-    ESP_LOGV(TAG, "leave esp_sha256_digest_process");
+    ESP_LOGV(TAG, "leave esp_sha256_digest_process. depth = %d", &sha->ctx.lockDepth);
     return ret;
 }
 
