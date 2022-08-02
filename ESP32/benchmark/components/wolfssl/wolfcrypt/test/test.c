@@ -2744,7 +2744,7 @@ WOLFSSL_TEST_SUBROUTINE int sha256_test(void)
 
     for (i = 0; i < times; ++i) {
         ESP_LOGI("test", " iteration %d", i);
-        ESP_LOG_BUFFER_HEXDUMP("hash    ", hash, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
+        ESP_LOG_BUFFER_HEXDUMP("hash n/i", hash, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
         ESP_LOG_BUFFER_HEXDUMP("output  ", test_sha[i].output, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
 
         ESP_LOGI("test", " wc_Sha256Update\n");
@@ -2758,10 +2758,10 @@ WOLFSSL_TEST_SUBROUTINE int sha256_test(void)
         ESP_LOG_BUFFER_HEXDUMP("hashcopy", hashcopy, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
         if (ret != 0)
             ERROR_OUT(-2303 - i, exit);
-        ret = wc_Sha256Copy(&sha, &shaCopy);
+        ret = wc_Sha256Copy(&sha, &shaCopy); /* initial digest missing for SW */
         if (ret != 0)
             ERROR_OUT(-2304 - i, exit);
-        ret = wc_Sha256Final(&sha, hash);
+        ret = wc_Sha256Final(&sha, hash); /* this will be SW due to pending hashcopy */
         if (ret != 0)
             ERROR_OUT(-2305 - i, exit);
         wc_Sha256Free(&shaCopy);
@@ -2773,7 +2773,7 @@ WOLFSSL_TEST_SUBROUTINE int sha256_test(void)
         if (XMEMCMP(hash, test_sha[i].output, WC_SHA256_DIGEST_SIZE) != 0)
             ERROR_OUT(-2306 - i, exit);
 
-        ESP_LOGI("test", "\nhash, hashcop");
+        ESP_LOGI("test", "\nhash, hashcopy");
         ESP_LOG_BUFFER_HEXDUMP("hash    ", hash, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
         ESP_LOG_BUFFER_HEXDUMP("hashcopy", test_sha[i].output, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
 
