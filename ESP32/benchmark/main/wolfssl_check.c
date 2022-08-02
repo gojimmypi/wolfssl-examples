@@ -130,13 +130,55 @@ int environment_check()
     return ret;
 }
 
+#include <hal/sha_hal.h>
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    #include <hal/sha_ll.h>
+    #include <hal/clk_gate_ll.h>
+#else
+    #include <hal/clk_gate_ll.h> /* ESP32-WROOM */
+#endif
+
+int hal_check()
+{
+
+    int ret = 0;
+    long msg[8];
+    msg[0] = 0x00000080L;
+    msg[1] = 0x00;
+    msg[2] = 0x00;
+    msg[3] = 0x00;
+    msg[4] = 0x00;
+    msg[5] = 0x00;
+    msg[6] = 0x00;
+    msg[7] = 0x00;
+
+    char* data[0x40];
+    ets_sha_disable();
+    ets_sha_enable();
+    sha_hal_hash_block(SHA2_256, msg, 1, true);
+    sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
+    ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
+
+    ets_sha_enable();
+    sha_hal_hash_block(SHA2_256, msg, 1, true);
+    sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
+    ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
+
+    ets_sha_disable();
+    return ret;
+}
+
 /*
  * the main wolfSSL Test and Benchmark tests
  */
 int wolfssl_check()
 {
+#undef WOLFSSL_TRACK_MEMORY
     int ret = 0;
+
     environment_check();
+
+    hal_check();
 
     esp_log_level_set("*", ESP_LOG_VERBOSE);
     ESP_LOGI(TAG, "Verbose mode!");
