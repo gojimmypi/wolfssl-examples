@@ -35,6 +35,16 @@
     #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #endif
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    #include <hal/sha_hal.h>
+
+    #include <hal/sha_ll.h>
+    #include <hal/clk_gate_ll.h>
+#else
+    #include <hal/clk_gate_ll.h> /* ESP32-WROOM */
+#endif
+
+
 /*****************************************************************************/
 /* this entire file content is excluded when NO_SHA, NO_SHA256
  * or when using WC_SHA384 or WC_SHA512
@@ -473,7 +483,7 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
              * already been set, for example
              * DPORT_REG_WRITE(SHA_MODE_REG, 2); // 2 = SHA-256; see page 336
              */
-            //DPORT_REG_WRITE(SHA_MODE_REG, 2);
+            DPORT_REG_WRITE(SHA_MODE_REG, 2); // TODO use macro name
             //DPORT_REG_WRITE(SHA_START_REG, 1);
             ESP_LOGV(TAG, "SHA2_256 sha_ll_start_block");
             sha_ll_start_block(SHA2_256); // SHA 256
@@ -531,7 +541,7 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
         #if defined(CONFIG_IDF_TARGET_ESP32)
             #error "not implemented"
         #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-            ESP_LOGV(TAG, "SHA2_224 continue");
+            ESP_LOGV(TAG, "    SHA2_224 continue");
             DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
         #endif // CONFIG_IDF_TARGET_ESP32)
             break;
@@ -540,7 +550,7 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
         #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_256_CONTINUE_REG, 1);
         #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-            ESP_LOGV(TAG, "SHA2_256 continue");
+            ESP_LOGV(TAG, "      SHA2_256 continue");
             // DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
             // REG_WRITE(SHA_CONTINUE_REG, 1);
             sha_ll_continue_block(SHA2_256);
@@ -614,7 +624,13 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
 
         DPORT_REG_WRITE(SHA_TEXT_BASE + (i*sizeof(word32)), *(data + i));
         /* memw confirmed auto inserted by compiler here */
-    }
+
+        /* notify hw to start process
+         * see ctx->sha_type
+         * reg data does not change until we are ready to read */
+        ctx->sha_type = SHA2_256; /* TODO does  this sometime not have the right value? */
+        esp_sha_start_process(ctx);
+        }
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
    /*  SHA_M_1_REG is not a macro:
     *  DPORT_REG_WRITE(SHA_M_1_REG + (i*sizeof(word32)), *(data + i));
@@ -628,14 +644,9 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     * see hash: ((uint32_t[08])  (*(volatile uint32_t *)(SHA_H_BASE)))
     *  message: ((uint32_t[16])  (*(volatile uint32_t *)(SHA_TEXT_BASE)))
     */
-    sha_ll_fill_text_block((void *)(data), word32_to_save);
+    sha_hal_hash_block(ctx->sha_type, (void *)(data), word32_to_save, ctx->isfirstblock);
 #endif
 
-    /* notify hw to start process
-     * see ctx->sha_type
-     * reg data does not change until we are ready to read */
-    ctx->sha_type = SHA2_256; /* TODO */
-    esp_sha_start_process(ctx);
 
     ESP_LOGV(TAG, "  leave esp_process_block");
 }
@@ -847,13 +858,14 @@ int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 {
     int ret = 0;
 /* we only arrive here during HW digest process */
-#ifdef CONFIG_IDF_TARGET_ESP32C3
+#ifdef CONFIG_IDF_TARGET_ESP32C3_disabled
     if (sha->ctx.isfirstblock && (blockprocess == 0)) {
+        /* C3 already has the first block in HW */
         ESP_LOGV(TAG, "skip esp_sha256_digest_process for first block");
         return 0;
     }
 #endif
-    ESP_LOGV(TAG, "enter esp_sha256_digest_process. depth = %d", &sha->ctx.lockDepth);
+    ESP_LOGV(TAG, "enter esp_sha256_digest_process. depth = %d", sha->ctx.lockDepth);
 
     if(blockprocess) {
 
@@ -862,7 +874,7 @@ int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 
     wc_esp_digest_state(&sha->ctx, (byte*)sha->digest);
 
-    ESP_LOGV(TAG, "leave esp_sha256_digest_process. depth = %d", &sha->ctx.lockDepth);
+    ESP_LOGV(TAG, "leave esp_sha256_digest_process. depth = %d", sha->ctx.lockDepth);
     return ret;
 }
 
