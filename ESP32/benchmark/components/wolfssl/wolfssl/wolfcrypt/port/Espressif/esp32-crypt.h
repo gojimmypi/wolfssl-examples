@@ -163,6 +163,7 @@ uint64_t  wc_esp32elapsedTime();
         enum SHA_TYPE sha_type;
 #else
         SHA_TYPE sha_type;
+        word32 * for_digest;
 #endif
     } WC_ESP32SHA;
 
