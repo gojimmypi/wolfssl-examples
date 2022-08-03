@@ -59,6 +59,8 @@
 #if defined(WOLFSSL_ESP32WROOM32_CRYPT) && \
    !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
 
+const static word32 ** _active_digest_address = 0; /* keep track of the currently active SHA hash object for interleaving */
+
 /* TODO this may be chip type dependent: add support for others */
 // #include <hal/clk_gate_ll.h> /* ESP32-WROOM */
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -589,7 +591,6 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 
    return ret;
 }
-
 /*
 * process message block
 */
@@ -644,6 +645,13 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     * see hash: ((uint32_t[08])  (*(volatile uint32_t *)(SHA_H_BASE)))
     *  message: ((uint32_t[16])  (*(volatile uint32_t *)(SHA_TEXT_BASE)))
     */
+    if (&data != _active_digest_address)
+    {
+        ESP_LOGI(TAG, "Moving alternate ctx->for_digest");
+        /* move last known digest into HW reg during interleave */
+        sha_ll_write_digest(ctx->sha_type, ctx->for_digest, WC_SHA256_BLOCK_SIZE);
+        _active_digest_address = &data;
+    }
     sha_hal_hash_block(ctx->sha_type, (void *)(data), word32_to_save, ctx->isfirstblock);
 #endif
 
@@ -939,7 +947,7 @@ int esp_sha512_digest_process(struct wc_Sha512* sha, byte blockproc)
     if(blockproc) {
         word32* data = (word32*)sha->buffer;
 
-        esp_sha512_block(sha, data, 1);
+        esp_sha512_block(sha, data, 1); /* TODO not supported in C3 */
     }
     if(sha->ctx.mode != ESP32_SHA_SW)
         wc_esp_digest_state(&sha->ctx, (byte*)sha->digest);
