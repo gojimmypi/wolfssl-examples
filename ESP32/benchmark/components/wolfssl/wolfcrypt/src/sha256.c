@@ -770,10 +770,11 @@ static int InitSha256(wc_Sha256* sha256)
         /* for NON Xtensa platform, we only needs to preload when in SW mode */
         if (sha256->ctx.mode == ESP32_SHA_SW)
 #endif
+
+#ifdef disabledcode
         {
             ESP_LOGV("WOLF sha256", "loading static known initial digest");
             XMEMSET(sha256->digest, 0, sizeof(sha256->digest));
-
             sha256->digest[0] = 0x6A09E667L;
             sha256->digest[1] = 0xBB67AE85L;
             sha256->digest[2] = 0x3C6EF372L;
@@ -787,6 +788,7 @@ static int InitSha256(wc_Sha256* sha256)
             sha256->loLen   = 0;
             sha256->hiLen   = 0;
         }
+#endif
 
 
         /* always start firstblock = 1 when using hw engine */
