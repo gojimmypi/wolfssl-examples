@@ -142,6 +142,7 @@ int hal_check()
 {
 
     int ret = 0;
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
     long msg[8];
     msg[0] = 0x00000080L;
     msg[1] = 0x00;
@@ -165,6 +166,9 @@ int hal_check()
     ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
 
     ets_sha_disable();
+#else
+    ESP_LOGI(TAG, "hal_check() For use with ESP32C3 only.");
+#endif
     return ret;
 }
 
