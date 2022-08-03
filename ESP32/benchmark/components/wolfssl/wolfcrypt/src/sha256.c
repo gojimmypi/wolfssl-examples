@@ -824,7 +824,7 @@ static int InitSha256(wc_Sha256* sha256)
         sha256->ctx.isfirstblock = 1;
         sha256->ctx.lockDepth = 0; /* we'll keep track of our own lock depth */
         sha256->ctx.sha_type = SHA2_256;
-        sha256->ctx.for_digest = &sha256->digest[0];
+        // sha256->ctx.for_digest = &sha256->digest[0];
         (void)devId;
 
         ret = InitSha256(sha256);
