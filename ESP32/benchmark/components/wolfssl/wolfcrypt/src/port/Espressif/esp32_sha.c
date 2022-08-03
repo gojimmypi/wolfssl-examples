@@ -468,19 +468,17 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 
                 break;
 
+    #if defined(CONFIG_IDF_TARGET_ESP32C3)
         case SHA2_224:
-        #if defined(CONFIG_IDF_TARGET_ESP32)
-            #error "not implemented"
-        #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             ESP_LOGV(TAG, "SHA2_256 sha_ll_start_block");
             sha_ll_start_block(SHA2_224); // SHA 224
-        #endif // CONFIG_IDF_TARGET_ESP32)
             break;
+    #endif // SHA2_224 FOR CONFIG_IDF_TARGET_ESP32C3)
 
             case SHA2_256:
-#if defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_256_START_REG, 1);
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             /* note by the time we get here, the mode should have
              * already been set, for example
              * DPORT_REG_WRITE(SHA_MODE_REG, 2); // 2 = SHA-256; see page 336
@@ -492,7 +490,7 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 
             // DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
 
-#endif // CONFIG_IDF_TARGET_ESP32)
+    #endif /* ESP32 chip type */
             break;
 
         #if defined(WOLFSSL_SHA384)
@@ -536,17 +534,15 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
         #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
             ESP_LOGV(TAG, "SHA_CONTINUE_REG");
-        #endif // CONFIG_IDF_TARGET_ESP32)
+        #endif /* CONFIG_IDF_TARGET_ESP32 */
             break;
 
+    #if defined(CONFIG_IDF_TARGET_ESP32C3)
         case SHA2_224:
-        #if defined(CONFIG_IDF_TARGET_ESP32)
-            #error "not implemented"
-        #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             ESP_LOGV(TAG, "    SHA2_224 continue");
             DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
-        #endif // CONFIG_IDF_TARGET_ESP32)
             break;
+    #endif /* SHA2_224 FOR CONFIG_IDF_TARGET_ESP32C3 */
 
         case SHA2_256:
         #if defined(CONFIG_IDF_TARGET_ESP32)
