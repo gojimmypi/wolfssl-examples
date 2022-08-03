@@ -1137,6 +1137,7 @@ static int InitSha256(wc_Sha256* sha256)
                 }
 
                 if (sha256->ctx.mode == ESP32_SHA_SW) {
+                    /* we should never need SW on the C3 */
                     ret = XTRANSFORM(sha256, (const byte*)local);
                 }
                 else {
@@ -1298,14 +1299,15 @@ static int InitSha256(wc_Sha256* sha256)
                           (defined(HAVE_INTEL_AVX1) || defined(HAVE_INTEL_AVX2))
             if (!IS_INTEL_AVX1(intel_flags) && !IS_INTEL_AVX2(intel_flags))
             #endif
-            {
             #if defined(CONFIG_IDF_TARGET_ESP32C3)
-                /* we don't reverse the buffer only for Espressif RISC-V HAL */
-            #else
-                ByteReverseWords(sha256->buffer, sha256->buffer,
-                                                      WC_SHA256_BLOCK_SIZE);
+                /* we don't reverse the buffer only for Espressif RISC-V HAL HW */
+                if (sha256->ctx.mode != ESP32_SHA_HW)
             #endif
-            }
+                {
+                    ByteReverseWords(sha256->buffer,
+                        sha256->buffer,
+                        WC_SHA256_BLOCK_SIZE);
+                }
         #endif
 
         #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
@@ -1380,7 +1382,20 @@ static int InitSha256(wc_Sha256* sha256)
             esp_sha_try_hw_lock(&sha256->ctx);
         }
         if (sha256->ctx.mode == ESP32_SHA_SW) {
-            /* TODO do this for C3 ? (probably not) */
+            /* TODO do this for C3 ? (probably not once interleaving is implemented) */
+            // ByteReverseWords(sha256->buffer, sha256->buffer, WC_SHA256_DIGEST_SIZE);
+            sha256->digest[0] = 0x6A09E667L;
+            sha256->digest[1] = 0xBB67AE85L;
+            sha256->digest[2] = 0x3C6EF372L;
+            sha256->digest[3] = 0xA54FF53AL;
+            sha256->digest[4] = 0x510E527FL;
+            sha256->digest[5] = 0x9B05688CL;
+            sha256->digest[6] = 0x1F83D9ABL;
+            sha256->digest[7] = 0x5BE0CD19L;
+            ByteReverseWords(sha256->digest,
+                (word32*)sha256->digest,
+                WC_SHA256_DIGEST_SIZE);
+
             ret = XTRANSFORM(sha256, (const byte*)local);
         }
         else {
@@ -1816,12 +1831,12 @@ void wc_Sha256Free(wc_Sha256* sha256)
          * the unexpected. by the time free is called, the hardware
          * should have already been released (lockDepth = 0)
          */
-        InitSha256(sha256); /* unlock mutex, set mode to ESP32_SHA_INIT */
         ESP_LOGV("sha256", "Note: hardware unlock needed in wc_Sha256Free");
     }
     else {
         ESP_LOGV("sha256", "hardware unlock not needed in wc_Sha256Free");
     }
+    InitSha256(sha256); /* unlock mutex, set mode to ESP32_SHA_INIT */
 #endif
 }
 
@@ -1977,6 +1992,7 @@ int wc_Sha256GetHash(wc_Sha256* sha256, byte* hash)
      * do not get the lock fallback to software based Sha256 */
 
    if(sha256->ctx.mode == ESP32_SHA_INIT){
+        ESP_LOGV("SHA256", "Trying HW lock from INIT");
         esp_sha_try_hw_lock(&sha256->ctx);
     }
     if(sha256->ctx.mode == ESP32_SHA_HW)
@@ -1990,7 +2006,9 @@ int wc_Sha256GetHash(wc_Sha256* sha256, byte* hash)
     #endif
     }
 #endif
-    ret = wc_Sha256Copy(sha256, &tmpSha256); /* copy sha256 to tmp  */
+
+    /* copy sha256 to tmp; TODO why ? needed on C3?  */
+    ret = wc_Sha256Copy(sha256, &tmpSha256);
     if (ret == 0) {
         ret = wc_Sha256Final(&tmpSha256, hash);
 
