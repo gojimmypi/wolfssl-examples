@@ -47,11 +47,6 @@
 
 #define WOLFSSL_ESPWROOM32
 
-#if defined(LOG_LOCAL_LEVEL)
-    #undef LOG_LOCAL_LEVEL
-    #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-#endif
-
 /* optional verbose debugging
 */
 #define DEBUG_WOLFSSL_VERBOSE
