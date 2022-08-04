@@ -153,6 +153,16 @@ int hal_check()
     msg[6] = 0x00;
     msg[7] = 0x00;
 
+    long msg2[4];
+    msg2[0] = 0x80636261L;
+    msg2[1] = 0x00;
+    msg2[2] = 0x00;
+    msg2[3] = 0x00;
+    msg2[4] = 0x00;
+    msg2[5] = 0x00;
+    msg2[6] = 0x00;
+    msg2[7] = 0x00000018;
+
     char* data[0x40];
     ets_sha_disable();
     ets_sha_enable();
@@ -165,7 +175,16 @@ int hal_check()
     sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
     ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
 
-    ets_sha_disable();
+    ets_sha_enable();
+    sha_hal_hash_block(SHA2_256, msg, 1, true);
+    sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
+    ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
+
+    ets_sha_enable();
+    sha_hal_hash_block(SHA2_256, msg2, 1, true);
+    sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
+    ESP_LOG_BUFFER_HEXDUMP("data2", data, 0x20, ESP_LOG_INFO);
+
 #else
     ESP_LOGI(TAG, "hal_check() For use with ESP32C3 only.");
 #endif
