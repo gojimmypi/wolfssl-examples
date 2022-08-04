@@ -125,6 +125,8 @@
 #elif defined(WOLFSSL_ESPIDF)
     #include <time.h>
     #include <sys/time.h>
+    #include <esp_log.h>
+
 #elif defined(WOLFSSL_ZEPHYR)
     #include <stdio.h>
 
@@ -2756,13 +2758,13 @@ WOLFSSL_TEST_SUBROUTINE int sha256_test(void)
         ESP_LOGI("test", " wc_Sha256GetHash\n");
         ret = wc_Sha256GetHash(&sha, hashcopy);
         ESP_LOG_BUFFER_HEXDUMP("hashcopy", hashcopy, WC_SHA256_DIGEST_SIZE, ESP_LOG_INFO);
-        if (ret != 0)
+        if (ret != 0) // hashcopy should be  e3 b0 c4 42 98 fc 1c 14  9a fb f4 c8 99 6f b9 24
             ERROR_OUT(-2303 - i, exit);
         ret = wc_Sha256Copy(&sha, &shaCopy); /* initial digest missing for SW */
         if (ret != 0)
             ERROR_OUT(-2304 - i, exit);
-        ret = wc_Sha256Final(&sha, hash); /* this will be SW due to pending hashcopy */
-        if (ret != 0)
+        ret = wc_Sha256Final(&sha, hash); /* needs predigest for SW!  this will be SW due to pending hashcopy */
+        if (ret != 0) // hash should be: e3 b0 c4 42 98 fc 1c 14  9a fb f4 c8 99 6f b9 24
             ERROR_OUT(-2305 - i, exit);
         wc_Sha256Free(&shaCopy);
 
