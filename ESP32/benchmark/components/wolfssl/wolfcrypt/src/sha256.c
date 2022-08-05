@@ -1401,9 +1401,24 @@ static int InitSha256(wc_Sha256* sha256)
         }
     #endif
         /* ! length ordering dependent on digest endian type ! */
-        XMEMCPY(&local[WC_SHA256_PAD_SIZE], &sha256->hiLen, sizeof(word32));
-        XMEMCPY(&local[WC_SHA256_PAD_SIZE + sizeof(word32)], &sha256->loLen,
+        XMEMCPY(&local[WC_SHA256_PAD_SIZE],
+               &sha256->hiLen,
+               sizeof(word32));
+        XMEMCPY(&local[WC_SHA256_PAD_SIZE + sizeof(word32)],
+                &sha256->loLen,
                 sizeof(word32));
+
+        #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
+        if (sha256->ctx.mode == ESP32_SHA_HW) {
+            /* TODO is this the proper way to reverse endianness for the 64bit Espressif value? */
+            ESP_LOGV(TAG, "Start: Reverse PAD SIZE Endianness.");  /* see also ByteReverseWord64() */
+            ByteReverseWords((word32*)&local[WC_SHA256_PAD_SIZE], /* out*/
+                             (word32*)&local[WC_SHA256_PAD_SIZE], /* in */
+                             2 * sizeof(word32) /* byte count to reverse */
+                            );
+            ESP_LOGV(TAG, "End: Reverse PAD SIZE Endianness.");
+        }
+        #endif
 
     #if defined(FREESCALE_MMCAU_SHA) || (defined(USE_INTEL_SPEEDUP) && \
                          (defined(HAVE_INTEL_AVX1) || defined(HAVE_INTEL_AVX2)))
