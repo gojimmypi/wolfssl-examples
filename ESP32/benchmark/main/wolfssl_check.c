@@ -143,7 +143,7 @@ int hal_check()
 
     int ret = 0;
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    long msg[8];
+    long msg[0x10];
     msg[0] = 0x00000080L;
     msg[1] = 0x00;
     msg[2] = 0x00;
@@ -152,8 +152,17 @@ int hal_check()
     msg[5] = 0x00;
     msg[6] = 0x00;
     msg[7] = 0x00;
+    msg[8] = 0x00;
+    msg[9] = 0x00;
+    msg[10] = 0x00;
+    msg[11] = 0x00;
+    msg[12] = 0x00;
+    msg[13] = 0x00;
+    msg[14] = 0x00; /* *((word64[8]*)msg)  */
+    msg[15] = 0x00L;
 
-    long msg2[4];
+    /* each block is 512 bits: 16 * 32-bit words = 64 bytes */
+    long msg2[0x10];
     msg2[0] = 0x80636261L;
     msg2[1] = 0x00;
     msg2[2] = 0x00;
@@ -161,14 +170,30 @@ int hal_check()
     msg2[4] = 0x00;
     msg2[5] = 0x00;
     msg2[6] = 0x00;
-    msg2[7] = 0x00000018;
+    msg2[7] = 0x00L;
+    msg2[8] = 0x00;
+    msg2[9] = 0x00;
+    msg2[10] = 0x00;
+    msg2[11] = 0x00;
+    msg2[12] = 0x00;
+    msg2[13] = 0x00;
+             //  11223344
+    msg2[14] = 0x00; /* *((word64[8]*)msg2)  */
+    msg2[15] = 0x18000000L;
 
     char* data[0x40];
+
     ets_sha_disable();
     ets_sha_enable();
-    sha_hal_hash_block(SHA2_256, msg, 1, true);
+    sha_hal_hash_block(SHA2_256, msg, 0x10, true);
     sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
-    ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
+    ESP_LOG_BUFFER_HEXDUMP("data", data, 4, ESP_LOG_INFO);
+
+    ets_sha_enable();
+    sha_hal_hash_block(SHA2_256, msg2, 0x10, true);
+    sha_hal_wait_idle();
+    sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
+    ESP_LOG_BUFFER_HEXDUMP("data2", data, 4, ESP_LOG_INFO);
 
     ets_sha_enable();
     sha_hal_hash_block(SHA2_256, msg, 1, true);
@@ -179,11 +204,6 @@ int hal_check()
     sha_hal_hash_block(SHA2_256, msg, 1, true);
     sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
     ESP_LOG_BUFFER_HEXDUMP("data", data, 0x20, ESP_LOG_INFO);
-
-    ets_sha_enable();
-    sha_hal_hash_block(SHA2_256, msg2, 1, true);
-    sha_hal_read_digest(SHA2_256, data); //  E3B0C442 98FC1C14 9AFBF4C8 996FB924 27AE41E4 649B934C A495991B 7852B855
-    ESP_LOG_BUFFER_HEXDUMP("data2", data, 0x20, ESP_LOG_INFO);
 
 #else
     ESP_LOGI(TAG, "hal_check() For use with ESP32C3 only.");
