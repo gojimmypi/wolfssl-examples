@@ -1156,7 +1156,15 @@ static int InitSha256(wc_Sha256* sha256)
                           (defined(HAVE_INTEL_AVX1) || defined(HAVE_INTEL_AVX2))
                 if (!IS_INTEL_AVX1(intel_flags) && !IS_INTEL_AVX2(intel_flags))
                 #endif
+                {
+                #ifndef WOLFSSL_ESPIDF
+                    ByteReverseWords(sha256->buffer, sha256->buffer,
+                        WC_SHA256_BLOCK_SIZE);
+                #endif
+                }
+            #endif
 
+        #if defined(WOLFSSL_ESPIDF)
             #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
 
                 #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
@@ -1170,7 +1178,7 @@ static int InitSha256(wc_Sha256* sha256)
                         ByteReverseWords(sha256->buffer, sha256->buffer,
                             WC_SHA256_BLOCK_SIZE);
                     }
-                #endif
+            #endif
 
                 set_default_digest256(sha256);
                 if (sha256->ctx.mode == ESP32_SHA_SW) {
@@ -1188,6 +1196,7 @@ static int InitSha256(wc_Sha256* sha256)
                 }
                 ret = XTRANSFORM(sha256, (const byte*)local);
             #endif
+
 
                 if (ret == 0)
                     sha256->buffLen = 0;
