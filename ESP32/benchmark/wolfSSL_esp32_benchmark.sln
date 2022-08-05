@@ -25,6 +25,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wolfcrypt", "wolfcrypt", "{
 		components\wolfssl\wolfcrypt\src\port\Espressif\README.md = components\wolfssl\wolfcrypt\src\port\Espressif\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5DD066E8-8EE8-4EB3-8619-01E2C27D9821}"
+	ProjectSection(SolutionItems) = preProject
+		components\wolfssl\wolfcrypt\test\test.c = components\wolfssl\wolfcrypt\test\test.c
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmark", "benchmark", "{9194F76A-C854-4EAF-8557-CB4E155C190B}"
+	ProjectSection(SolutionItems) = preProject
+		components\wolfssl\wolfcrypt\benchmark\benchmark.c = components\wolfssl\wolfcrypt\benchmark\benchmark.c
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|VisualGDB = Debug|VisualGDB
@@ -47,6 +57,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E6C5CA6C-D894-4766-86AB-A716B42E2E49} = {A77B3870-FA92-4004-AB78-F7198DBB70BD}
+		{5DD066E8-8EE8-4EB3-8619-01E2C27D9821} = {E6C5CA6C-D894-4766-86AB-A716B42E2E49}
+		{9194F76A-C854-4EAF-8557-CB4E155C190B} = {E6C5CA6C-D894-4766-86AB-A716B42E2E49}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E2E0D763-5FF0-4459-80AD-AFDC42B1C8B0}
