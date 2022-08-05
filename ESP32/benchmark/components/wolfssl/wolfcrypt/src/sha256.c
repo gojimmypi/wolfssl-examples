@@ -1352,13 +1352,14 @@ static int InitSha256(wc_Sha256* sha256)
             set_default_digest256(sha256);
             if (sha256->ctx.mode == ESP32_SHA_SW) {
                 ret = XTRANSFORM(sha256, (const byte*)local);
+                sha256->ctx.isfirstblock = 0;
             }
             else
             {
             #if defined(CONFIG_IDF_TARGET_ESP32)
                 ret = esp_sha256_process(sha256, (const byte*)local);
             #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-                ret = 0; /* TODO really always assume success? */
+                ret = esp_sha256_process(sha256, (const byte*)local);
 //                sha_hal_hash_block(SHA2_256,
 //                                   (const byte*)local,
 //                                   sha256->buffLen / sizeof(word32),
@@ -1376,6 +1377,8 @@ static int InitSha256(wc_Sha256* sha256)
 
             sha256->buffLen = 0;
         } /* end if (sha256->buffLen > WC_SHA256_PAD_SIZE) */
+
+        /* continue after WC_SHA256_PAD_SIZE check */
         XMEMSET(&local[sha256->buffLen], 0,
             WC_SHA256_PAD_SIZE - sha256->buffLen);
 
