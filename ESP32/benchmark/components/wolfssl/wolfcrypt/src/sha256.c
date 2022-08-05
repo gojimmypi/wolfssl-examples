@@ -790,6 +790,17 @@ static int InitSha256(wc_Sha256* sha256)
 
         /* we may or may not need initial digest.
          *  See set_default_digest256() */
+    #if defined( NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
+        sha256->digest[0] = 0x6A09E667L;
+        sha256->digest[1] = 0xBB67AE85L;
+        sha256->digest[2] = 0x3C6EF372L;
+        sha256->digest[3] = 0xA54FF53AL;
+        sha256->digest[4] = 0x510E527FL;
+        sha256->digest[5] = 0x9B05688CL;
+        sha256->digest[6] = 0x1F83D9ABL;
+        sha256->digest[7] = 0x5BE0CD19L;
+    #endif // !NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
+
         sha256->buffLen = 0;
         sha256->loLen   = 0;
         sha256->hiLen   = 0;
@@ -1191,9 +1202,9 @@ static int InitSha256(wc_Sha256* sha256)
                 }
         #else /* no WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW */
                 /* no HW acceleration, just software calcs */
-                if (sha256->ctx.isfirstblock) {
-                    set_default_digest256(sha256);
-                }
+//                if (sha256->ctx.isfirstblock) {
+//                    set_default_digest256(sha256);
+//                }
                 ret = XTRANSFORM(sha256, (const byte*)local);
         #endif
 
@@ -1281,7 +1292,7 @@ static int InitSha256(wc_Sha256* sha256)
                     esp_sha256_process(sha256, (const byte*)local32);
                 }
             #else
-                set_default_digest256(sha256);
+                // set_default_digest256(sha256);
                 ret = XTRANSFORM(sha256, (const byte*)local32);
             #endif
 
@@ -1406,7 +1417,7 @@ static int InitSha256(wc_Sha256* sha256)
             #endif
             }
         #else
-            set_default_digest256(sha256);
+            // set_default_digest256(sha256);
             ret = XTRANSFORM(sha256, (const byte*)local);
         #endif
             if (ret != 0)
@@ -1501,7 +1512,7 @@ static int InitSha256(wc_Sha256* sha256)
             ret = esp_sha256_digest_process(sha256, 1);
         }
     #else
-        set_default_digest256(sha256);
+        // set_default_digest256(sha256);
         ret = XTRANSFORM(sha256, (const byte*)local);
     #endif
 
