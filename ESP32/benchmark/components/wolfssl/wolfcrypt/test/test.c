@@ -724,7 +724,6 @@ int wolfcrypt_test(void* args)
     ShowMemoryTracker();
 #endif
 
-    return ret;
 
     if (args) {
 #ifdef HAVE_WOLFCRYPT_TEST_OPTIONS
@@ -894,6 +893,14 @@ options: [-s max_relative_stack_bytes] [-m max_relative_heap_memory_bytes]\n\
     else
         TEST_PASS("MD4      test passed!\n");
 #endif
+
+
+    /* early test exit */
+    if (args)
+        ((func_args*)args)->return_code = ret;
+    TEST_PASS("Early test exit\n");
+
+    return ret;
 
 #ifndef NO_SHA
     if ( (ret = sha_test()) != 0)
