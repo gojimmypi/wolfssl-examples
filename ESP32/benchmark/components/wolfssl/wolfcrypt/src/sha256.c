@@ -44,6 +44,9 @@ on the specific device platform.
 
 #include <wolfssl/wolfcrypt/settings.h>
 
+/* #define WOLFSSL_SUPER_VERBOSE_DEBUG */
+
+
 /*
  * SHA256 Build Options:
  * USE_SLOW_SHA256:            Reduces code size by not partially unrolling
@@ -740,7 +743,14 @@ static int InitSha256(wc_Sha256* sha256)
      *  just before computing hash.
      *
      * Reminder that ESP32-C3 does NOT need initial digest.
-     **/
+     *
+     *  see page 337 of C3 spec: 16.4.1.3 Setting the Initial Hash Value
+     *
+     * "Before hash task begins for any secure hash algorithms, the initial
+     * Hash value H(0) must be set based on different algorithms. However,
+     * the SHA accelerator uses the initial Hash values (constant C) stored
+     * in the hardware for hash tasks"
+     */
     int set_default_digest256(wc_Sha256* sha256)
     {
         if (sha256->ctx.isfirstblock == 1)
@@ -764,25 +774,22 @@ static int InitSha256(wc_Sha256* sha256)
      * this is a custom Espressif InitSha256 ()
      *
      * soft SHA needs initialization digest, but HW does not.
-     *  we'll determine that later, just before performing cal
+     *  we'll determine that later, just before performing calc.
      */
     static int InitSha256(wc_Sha256* sha256)
     {
         int ret = 0; /* zero = success */
+
+    #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
         ESP_LOGV(TAG, "entering InitSha256");
+    #endif
 
-        if (sha256 == NULL)
+        if (sha256 == NULL) {
             return BAD_FUNC_ARG;
+        }
 
-
-        /* TODO see page 337 of C3 spec: 16.4.1.3 Setting the Initial Hash Value
-         *
-         * Before hash task begins for any secure hash algorithms, the initial Hash value H(0) must be set based on different
-           algorithms. However, the SHA accelerator uses the initial Hash values (constant C) stored in the hardware for
-           hash tasks
-         * */
-
-
+        /* we may or may not need initial digest.
+         *  See set_default_digest256() */
         sha256->buffLen = 0;
         sha256->loLen   = 0;
         sha256->hiLen   = 0;
@@ -795,8 +802,10 @@ static int InitSha256(wc_Sha256* sha256)
         if(sha256->ctx.mode == ESP32_SHA_HW) {
             /* release hw during init if we are doing init while in HW mode
              * TODO really ? what if BUSY elsewhere with SHA in progress?
-             **/
+             */
+        #if defined(DEBUG_WOLFSSL_VERBOSE)
             ESP_LOGV(TAG, "InitSha256; esp_sha_hw_unlock");
+        #endif
             esp_sha_hw_unlock(&(sha256->ctx));
         }
 
@@ -804,8 +813,9 @@ static int InitSha256(wc_Sha256* sha256)
         *  whether using HW or SW is determined at first call of update()
         */
         sha256->ctx.mode = ESP32_SHA_INIT;
+    #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
         ESP_LOGV("WOLF sha256", "exiting InitSha256; ESP32_SHA_INIT");
-
+    #endif
         return ret;
     }
 
@@ -826,12 +836,23 @@ static int InitSha256(wc_Sha256* sha256)
         sha256->ctx.isfirstblock = 1;
         sha256->ctx.lockDepth = 0; /* we'll keep track of our own lock depth */
 
-        // TODO keep track of which digest is in progress.
+        // TODO keep track of which digest is in progress. (is this devId?)
         // useful for interleaving (e.g. ESP32-C3)
         // sha256->ctx.for_digest = &sha256->digest[0];
         (void)devId;
 
         ret = InitSha256(sha256);
+        if (ret != 0) {
+            return ret;
+        }
+
+    #if defined(WOLFSSL_ASYNC_CRYPT) && defined(WC_ASYNC_ENABLE_SHA)
+        ret = wolfAsync_DevCtxInit(&sha->asyncDev, WOLFSSL_ASYNC_MARKER_SHA,
+                                                                sha->heap, devId);
+    #else
+        (void)devId;
+    #endif /* WOLFSSL_ASYNC_CRYPT */
+
         return ret;
     }
 
@@ -1119,7 +1140,7 @@ static int InitSha256(wc_Sha256* sha256)
             esp_sha_try_hw_lock(&sha256->ctx);
         }
 #endif
-        
+
         /* process any remainder from previous operation */
         if (sha256->buffLen > 0) {
             blocksLen = min(len, WC_SHA256_BLOCK_SIZE - sha256->buffLen);
@@ -1137,22 +1158,19 @@ static int InitSha256(wc_Sha256* sha256)
                 #endif
 
             #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
-//                if (sha256->ctx.mode == ESP32_SHA_INIT ||
-//                    sha256->ctx.mode == ESP32_SHA_FAIL_NEED_UNROLL) {
-//                    esp_sha_try_hw_lock(&sha256->ctx);
-//                }
 
                 #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
                     if (sha256->ctx.mode != ESP32_SHA_HW )
                     /* for ESP32-C3 using HAL we don't want to change endianness */
                 #endif
                     {
+                    #if defined(DEBUG_WOLFSSL_VERBOSE)
                         ESP_LOGV(TAG, "Sha256Update ByteReverseWords sha256->buffer 1");
+                    #endif
                         ByteReverseWords(sha256->buffer, sha256->buffer,
                             WC_SHA256_BLOCK_SIZE);
                     }
                 #endif
-
 
                 set_default_digest256(sha256);
                 if (sha256->ctx.mode == ESP32_SHA_SW) {
@@ -1234,7 +1252,9 @@ static int InitSha256(wc_Sha256* sha256)
                 /* for ESP32-C3 using HAL we don't want to change endianness */
                 #endif
                 {
+                #if defined(DEBUG_WOLFSSL_VERBOSE)
                     ESP_LOGV(TAG, "Sha256Update ByteReverseWords local32");
+                #endif
                     ByteReverseWords(local32, local32, WC_SHA256_BLOCK_SIZE);
                 }
             #endif
@@ -1319,7 +1339,10 @@ static int InitSha256(wc_Sha256* sha256)
             return BAD_FUNC_ARG;
         }
 
+    #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
         ESP_LOGV(TAG, "Enter Sha256Final");
+    #endif
+
         local = (byte*)sha256->buffer;
         local[sha256->buffLen++] = 0x80; /* add 1 */
 
@@ -1339,7 +1362,9 @@ static int InitSha256(wc_Sha256* sha256)
             if (sha256->ctx.mode == ESP32_SHA_SW)
             #endif
             {
+            #if defined(DEBUG_WOLFSSL_VERBOSE)
                 ESP_LOGV(TAG, "Sha256Final ByteReverseWords sha256->buffer 1");
+            #endif
                 ByteReverseWords(sha256->buffer,
                     sha256->buffer,
                     WC_SHA256_BLOCK_SIZE);
@@ -1347,7 +1372,9 @@ static int InitSha256(wc_Sha256* sha256)
             #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
             else
             {
+            #if defined(DEBUG_WOLFSSL_VERBOSE)
                 ESP_LOGV(TAG, "Skipping ByteReverseWords");
+            #endif
             }
             #endif
         #endif
@@ -1363,14 +1390,8 @@ static int InitSha256(wc_Sha256* sha256)
             }
             else
             {
-            #if defined(CONFIG_IDF_TARGET_ESP32)
+            #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3)
                 ret = esp_sha256_process(sha256, (const byte*)local);
-            #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-                ret = esp_sha256_process(sha256, (const byte*)local);
-//                sha_hal_hash_block(SHA2_256,
-//                                   (const byte*)local,
-//                                   sha256->buffLen / sizeof(word32),
-//                                   sha256->ctx.isfirstblock);
             #else
                 #error "Not implemented"
             #endif
@@ -1385,7 +1406,9 @@ static int InitSha256(wc_Sha256* sha256)
             sha256->buffLen = 0;
         } /* end if (sha256->buffLen > WC_SHA256_PAD_SIZE) */
 
-        /* continue after WC_SHA256_PAD_SIZE check */
+        /*
+         *  continue after WC_SHA256_PAD_SIZE check
+         */
         XMEMSET(&local[sha256->buffLen], 0,
             WC_SHA256_PAD_SIZE - sha256->buffLen);
 
@@ -1405,7 +1428,9 @@ static int InitSha256(wc_Sha256* sha256)
             /* for ESP32-C3 using HAL we don't want to change endianness */
         #endif
         {
+        #if defined(DEBUG_WOLFSSL_VERBOSE)
             ESP_LOGV(TAG, "Sha256Final ByteReverseWords sha256->buffer");
+        #endif
             ByteReverseWords(sha256->buffer, sha256->buffer,
                 WC_SHA256_BLOCK_SIZE);
         }
@@ -1420,14 +1445,19 @@ static int InitSha256(wc_Sha256* sha256)
 
         #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
         if (sha256->ctx.mode == ESP32_SHA_HW) {
-            /* TODO is this the proper way to reverse endianness for the 64bit Espressif value? */
-            ESP_LOGV(TAG, "Start: Reverse PAD SIZE Endianness.");  /* see also ByteReverseWord64() */
-            ByteReverseWords((word32*)&local[WC_SHA256_PAD_SIZE], /* out*/
-                             (word32*)&local[WC_SHA256_PAD_SIZE], /* in */
+            /* TODO is this the proper way to reverse endianness for the 64bit Espressif value?
+             * see also ByteReverseWord64() */
+        #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+            ESP_LOGV(TAG, "Start: Reverse PAD SIZE Endianness.");
+        #endif
+            ByteReverseWords((word32*)&local[WC_SHA256_PAD_SIZE], /* out */
+                             (word32*)&local[WC_SHA256_PAD_SIZE], /* in  */
                              2 * sizeof(word32) /* byte count to reverse */
                             );
+        #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
             ESP_LOGV(TAG, "End: Reverse PAD SIZE Endianness.");
-        }
+        #endif
+        } /* end if (sha256->ctx.mode == ESP32_SHA_HW) */
         #endif
 
     #if defined(FREESCALE_MMCAU_SHA) || (defined(USE_INTEL_SPEEDUP) && \
@@ -1466,7 +1496,9 @@ static int InitSha256(wc_Sha256* sha256)
         ret = XTRANSFORM(sha256, (const byte*)local);
     #endif
 
+    #if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
         ESP_LOGV(TAG, "Exit Sha256Final");
+    #endif
         return ret;
     }
 
@@ -1488,7 +1520,10 @@ static int InitSha256(wc_Sha256* sha256)
             /* for ESP32-C3 using HAL we don't want to change endianness */
         #endif
         {
+         /* typically only for SW, we'll want to reverse the word byte order */
+         #if defined(DEBUG_WOLFSSL_VERBOSE)
             ESP_LOGV(TAG, "wc_Sha256FinalRaw ByteReverseWords digest - sha256->digest 1");
+         #endif
             ByteReverseWords((word32*)digest, (word32*)sha256->digest,
                                                              WC_SHA256_DIGEST_SIZE);
         }
@@ -1536,7 +1571,9 @@ static int InitSha256(wc_Sha256* sha256)
             /* for ESP32-C3 using HAL we don't want to change endianness */
         #endif
         {
+         #if defined(DEBUG_WOLFSSL_VERBOSE)
             ESP_LOGV(TAG, "wc_Sha256Final ByteReverseWords sha256->digest 1");
+         #endif
             ByteReverseWords(sha256->digest, sha256->digest, WC_SHA256_DIGEST_SIZE);
         }
     #endif

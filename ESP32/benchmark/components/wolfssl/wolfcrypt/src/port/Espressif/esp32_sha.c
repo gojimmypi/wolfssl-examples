@@ -122,7 +122,9 @@ static word32 wc_esp_sha_digest_size(enum SHA_TYPE type)
 static word32 wc_esp_sha_digest_size(SHA_TYPE type)
 #endif
 {
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "  enter esp_sha_digest_size");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     switch(type){
     #ifndef NO_SHA
@@ -154,7 +156,8 @@ static word32 wc_esp_sha_digest_size(SHA_TYPE type)
             return WC_SHA_DIGEST_SIZE;
     }
     /* we never get here, as all the above switches should have a return */
-    ESP_LOGV(TAG, "leave esp_sha_digest_size");
+
+    ESP_LOGE(TAG, "unexpected leave esp_sha_digest_size");
 }
 
 /*
@@ -260,7 +263,9 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
 {
     int ret = 0;
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha_hw_lock");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     /* Init mutex */
     if (ctx == NULL) {
@@ -388,7 +393,9 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
         ctx->mode = ESP32_SHA_SW;
     }
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha_hw_lock. depth = %d", ctx->lockDepth);
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return ret;
 } /* esp_sha_try_hw_lock */
 
@@ -397,7 +404,10 @@ int esp_sha_try_hw_lock(WC_ESP32SHA* ctx)
 */
 int esp_sha_hw_unlock(WC_ESP32SHA* ctx)
 {
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha_hw_unlock");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
     uint32_t this_sha_mask; /* this is the bit-mask for our SHA CLK_EN_REG */
@@ -440,7 +450,9 @@ int esp_sha_hw_unlock(WC_ESP32SHA* ctx)
         ctx->lockDepth = 0;
     }
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha_hw_unlock");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return 0;
 } /* esp_sha_hw_unlock */
 
@@ -459,7 +471,9 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
         ESP_LOGV(TAG, "    sha->sha_type != SHA2_256");
     }
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "    enter esp_sha_start_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     if (sha->isfirstblock) {
         /* start first message block */
@@ -468,28 +482,27 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
          */
         switch (sha->sha_type) {
         case SHA1:
-#if defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_1_START_REG, 1);
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             // DPORT_REG_WRITE(SHA_START_REG, 1);
             // DPORT_REG_WRITE(SHA_MODE_REG, 0); /* 0 = SHA-1; see page 336  */
             ESP_LOGV(TAG, "SHA1 SHA_START_REG");
             sha_ll_start_block(SHA1);   // SHA1 TODO confirm & change to macro name
-#endif // CONFIG_IDF_TARGET_ESP32)
-
+    #endif // CONFIG_IDF_TARGET_ESP32)
             break;
 
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    #if defined(CONFIG_IDF_TARGET_ESP32C3)
         case SHA2_224:
             ESP_LOGV(TAG, "SHA2_256 sha_ll_start_block");
             sha_ll_start_block(SHA2_224); // SHA 224
             break;
-#endif // SHA2_224 FOR CONFIG_IDF_TARGET_ESP32C3)
+    #endif // SHA2_224 FOR CONFIG_IDF_TARGET_ESP32C3)
 
         case SHA2_256:
-#if defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(CONFIG_IDF_TARGET_ESP32)
             DPORT_REG_WRITE(SHA_256_START_REG, 1);
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
             /* note by the time we get here, the mode should have
              * already been set, for example
              * DPORT_REG_WRITE(SHA_MODE_REG, 2); // 2 = SHA-256; see page 336
@@ -501,22 +514,22 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 
             // DPORT_REG_WRITE(SHA_CONTINUE_REG, 1);
 
-#endif /* ESP32 chip type */
+    #endif /* ESP32 chip type */
             break;
 
-#if defined(WOLFSSL_SHA384)
+    #if defined(WOLFSSL_SHA384)
         case SHA2_384:
             DPORT_REG_WRITE(SHA_384_START_REG, 1);
             break;
-#endif
+    #endif
 
-#if defined(CONFIG_IDF_TARGET_ESP32)
-#if defined(WOLFSSL_SHA512)
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(WOLFSSL_SHA512)
         case SHA2_512:
             DPORT_REG_WRITE(SHA_512_START_REG, 1);
             break;
-#endif
-#endif
+    #endif
+    #endif
 
         default:
             sha->mode = ESP32_SHA_FAIL_NEED_UNROLL;
@@ -524,18 +537,22 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
             break;
         }
 
-         sha->isfirstblock = 0;
-         ESP_LOGV(TAG, "      set sha->isfirstblock = 0");
+        sha->isfirstblock = 0;
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+        ESP_LOGV(TAG, "      set sha->isfirstblock = 0");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
          #if defined(DEBUG_WOLFSSL)
              this_block_num = 1; /* one-based counter, just for debug info */
          #endif
 
     }
+    /*
+     *          else: is not first block, continue
+     */
     else {
-        /* continue  */
         /* continue registers for next message block.
-         * we don't make any relational memory position assumptions
+         * we don't make any relational registry memory position assumptions
          * for future chip architecture changes.
          */
         switch (sha->sha_type) {
@@ -594,10 +611,13 @@ static int esp_sha_start_process(WC_ESP32SHA* sha)
 
    }
 
-   ESP_LOGV(TAG, "    leave esp_sha_start_process");
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+    ESP_LOGV(TAG, "    leave esp_sha_start_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     return ret;
-}
+} /* esp_sha_start_process */
+
 /*
 * process message block
 */
@@ -607,7 +627,11 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
 {
     int i;
     int word32_to_save = (len) / (sizeof(word32));
+
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "  enter esp_process_block, len = %d", word32_to_save);
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+
     if (word32_to_save > 0x31) { /* to do, is this really hex value? */
         word32_to_save = 0x31; /* TODO can this be 0x32 for C3?*/
         ESP_LOGE(TAG, "  ERROR esp_process_block len exceeds 0x31 words");
@@ -670,7 +694,9 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
     ctx->isfirstblock = 0; /* once we hash a block, we're no longer at the first */
 #endif
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "  leave esp_process_block");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 }
 
 /*
@@ -678,7 +704,9 @@ static void wc_esp_process_block(WC_ESP32SHA* ctx, /* see ctx->sha_type */
 */
 int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
 {
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_digest_state");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
         if (ctx == NULL)    {
         return -1;
@@ -781,8 +809,12 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
             SHA_TEXT_BASE,   /* there's a fixed reg address for all SHA        */
             wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32) /* # 4-byte */
     );
+
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-        sha_ll_read_digest(ctx->sha_type, (void *)hash, wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32));
+    sha_ll_read_digest(ctx->sha_type, (void *)hash, wc_esp_sha_digest_size(ctx->sha_type) / sizeof(word32));
+
+#else
+    #error "This CONFIG_IDF_TARGET Not Implemented"
 #endif
 
 #if (defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)) && \
@@ -799,7 +831,9 @@ int wc_esp_digest_state(WC_ESP32SHA* ctx, byte* hash)
     }
 #endif
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_digest_state");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return 0;
 }
 
@@ -811,11 +845,15 @@ int esp_sha_process(struct wc_Sha* sha, const byte* data)
 {
     int ret = 0;
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     wc_esp_process_block(&sha->ctx, (const word32*)data, WC_SHA_BLOCK_SIZE);
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return ret;
 }
 
@@ -826,7 +864,9 @@ int esp_sha_digest_process(struct wc_Sha* sha, byte blockprocess)
 {
     int ret = 0;
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha_digest_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     if (blockprocess) {
         wc_esp_process_block(&sha->ctx, sha->buffer, WC_SHA_BLOCK_SIZE);
@@ -834,7 +874,9 @@ int esp_sha_digest_process(struct wc_Sha* sha, byte blockprocess)
 
     wc_esp_digest_state(&sha->ctx, (byte*)sha->digest);
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha_digest_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     return ret;
 }
@@ -851,7 +893,9 @@ int esp_sha256_process(struct wc_Sha256* sha, const byte* data)
 {
     int ret = 0;
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "  enter esp_sha256_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     if ((&sha->ctx)->sha_type == SHA2_256) {
     #if defined(DEBUG_WOLFSSL_VERBOSE)
@@ -865,7 +909,9 @@ int esp_sha256_process(struct wc_Sha256* sha, const byte* data)
 
     wc_esp_process_block(&sha->ctx, (const word32*)data, WC_SHA256_BLOCK_SIZE);
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "  leave esp_sha256_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     return ret;
 }
@@ -879,15 +925,21 @@ int esp_sha256_process(struct wc_Sha256* sha, const byte* data)
 int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 {
     int ret = 0;
+
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+    ESP_LOGV(TAG, "enter esp_sha256_digest_process. depth = %d", sha->ctx.lockDepth);
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+
+
 /* we only arrive here during HW digest process */
 #ifdef CONFIG_IDF_TARGET_ESP32C3_disabled
+    TODO remove?
     if (sha->ctx.isfirstblock && (blockprocess == 0)) {
         /* C3 already has the first block in HW */
         ESP_LOGV(TAG, "skip esp_sha256_digest_process for first block");
         return 0;
     }
 #endif
-    ESP_LOGV(TAG, "enter esp_sha256_digest_process. depth = %d", sha->ctx.lockDepth);
 
     if(blockprocess) {
 
@@ -896,12 +948,15 @@ int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 
     wc_esp_digest_state(&sha->ctx, (byte*)sha->digest);
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha256_digest_process. depth = %d", sha->ctx.lockDepth);
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return ret;
 }
 
 
 #endif /* NO_SHA256 */
+
 
 #if defined(WOLFSSL_SHA512) || defined(WOLFSSL_SHA384)
 /*
@@ -909,8 +964,11 @@ int esp_sha256_digest_process(struct wc_Sha256* sha, byte blockprocess)
 */
 void esp_sha512_block(struct wc_Sha512* sha, const word32* data, byte isfinal)
 {
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha512_block");
-    /* start register offset */
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
+
+    /* start register offset TODO not really */
 
     if(sha->ctx.mode == ESP32_SHA_SW){
         ByteReverseWords64(sha->buffer, sha->buffer,
@@ -935,7 +993,10 @@ void esp_sha512_block(struct wc_Sha512* sha, const word32* data, byte isfinal)
 
         wc_esp_process_block(&sha->ctx, data, WC_SHA512_BLOCK_SIZE);
     }
+
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha512_block");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 }
 /*
 * sha512 process. this is used for sha384 too.
@@ -944,11 +1005,15 @@ int esp_sha512_process(struct wc_Sha512* sha)
 {
     word32 *data = (word32*)sha->buffer;
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha512_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     esp_sha512_block(sha, data, 0);
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha512_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return 0;
 }
 /*
@@ -956,7 +1021,9 @@ int esp_sha512_process(struct wc_Sha512* sha)
 */
 int esp_sha512_digest_process(struct wc_Sha512* sha, byte blockproc)
 {
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "enter esp_sha512_digest_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
 
     if(blockproc) {
         word32* data = (word32*)sha->buffer;
@@ -966,7 +1033,9 @@ int esp_sha512_digest_process(struct wc_Sha512* sha, byte blockproc)
     if(sha->ctx.mode != ESP32_SHA_SW)
         wc_esp_digest_state(&sha->ctx, (byte*)sha->digest);
 
+#if defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     ESP_LOGV(TAG, "leave esp_sha512_digest_process");
+#endif // defined(WOLFSSL_SUPER_VERBOSE_DEBUG)
     return 0;
 }
 #endif /* WOLFSSL_SHA512 || WOLFSSL_SHA384 */
