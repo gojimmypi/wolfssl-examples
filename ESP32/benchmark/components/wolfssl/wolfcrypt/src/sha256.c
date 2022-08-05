@@ -751,7 +751,7 @@ static int InitSha256(wc_Sha256* sha256)
      * the SHA accelerator uses the initial Hash values (constant C) stored
      * in the hardware for hash tasks"
      */
-    int set_default_digest256(wc_Sha256* sha256)
+    static int set_default_digest256(wc_Sha256* sha256)
     {
         if (sha256->ctx.isfirstblock == 1)
         {
@@ -1164,8 +1164,8 @@ static int InitSha256(wc_Sha256* sha256)
                 }
             #endif
 
-        #if defined(WOLFSSL_ESPIDF)
-            #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
+        #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
+             // #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
 
                 #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
                     if (sha256->ctx.mode != ESP32_SHA_HW )
@@ -1178,7 +1178,7 @@ static int InitSha256(wc_Sha256* sha256)
                         ByteReverseWords(sha256->buffer, sha256->buffer,
                             WC_SHA256_BLOCK_SIZE);
                     }
-            #endif
+            // #endif
 
                 set_default_digest256(sha256);
                 if (sha256->ctx.mode == ESP32_SHA_SW) {
@@ -1189,13 +1189,13 @@ static int InitSha256(wc_Sha256* sha256)
                 else {
                     esp_sha256_process(sha256, (const byte*)local);
                 }
-            #else
+        #else /* no WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW */
                 /* no HW acceleration, just software calcs */
                 if (sha256->ctx.isfirstblock) {
                     set_default_digest256(sha256);
                 }
                 ret = XTRANSFORM(sha256, (const byte*)local);
-            #endif
+        #endif
 
 
                 if (ret == 0)
