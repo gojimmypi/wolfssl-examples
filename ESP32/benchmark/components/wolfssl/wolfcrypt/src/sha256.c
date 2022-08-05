@@ -1113,7 +1113,13 @@ static int InitSha256(wc_Sha256* sha256)
         AddLength(sha256, len);
 
         local = (byte*)sha256->buffer;
-
+#if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
+        if (sha256->ctx.mode == ESP32_SHA_INIT ||
+            sha256->ctx.mode == ESP32_SHA_FAIL_NEED_UNROLL) {
+            esp_sha_try_hw_lock(&sha256->ctx);
+        }
+#endif
+        
         /* process any remainder from previous operation */
         if (sha256->buffLen > 0) {
             blocksLen = min(len, WC_SHA256_BLOCK_SIZE - sha256->buffLen);
@@ -1131,10 +1137,10 @@ static int InitSha256(wc_Sha256* sha256)
                 #endif
 
             #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
-                if (sha256->ctx.mode == ESP32_SHA_INIT ||
-                    sha256->ctx.mode == ESP32_SHA_FAIL_NEED_UNROLL) {
-                    esp_sha_try_hw_lock(&sha256->ctx);
-                }
+//                if (sha256->ctx.mode == ESP32_SHA_INIT ||
+//                    sha256->ctx.mode == ESP32_SHA_FAIL_NEED_UNROLL) {
+//                    esp_sha_try_hw_lock(&sha256->ctx);
+//                }
 
                 #if defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)
                     if (sha256->ctx.mode != ESP32_SHA_HW )
@@ -1235,6 +1241,7 @@ static int InitSha256(wc_Sha256* sha256)
 
             #if defined(WOLFSSL_USE_ESP32WROOM32_CRYPT_HASH_HW)
                 if (sha256->ctx.mode == ESP32_SHA_INIT){
+                    ESP_LOGE(TAG, "Sha256Update how did we get back to init?");
                     esp_sha_try_hw_lock(&sha256->ctx);
                 }
                 set_default_digest256(sha256);
