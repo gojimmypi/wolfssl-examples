@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32802.440
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "mbedtls_migration", "mbedtls_migration.vgdbproj", "{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|VisualGDB = Debug|VisualGDB
+		Release|VisualGDB = Release|VisualGDB
+		Tests (Debug)|VisualGDB = Tests (Debug)|VisualGDB
+		Tests (Release)|VisualGDB = Tests (Release)|VisualGDB
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Release|VisualGDB.Build.0 = Release|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Tests (Debug)|VisualGDB.ActiveCfg = Tests (Debug)|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Tests (Debug)|VisualGDB.Build.0 = Tests (Debug)|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Tests (Release)|VisualGDB.ActiveCfg = Tests (Release)|VisualGDB
+		{F5B4C9B3-4B15-4850-B3DD-EA2F0BF9AC3F}.Tests (Release)|VisualGDB.Build.0 = Tests (Release)|VisualGDB
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0FAA6269-6B26-4C4B-938E-A1E258C17E83}
+	EndGlobalSection
+EndGlobal
