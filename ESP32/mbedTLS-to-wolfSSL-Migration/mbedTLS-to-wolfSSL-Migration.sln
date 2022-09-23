@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32802.440
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "mbedTLS-to-wolfSSL-Migration", "mbedTLS-to-wolfSSL-Migration.vgdbproj", "{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|VisualGDB = Debug|VisualGDB
+		Release|VisualGDB = Release|VisualGDB
+		Tests (Debug)|VisualGDB = Tests (Debug)|VisualGDB
+		Tests (Release)|VisualGDB = Tests (Release)|VisualGDB
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Release|VisualGDB.Build.0 = Release|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Tests (Debug)|VisualGDB.ActiveCfg = Tests (Debug)|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Tests (Debug)|VisualGDB.Build.0 = Tests (Debug)|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Tests (Release)|VisualGDB.ActiveCfg = Tests (Release)|VisualGDB
+		{D3B22538-C08F-4AEE-B2C0-DE2DB3EA530E}.Tests (Release)|VisualGDB.Build.0 = Tests (Release)|VisualGDB
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {08D50DEE-72D8-43FD-B91A-4378DC5446D6}
+	EndGlobalSection
+EndGlobal
