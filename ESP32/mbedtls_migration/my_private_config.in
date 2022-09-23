@@ -1,0 +1,8 @@
+#pragma once
+
+#define EXAMPLE_ESP_WIFI_SSID    "mySSID"
+#define EXAMPLE_ESP_WIFI_PASS    "myPassword"
+
+
+#define EXAMPLE_ESP_WIFI_AP_SSID "TheBucketHill"
+#define EXAMPLE_ESP_WIFI_AP_PASS "upthehill"
