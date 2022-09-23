@@ -19,13 +19,22 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
+/* add my_config.h to reference my_private_config.h in parent directory. see docs    */
+/* see also the local my_private_config.in sample file to go in the parent directory */
+#include "my_config.h"
+
 /* The examples use WiFi configuration that you can set via project configuration menu
 
    If you'd rather not, just change the below entries to strings with
    the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
 */
-#define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
-#define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
+
+/* since we are using my_private_config.h via local my_config.h comment out these
+** that are otherwise defined in the sdkconfig file:
+*/
+/* #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID     */
+/* #define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD */
+
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
 
 #if CONFIG_ESP_WIFI_AUTH_OPEN
