@@ -13,6 +13,21 @@ OBJCOPY := objcopy
 
 #Additional flags
 PREPROCESSOR_MACROS := DEBUG=1
+<<<<<<< HEAD
+INCLUDE_DIRS := 
+LIBRARY_DIRS := wolfssl
+LIBRARY_NAMES := wolfssl
+ADDITIONAL_LINKER_INPUTS := 
+MACOS_FRAMEWORKS := 
+LINUX_PACKAGES := 
+
+CFLAGS := -ggdb -ffunction-sections -O0
+CXXFLAGS := -ggdb -ffunction-sections -O0
+ASFLAGS := 
+LDFLAGS := -Wl,-gc-sections
+COMMONFLAGS := -pthread
+LINKER_SCRIPT := 
+=======
 INCLUDE_DIRS :=
 LIBRARY_DIRS := wolfssl
 LIBRARY_NAMES := wolfssl
@@ -26,6 +41,7 @@ ASFLAGS :=
 LDFLAGS := -Wl,-gc-sections
 COMMONFLAGS := -pthread
 LINKER_SCRIPT :=
+>>>>>>> 3661692c1325fc5fff97c81268f1666462fb771a
 
 START_GROUP := -Wl,--start-group
 END_GROUP := -Wl,--end-group

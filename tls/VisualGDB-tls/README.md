@@ -1,5 +1,44 @@
 # wolfSSL TLS Examples in Visual Studio
 
+<<<<<<< HEAD
+These examples use the VisualGDB extension for Visual Studio and assume WSL is already installed with toolchain.
+
+Basic steps to create a new wolfSSL example:
+
+Step 1:
+
+![VisualGDB-New-Project-Step1.png](./images/VisualGDB-New-Project-Step1.png)
+
+Step 2:
+
+![VisualGDB-New-Project-Step2.png](./images/VisualGDB-New-Project-Step2.png)
+
+Step 3:
+
+![VisualGDB-New-Project-Step3.png](./images/VisualGDB-New-Project-Step3.png)
+
+Step 4:
+
+![VisualGDB-New-Project-Step4.png](./images/VisualGDB-New-Project-Step4.png)
+
+Step 5:
+
+![VisualGDB-New-Project-Step5.png](./images/VisualGDB-New-Project-Step5.png)
+
+Step 6:
+
+![VisualGDB-New-Project-Step6.png](./images/VisualGDB-New-Project-Step6.png)
+
+Step 7:
+
+![VisualGDB-New-Project-Step7.png](./images/VisualGDB-New-Project-Step7.png)
+
+All of the code refers to source in `..\..\tls`
+
+
+## Troubleshooting
+
+=======
 These examples use the VisualGDB extension for Visual Studio and assume WSL (or a remote Linix box) is already installed with toolchain.
 
 ## Running VisualGDB Examples
@@ -122,6 +161,7 @@ This error may occur if there are multiple WSL distros installed, or different f
 ![VisualGDB-pick-WSL.png](./images/VisualGDB-pick-WSL.png)
 
 
+>>>>>>> 3661692c1325fc5fff97c81268f1666462fb771a
 
 ### Failed to start GDB session
 
@@ -159,6 +199,9 @@ Be sure to set `-pthread` in Makefile settings - Common Flags:
 
 May need to allow Windows Firewall to listen on GDB ports:
 
+<<<<<<< HEAD
+![VisualStudio-firewall.png](./images/VisualStudio-firewall.png)
+=======
 ![VisualStudio-firewall.png](./images/VisualStudio-firewall.png)
 
 It may be useful to setup an explicit port rule:
@@ -203,3 +246,4 @@ Please contact wolfSSL at support@wolfssl.com with any questions, bug fixes,
 or suggested feature additions.
 
 
+>>>>>>> 3661692c1325fc5fff97c81268f1666462fb771a
