@@ -23,6 +23,39 @@ leaks, especially in error conditions.
 For Visual Studio users with the VisualGDB extension, there are additional
 example files in [VisualGDB-tls](./VisualGDB-tls/).
 
+
+Quick Start
+===========
+
+This portion of the `README` will show you how to quickly build and run some of
+the examples in this directory. For more detail on the examples and further 
+variations and features please see the *Tutorial* section.
+
+Build wolfSSL:
+
+```sh
+./configure --enable-asynccrypt && make && sudo make install
+```
+
+In wolfssl-examples/tls:
+
+```sh
+make clean && make
+```
+
+To run simple TLS example, in separate terminals enter:
+```sh
+./server-tls
+./client-tls 127.0.0.1
+```
+
+To run non-blocking / threaded TLS example, in separate terminals enter:
+```sh
+./server-tls-threaded
+./client-tls-nonblocking 127.0.0.1
+```
+
+
 Tutorial
 ========
 
@@ -75,15 +108,17 @@ into.
     2. [Client](#client-tls)
     3. [Running](#run-tls)
 
-4. [Using callbacks](#callback)
+5. [Using callbacks](#callback)
 
     1. [Running](#run-callback)
 
-4. [Using ECC](#ecc)
+6. [Using ECC](#ecc)
 
     1. [Server](#server-ecc)
     2. [Client](#client-ecc)
     3. [Running](#run-ecc)
+
+6. [Encrypted Client Hello](#ech)
 
 
 
@@ -1301,6 +1336,47 @@ Server: I hear ya fa shizzle!
 To generate your own cert text, see the [DER to C script](https://github.com/wolfSSL/wolfssl/blob/master/scripts/dertoc.pl).
 
 <br />
+
+## <a name="ech">Encrypted Client Hello</a>
+
+Encrypted Client Hello (ECH) encrypts sensitive fields in the client hello step of the TLS handshake. The client-ech example connects to a cloudflare server that is setup to test different TLS options including ECH. To build wolfSSL for this ech example run `./configure --enable-ech && make && sudo make install`.
+
+This test is successful if the cloudflare http response shows that `sni=encrypted`.
+
+```sh
+make
+./client-ech 
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Cache-Control: no-cache
+Cf-Ray: 77c3e3e937c6b08e-ATL
+Content-Type: text/plain
+Expires: Thu, 01 Jan 1970 00:00:01 GMT
+Server: cloudflare
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Date: Mon, 19 Dec 2022 23:24:11 GMT
+Transfer-Encoding: chunked
+
+106
+fl=507f46
+h=crypto.cloudflare.com
+ip=173.93.184.37
+ts=1671492251.082
+visit_scheme=https
+uag=Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0
+colo=ATL
+sliver=none
+http=http/1.1
+loc=US
+tls=TLSv1.3
+sni=encrypted
+warp=off
+gateway=off
+kex=P-256
+
+0
+```
 
 ## Support
 

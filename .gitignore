@@ -24,7 +24,6 @@
 *.i*86
 *.x86_64
 *.hex
-*app
 
 # IDE Temp Files
 **/*.swp
@@ -106,7 +105,9 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 /tls/server-tls-uart
 /tls/server-tls-verifycallback
 /tls/server-tls-writedup
-
+/tls/client-ech
+/tls/client-ech-local
+/tls/server-ech-local
 
 
 crypto/3des/3des-file-encrypt
@@ -237,6 +238,7 @@ pk/ed448/ed448_pub
 pk/ed448/ed448_keys
 pk/ed448/*.der
 pk/curve25519/curve25519_test
+pk/hpke/hpke_test
 
 embedded/tls-client-server
 embedded/tls-server-size
@@ -304,3 +306,20 @@ tpm/evp_tpm
 **/main/build/CMakeFiles/*
 **/build/*
 
+# VisualGDB
+**/.visualgdb
+
+# Espressif sdk config default should be saved in sdkconfig.defaults
+# we won't track the actual working sdkconfig files
+/ESP32/**/sdkconfig
+/ESP32/**/sdkconfig.old
+/ESP32/**/sdkconfig.bak
+
+# the solution files are not needed (Visual Studio will generated them)
+/ESP32/**/*.sln
+
+# auto-created CMake backups
+**/CMakeLists.txt.old
+
+# MacOS
+.DS_Store
