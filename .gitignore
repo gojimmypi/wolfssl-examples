@@ -302,12 +302,12 @@ tpm/evp_tpm
 **/*/*.vcxproj.filters
 **/*/*.vcxproj.user
 
+# VisualGDB directory
+**/.visualgdb
+
 # EDP-IDF
 **/main/build/CMakeFiles/*
 **/build/*
-
-# VisualGDB
-**/.visualgdb
 
 # Espressif sdk config default should be saved in sdkconfig.defaults
 # we won't track the actual working sdkconfig files
