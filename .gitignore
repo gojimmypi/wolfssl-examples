@@ -323,3 +323,6 @@ tpm/evp_tpm
 
 # MacOS
 .DS_Store
+
+# any backup file
+**/*.bak
