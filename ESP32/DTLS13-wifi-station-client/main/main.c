@@ -23,7 +23,7 @@
 #include <nvs_flash.h>
 #include <esp_log.h>
 
-/* wolfSSL  */
+/* wolfSSL */
 #include <wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
 #include <wolfssl/certs_test.h>
 

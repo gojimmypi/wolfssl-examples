@@ -19,11 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-/*
-# This tag is used to include this file in the ESP Component Registry:
-# __ESP_COMPONENT_SOURCE__
-*/
-
 #include <string.h>
 #include <lwip/apps/sntp.h>
 #include <esp_netif_sntp.h>
@@ -59,7 +54,7 @@ char* ntpServerList[NTP_SERVER_COUNT] = NTP_SERVER_LIST;
 extern char* ntpServerList[NTP_SERVER_COUNT];
 
 /* the worst-case scenario is a hard-coded date/time */
-int set_fixed_default_time()
+int set_fixed_default_time(void)
 {
     time_t interim_time;
 

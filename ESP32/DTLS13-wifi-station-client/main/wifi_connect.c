@@ -43,7 +43,7 @@
 #endif
 
 /* breadcrumb prefix for logging */
-const static char *TAG = "dtls_server";
+const static char *TAG = "wifi_connect";
 
 #if ESP_IDF_VERSION_MAJOR < 4
 /* event handler for wifi events */
