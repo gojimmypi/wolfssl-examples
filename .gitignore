@@ -185,6 +185,8 @@ pkcs7/signedData-CompressedFirmwarePkgData
 pkcs7/signedData-EncryptedCompressedFirmwarePkgData
 pkcs7/signedData-EncryptedFirmwareCB
 pkcs7/signedData-p7b
+pkcs7/signedData-cryptocb
+pkcs7/signedData-verifyFile
 
 *.dSYM
 certmanager/certloadverifybuffer
@@ -239,6 +241,13 @@ pk/ed448/ed448_keys
 pk/ed448/*.der
 pk/curve25519/curve25519_test
 pk/hpke/hpke_test
+
+
+# Post-Quantum Stateful Hash-Based Signatures.
+pq/stateful_hash_sig/xmss_example
+pq/stateful_hash_sig/xmss_example.key
+pq/stateful_hash_sig/lms_example
+pq/stateful_hash_sig/lms_example.key
 
 embedded/tls-client-server
 embedded/tls-server-size

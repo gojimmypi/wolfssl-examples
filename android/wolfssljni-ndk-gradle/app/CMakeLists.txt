@@ -62,22 +62,69 @@ if ("${WOLFSSL_PKG_TYPE}" MATCHES "normal")
 
         # Defines added for debugging. These can be removed if debug logging is not needed
         # and will increase performance and reduce library footprint size if removed.
-        -DEBUG_WOLFSSL
+        -DDEBUG_WOLFSSL -DWOLFSSL_ANDROID_DEBUG
 
         # Defines added for wolfCrypt test and benchmark only, may not be needed for your
         # own application.
-        -DUSE_CERT_BUFFERS_2048 -DUSE_CERT_BUFFERS_256 -DNO_WRITE_TEMP_FILES
-        -DNO_FILESYSTEM -DNO_MAIN_DRIVER
+        # Add -DNO_FILESYSTEM to disable file system use for wolfCrypt test, but make sure
+        # to remove this define in production applications as filesystem access is required
+        # for wolfJSSE use.
+        -DUSE_CERT_BUFFERS_2048 -DUSE_CERT_BUFFERS_256
+        -DNO_WRITE_TEMP_FILES -DNO_MAIN_DRIVER
     )
 
 elseif("${WOLFSSL_PKG_TYPE}" MATCHES "fipsready")
+    # The wolfCrypt FIPS In Core Integrity checksum will vary with compiler
+    # versions, runtime library versions, target hardware, and build type.
+    # Anytime the module is shifted up or down in memory or loaded from a new
+    # memory location the hash will change. This is expected during normal
+    # development cycles but should be stable in a production deployment.
+    # The verifyCore[] hash can be manually updated in
+    # 'wolfcrypt/src/fips_test.c' and the app recompiled. Or, the define
+    # WOLFCRYPT_FIPS_CORE_HASH_VALUE can be set below, which is helpful
+    # for Android Studio, which builds for all these architectures in the same
+    # build.
+    #
+    # The hash values below are only for reference and will need to
+    # be updated to match your build. To update this value:
+    #
+    #  1. Build and install your app which contains wolfCrypt FIPS
+    #  2. Run your app on each architecture, looking at the logcat output
+    #     to see the expected verifyCore[] hash value.
+    #  3. Copy the expected hash value from logcat to the proper architecture
+    #     section below.
+    #  4. Re-build your application now that the expected hash value has
+    #     been set.
+    #  5. Re-install and re-run your application on each architecture to
+    #     confirm the hash is stable and application runs as expected.
+    #
+    # NOTE: If using wolfSSL FIPS Ready or FIPS proper with this sample
+    # application and run into the scenario where the verifyCore[] hash output
+    # at runtime is empty, consider checking/increasing the size of the
+    # MAX_FIPS_DATA_SZ define in 'wolfcrypt/src/fips_test.c'.
+
+    if("${ANDROID_ABI}" MATCHES "arm64-v8a")
+        # https://developer.android.com/ndk/guides/abis#arm64-v8a
+        add_definitions(-DWOLFCRYPT_FIPS_CORE_HASH_VALUE=6F0F3E0BDA9AF973D2B7243444DE8279DF9F98A533E60D1E076DE4B6B9416F11)
+    elseif("${ANDROID_ABI}" MATCHES "armeabi-v7a")
+        # https://developer.android.com/ndk/guides/abis#v7a
+        add_definitions(-DWOLFCRYPT_FIPS_CORE_HASH_VALUE=6F0F3E0BDA9AF973D2B7243444DE8279DF9F98A533E60D1E076DE4B6B9416F11)
+    elseif("${ANDROID_ABI}" MATCHES "x86_64")
+        # https://developer.android.com/ndk/guides/abis#86-64
+        add_definitions(-DWOLFCRYPT_FIPS_CORE_HASH_VALUE=6F0F3E0BDA9AF973D2B7243444DE8279DF9F98A533E60D1E076DE4B6B9416F11)
+    elseif("${ANDROID_ABI}" MATCHES "x86")
+        # https://developer.android.com/ndk/guides/abis#x86
+        add_definitions(-DWOLFCRYPT_FIPS_CORE_HASH_VALUE=6F0F3E0BDA9AF973D2B7243444DE8279DF9F98A533E60D1E076DE4B6B9416F11)
+    endif()
+
     # Add preprocessor defines to CFLAGS, these match those placed into
-    # wolfssl/options.h by configure if using: "./configure" on a Unix/Linux platform. The options
-    # below have been chosen to match a FIPS Ready build, and are based on the example
-    # user_settings.h file located here:
+    # wolfssl/options.h by configure if using: "./configure" on a Unix/Linux
+    # platform. The options below have been chosen to match a FIPS Ready build,
+    # and are based on the example user_settings.h file located here:
     # https://github.com/wolfSSL/wolfssl/blob/master/examples/configs/user_settings_fipsv5.h
-    # This list may be configurable depending on use case and desired optimizations, being careful
-    # not to break FIPS compatibility if targeting FIPS proper in the future.
+    # This list may be configurable depending on use case and desired
+    # optimizations, being careful not to break FIPS compatibility if targeting
+    # FIPS proper in the future.
     add_definitions(-DHAVE_FIPS -DHAVE_FIPS_VERSION=5 -DHAVE_FIPS_VERSION_MINOR=3
             -DHAVE_HASHDRBG -DHAVE_THREAD_LS -DHAVE_REPRODUCIBLE_BUILD
             -DFP_MAX_BITS=16384 -DSP_INT_BITS=8192 -DWOLFSSL_PUBLIC_MP
@@ -116,7 +163,10 @@ elseif("${WOLFSSL_PKG_TYPE}" MATCHES "fipsready")
 
             # Below options are added only for wolfCrypt test and benchmark applications.
             # These can be left off / removed when integrating into a real-world application.
-            -DNO_FILESYSTEM -DUSE_CERT_BUFFERS_2048 -DUSE_CERT_BUFFERS_256
+            # Add -DNO_FILESYSTEM to disable file system use for wolfCrypt test, but make sure
+            # to remove this define in production applications as filesystem access is required
+            # for wolfJSSE use.
+            -DUSE_CERT_BUFFERS_2048 -DUSE_CERT_BUFFERS_256
             -DNO_WRITE_TEMP_FILES -DNO_MAIN_DRIVER
         )
 endif()
