@@ -1,6 +1,5 @@
-set(srcs "enc28j60_example_main.c"
-         "tls_smp_server_task.c"
-   )
+set(srcs "main.c"
+         "tls_smp_server_task.c")
 
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWOLFSSL_USER_SETTINGS")
