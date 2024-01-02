@@ -1,6 +1,6 @@
 # wolfSSL TLS 1.3 ENC28J60 Server Example
 
-This TLS1.3 example expands the [Expressif ENC28J60 Ethernet Example](https://github.com/espressif/esp-idf/tree/master/examples/ethernet/enc28j60)
+This TLS1.3 example expands the [Espressif ENC28J60 Ethernet Example](https://github.com/espressif/esp-idf/tree/master/examples/ethernet/enc28j60)
 to create a wolfSSL TLS1.3 TCP Server to a wolfSSL TLS1.3 TCP client to connect.
 
 To open this solution in Visual Studio with the VisualGDB extension, see the [Solution File]()
@@ -45,27 +45,79 @@ To run this example, you need to prepare following hardwares:
 | GPIO22 | SPI_CS      |
 | GPIO4  | Interrupt   |
 
+*Important*: To make room for JTAG pins, the configuration *may* need to be manually set.
+The unassigned defaults will _not_ work when also using a JTAG device, for example:
+
+```text
+CONFIG_EXAMPLE_ENC28J60_SCLK_GPIO=14
+CONFIG_EXAMPLE_ENC28J60_MOSI_GPIO=13
+CONFIG_EXAMPLE_ENC28J60_MISO_GPIO=12
+CONFIG_EXAMPLE_ENC28J60_CS_GPIO=15
+CONFIG_EXAMPLE_ENC28J60_SPI_CLOCK_MHZ=8
+```
+
+The [sdkconfig.defaults](./sdkconfig.defaults) _should_ assign pins like this:
+
+```text
+CONFIG_EXAMPLE_GPIO_RANGE_MIN=0
+CONFIG_EXAMPLE_GPIO_RANGE_MAX=33
+CONFIG_EXAMPLE_ENC28J60_SPI_HOST=1
+CONFIG_EXAMPLE_ENC28J60_SCLK_GPIO=19
+CONFIG_EXAMPLE_ENC28J60_MOSI_GPIO=23
+CONFIG_EXAMPLE_ENC28J60_MISO_GPIO=25
+CONFIG_EXAMPLE_ENC28J60_CS_GPIO=22
+CONFIG_EXAMPLE_ENC28J60_SPI_CLOCK_MHZ=6
+CONFIG_EXAMPLE_ENC28J60_INT_GPIO=4
+# CONFIG_EXAMPLE_ENC28J60_DUPLEX_FULL is not set
+CONFIG_EXAMPLE_ENC28J60_DUPLEX_HALF=y
+```
+
+Check the electrical connections and the `sdkconfig` settings if an error such as this 
+is encountered at startup time:
+
+```text
+I (468) cpu_start: Starting scheduler on PRO CPU.
+I (0) cpu_start: Starting scheduler on APP CPU.
+I (478) gpio: GPIO[4]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldow                                                 n: 0| Intr:0
+I (488) enc28j60: revision: 0
+E (488) enc28j60: enc28j60_verify_id(549): wrong chip ID
+E (498) enc28j60: emac_enc28j60_init(1024): vefiry chip ID failed
+I (508) gpio: GPIO[4]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldow                                                 n: 0| Intr:0
+E (508) esp_eth: esp_eth_driver_install(214): init mac failed
+ESP_ERROR_CHECK failed: esp_err_t 0xffffffff (ESP_FAIL) at 0x400861f8
+file: "../../../main/enc28j60_example_main.c" line 1029
+func: init_ENC28J60
+expression: esp_eth_driver_install(&eth_config, &eth_handle)
+
+abort() was called at PC 0x400861fb on core 0
+```
+
 ### Configure the project
 
 ```
 idf.py menuconfig
 ```
 
-In the `Example Configuration` menu, set SPI specific configuration, such as SPI host number, GPIO used for MISO/MOSI/CS signal, GPIO for interrupt event and the SPI clock rate, duplex mode.
+In the `Example Configuration` menu, set SPI specific configuration, such as SPI host number, 
+GPIO used for MISO/MOSI/CS signal, GPIO for interrupt event and the SPI clock rate, duplex mode.
+(see notes, above)
 
-**Note:** According to ENC28J60 data sheet and our internal testing, SPI clock could reach up to 20MHz, but in practice, the clock speed may depend on your PCB layout/wiring/power source. In this example, the default clock rate is set to 8 MHz since some ENC28J60 silicon revisions may not properly work at frequencies less than 8 MHz.
+**Note:** According to ENC28J60 data sheet and our internal testing, SPI clock could reach up to 20MHz, 
+but in practice, the clock speed may depend on your PCB layout/wiring/power source. In this example, 
+the default clock rate is set to 8 MHz since some ENC28J60 silicon revisions may not properly work at 
+frequencies less than 8 MHz.
 
 ### Build, Flash, and Run
 
 Build the project and flash it to the board, then run monitor tool to view serial output:
 
 ```
-idf.py -p PORT build flash monitor
+idf.py -p PORT -b 115200 build flash monitor
 ```
 
-(Replace PORT with the name of the serial port to use.)
+Replace PORT with the name of the serial port to use.
 
-(To exit the serial monitor, type ``Ctrl-]``.)
+To exit the serial monitor, type ``Ctrl-]``.
 
 See the [Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html) for full steps to configure and use ESP-IDF to build projects.
 
