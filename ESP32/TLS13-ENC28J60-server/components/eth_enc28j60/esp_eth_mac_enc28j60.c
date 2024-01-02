@@ -14,10 +14,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/cdefs.h>
-#include "driver/gpio.h"
+#if ESP_IDF_VERSION_MAJOR < 5
+    #include "driver/gpio.h"
+    #include "esp_eth.h"
+#else
+    #include "enc28j60.h"
+#endif
 #include "esp_attr.h"
 #include "esp_log.h"
-#include "esp_eth.h"
 #include "esp_system.h"
 #include "esp_intr_alloc.h"
 #include "esp_heap_caps.h"

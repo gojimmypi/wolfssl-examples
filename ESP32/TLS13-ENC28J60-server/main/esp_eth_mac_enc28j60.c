@@ -922,9 +922,11 @@ esp_eth_mac_t *esp_eth_mac_new_enc28j60(const eth_enc28j60_config_t *enc28j60_co
     MAC_CHECK(emac->spi_lock, "create lock failed", err, NULL);
     /* create enc28j60 task */
     BaseType_t core_num = tskNO_AFFINITY;
+#if ESP_IDF_VERSION_MAJOR < 5
     if (mac_config->flags & ETH_MAC_FLAG_PIN_TO_CORE) {
         core_num = cpu_hal_get_core_id();
     }
+#endif
     BaseType_t xReturned = xTaskCreatePinnedToCore(emac_enc28j60_task, "enc28j60_tsk", mac_config->rx_task_stack_size, emac,
                            mac_config->rx_task_prio, &emac->rx_task_hdl, core_num);
     MAC_CHECK(xReturned == pdPASS, "create enc28j60 task failed", err, NULL);

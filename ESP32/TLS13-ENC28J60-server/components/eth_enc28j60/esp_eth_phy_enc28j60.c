@@ -15,8 +15,12 @@
 #include <stdlib.h>
 #include <sys/cdefs.h>
 #include "esp_log.h"
-#include "esp_eth.h"
-#include "eth_phy_regs_struct.h"
+#if ESP_IDF_VERSION_MAJOR < 5
+    #include "esp_eth.h"
+    #include "eth_phy_regs_struct.h"
+#else
+    #include "enc28j60.h"
+#endif
 #include "esp_eth_enc28j60.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

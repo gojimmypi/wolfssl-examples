@@ -84,19 +84,19 @@ uint8_t myMacAddress[] = {
 
 
 
-/* include certificates. Note that there is an experiation date! 
- * 
+/* include certificates. Note that there is an experiation date!
+ *
  * See also https://github.com/wolfSSL/wolfssl/blob/master/wolfssl/certs_test.h
- 
+
    for example:
-     
+
     #define USE_CERT_BUFFERS_2048
     #include <wolfssl/certs_test.h>
 */
 
-/* 
+/*
 * for reference, embedded client uses:
-* 
+*
 * #include "embedded_CA_FILE.h"
 * #include "embedded_CERT_FILE.h"
 * #include "embedded_KEY_FILE.h"
@@ -135,7 +135,7 @@ TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
  ******************************************************************************
  ******************************************************************************
  **/
-  
+
 
 
 #ifdef HAVE_SIGNAL
@@ -188,7 +188,7 @@ int tls_smp_server_task() {
     ret = WOLFSSL_FAILURE;
     WOLFSSL_ERROR_MSG("ERROR: Example requires TLS v1.3.\n");
 #endif /* WOLFSSL_TLS13 */
-    
+
     /* Initialize the server address struct with zeros */
     memset(&servAddr, 0, sizeof(servAddr));
 
@@ -197,86 +197,86 @@ int tls_smp_server_task() {
     servAddr.sin_port        = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
     servAddr.sin_addr.s_addr = INADDR_ANY; /* from anywhere   */
 
-    /* 
+    /*
     ***************************************************************************
     * Create a socket that uses an internet IPv4 address,
     * Sets the socket to be stream based (TCP),
     * 0 means choose the default protocol.
-    * 
+    *
     *  #include <sys/socket.h>
     *
-    *  int socket(int domain, int type, int protocol);  
-    *  
-    *  The socket() function shall create an unbound socket in a communications 
-    *  domain, and return a file descriptor that can be used in later function 
+    *  int socket(int domain, int type, int protocol);
+    *
+    *  The socket() function shall create an unbound socket in a communications
+    *  domain, and return a file descriptor that can be used in later function
     *  calls that operate on sockets.
-    *  
+    *
     *  The socket() function takes the following arguments:
-    *    domain     Specifies the communications domain in which a 
+    *    domain     Specifies the communications domain in which a
     *                 socket is to be created.
     *    type       Specifies the type of socket to be created.
-    *    protocol   Specifies a particular protocol to be used with the socket. 
-    *               Specifying a protocol of 0 causes socket() to use an 
-    *               unspecified default protocol appropriate for the 
+    *    protocol   Specifies a particular protocol to be used with the socket.
+    *               Specifying a protocol of 0 causes socket() to use an
+    *               unspecified default protocol appropriate for the
     *               requested socket type.
-    *               
-    *    The domain argument specifies the address family used in the 
-    *    communications domain. The address families supported by the system 
+    *
+    *    The domain argument specifies the address family used in the
+    *    communications domain. The address families supported by the system
     *    are implementation-defined.
-    *    
+    *
     *    Symbolic constants that can be used for the domain argument are
     *    defined in the <sys/socket.h> header.
     *
-    *  The type argument specifies the socket type, which determines the semantics 
-    *  of communication over the socket. The following socket types are defined; 
+    *  The type argument specifies the socket type, which determines the semantics
+    *  of communication over the socket. The following socket types are defined;
     *  implementations may specify additional socket types:
     *
-    *    SOCK_STREAM    Provides sequenced, reliable, bidirectional, 
-    *                   connection-mode byte streams, and may provide a 
+    *    SOCK_STREAM    Provides sequenced, reliable, bidirectional,
+    *                   connection-mode byte streams, and may provide a
     *                   transmission mechanism for out-of-band data.
     *    SOCK_DGRAM     Provides datagrams, which are connectionless-mode,
     *                   unreliable messages of fixed maximum length.
-    *    SOCK_SEQPACKET Provides sequenced, reliable, bidirectional, 
-    *                   connection-mode transmission paths for records. 
-    *                   A record can be sent using one or more output 
-    *                   operations and received using one or more input 
-    *                   operations, but a single operation never transfers 
-    *                   part of more than one record. Record boundaries 
+    *    SOCK_SEQPACKET Provides sequenced, reliable, bidirectional,
+    *                   connection-mode transmission paths for records.
+    *                   A record can be sent using one or more output
+    *                   operations and received using one or more input
+    *                   operations, but a single operation never transfers
+    *                   part of more than one record. Record boundaries
     *                   are visible to the receiver via the MSG_EOR flag.
-    *    
-    *                   If the protocol argument is non-zero, it shall 
-    *                   specify a protocol that is supported by the address 
+    *
+    *                   If the protocol argument is non-zero, it shall
+    *                   specify a protocol that is supported by the address
     *                   family. If the protocol argument is zero, the default
     *                   protocol for this address family and type shall be
-    *                   used. The protocols supported by the system are 
+    *                   used. The protocols supported by the system are
     *                   implementation-defined.
-    *    
+    *
     *    The process may need to have appropriate privileges to use the socket() function or to create some sockets.
-    *    
+    *
     *  Return Value
-    *    Upon successful completion, socket() shall return a non-negative integer, 
-    *    the socket file descriptor. Otherwise, a value of -1 shall be returned 
+    *    Upon successful completion, socket() shall return a non-negative integer,
+    *    the socket file descriptor. Otherwise, a value of -1 shall be returned
     *    and errno set to indicate the error.
-    *    
+    *
     *  Errors; The socket() function shall fail if:
-    *  
+    *
     *    EAFNOSUPPORT    The implementation does not support the specified address family.
     *    EMFILE          No more file descriptors are available for this process.
     *    ENFILE          No more file descriptors are available for the system.
     *    EPROTONOSUPPORT The protocol is not supported by the address family, or the protocol is not supported by the implementation.
     *    EPROTOTYPE      The socket type is not supported by the protocol.
-    *    
+    *
     *  The socket() function may fail if:
-    *  
+    *
     *    EACCES  The process does not have appropriate privileges.
     *    ENOBUFS Insufficient resources were available in the system to perform the operation.
     *    ENOMEM  Insufficient memory was available to fulfill the request.
-    *    
+    *
     *  see: https://linux.die.net/man/3/socket
     ***************************************************************************
     */
     if (ret == WOLFSSL_SUCCESS) {
-        /* Upon successful completion, socket() shall return 
+        /* Upon successful completion, socket() shall return
          * a non-negative integer, the socket file descriptor.
         */
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -284,7 +284,7 @@ int tls_smp_server_task() {
             WOLFSSL_MSG("socket creation successful\n");
         }
         else {
-            // TODO show errno 
+            // TODO show errno
             ret = WOLFSSL_FAILURE;
             WOLFSSL_ERROR_MSG("ERROR: failed to create a socket.\n");
         }
@@ -297,7 +297,7 @@ int tls_smp_server_task() {
     /*
     ***************************************************************************
     * set SO_REUSEADDR on socket
-    * 
+    *
     *  #include <sys/types.h>
     *  # include <sys / socket.h>
     *  int getsockopt(int sockfd,
@@ -309,19 +309,19 @@ int tls_smp_server_task() {
     *    int optname,
     *    const void *optval,
     *    socklen_t optlen);
-    *    
-    *  setsockopt() manipulates options for the socket referred to by the file 
-    *  descriptor sockfd. Options may exist at multiple protocol levels; they 
+    *
+    *  setsockopt() manipulates options for the socket referred to by the file
+    *  descriptor sockfd. Options may exist at multiple protocol levels; they
     *  are always present at the uppermost socket level.
-    *  
-    *  When manipulating socket options, the level at which the option resides 
-    *  and the name of the option must be specified. To manipulate options at 
-    *  the sockets API level, level is specified as SOL_SOCKET. To manipulate 
-    *  options at any other level the protocol number of the appropriate 
-    *  protocol controlling the option is supplied. For example, to indicate 
-    *  that an option is to be interpreted by the TCP protocol, level should 
+    *
+    *  When manipulating socket options, the level at which the option resides
+    *  and the name of the option must be specified. To manipulate options at
+    *  the sockets API level, level is specified as SOL_SOCKET. To manipulate
+    *  options at any other level the protocol number of the appropriate
+    *  protocol controlling the option is supplied. For example, to indicate
+    *  that an option is to be interpreted by the TCP protocol, level should
     *  be set to the protocol number of TCP
-    *  
+    *
     *  Return Value
     *    On success, zero is returned. On error, -1 is returned, and errno is set appropriately.
     *
@@ -343,12 +343,12 @@ int tls_smp_server_task() {
             SO_REUSEADDR,
             (char*)&on,
             (socklen_t)sizeof(on));
-        
+
         if (soc_ret == 0) {
             WOLFSSL_MSG("setsockopt re-use addr successful\n");
         }
         else {
-            // TODO show errno 
+            // TODO show errno
             ret = WOLFSSL_FAILURE;
             WOLFSSL_ERROR_MSG("ERROR: failed to setsockopt addr on socket.\n");
         }
@@ -356,7 +356,7 @@ int tls_smp_server_task() {
     else {
         WOLFSSL_ERROR_MSG("Skipping setsockopt addr\n");
     }
-        
+
 #ifdef SO_REUSEPORT
     /* see above for details on getsockopt  */
     if (ret == WOLFSSL_SUCCESS) {
@@ -365,43 +365,43 @@ int tls_smp_server_task() {
             SO_REUSEPORT,
             (char*)&on,
             (socklen_t)sizeof(on));
-            
+
         if (soc_ret == 0) {
             WOLFSSL_MSG("setsockopt re-use port successful\n");
         }
         else {
-            // TODO show errno 
+            // TODO show errno
             // ret = WOLFSSL_FAILURE;
             // TODO what's up with the error?
             WOLFSSL_ERROR_MSG("ERROR: failed to setsockopt port on socket.  >> IGNORED << \n");
         }
-    } 
+    }
     else {
         WOLFSSL_ERROR_MSG("Skipping setsockopt port\n");
     }
 #else
     WOLFSSL_MSG("SO_REUSEPORT not configured for setsockopt to re-use port\n");
 #endif
-    
+
     /*
     ***************************************************************************
-    *  #include <sys/types.h>  
+    *  #include <sys/types.h>
     *  #include <sys/socket.h>
-    *  
+    *
     *  int bind(int sockfd,
     *      const struct sockaddr *addr,
     *      socklen_t addrlen);
-    *      
+    *
     *  Description
-    *  
-    *  When a socket is created with socket(2), it exists in a name 
+    *
+    *  When a socket is created with socket(2), it exists in a name
     *  space(address family) but has no address assigned to it.
-    * 
-    *  bind() assigns the address specified by addr to the socket referred to 
-    *  by the file descriptor sockfd.addrlen specifies the size, in bytes, of 
-    *  the address structure pointed to by addr.Traditionally, this operation 
+    *
+    *  bind() assigns the address specified by addr to the socket referred to
+    *  by the file descriptor sockfd.addrlen specifies the size, in bytes, of
+    *  the address structure pointed to by addr.Traditionally, this operation
     *  is called "assigning a name to a socket".
-    *  
+    *
     *   It is normally necessary to assign a local address using bind() before
     *   a SOCK_STREAM socket may receive connections.
     *
@@ -416,7 +416,7 @@ int tls_smp_server_task() {
     *    ENOTSOCK   sockfd is a descriptor for a file, not a socket.
     *
     *   see: https://linux.die.net/man/2/bind
-    *   
+    *
     *       https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/lwip.html
     ***************************************************************************
     */
@@ -432,34 +432,34 @@ int tls_smp_server_task() {
         }
     }
 
-    /* 
+    /*
     ***************************************************************************
-    *  Listen for a new connection, allow 5 pending connections 
+    *  Listen for a new connection, allow 5 pending connections
     *
-    *  #include <sys/types.h>  
+    *  #include <sys/types.h>
     *  #include <sys/socket.h>
     *  int listen(int sockfd, int backlog);
     *
     *  Description
-    *  
-    *  listen() marks the socket referred to by sockfd as a passive socket, 
-    *  that is, as a socket that will be used to accept incoming connection 
+    *
+    *  listen() marks the socket referred to by sockfd as a passive socket,
+    *  that is, as a socket that will be used to accept incoming connection
     *  requests using accept.
     *
-    *  The sockfd argument is a file descriptor that refers to a socket of 
+    *  The sockfd argument is a file descriptor that refers to a socket of
     *  type SOCK_STREAM or SOCK_SEQPACKET.
-    *  
-    *  The backlog argument defines the maximum length to which the queue of 
-    *  pending connections for sockfd may grow.If a connection request arrives 
+    *
+    *  The backlog argument defines the maximum length to which the queue of
+    *  pending connections for sockfd may grow.If a connection request arrives
     *  when the queue is full, the client may receive an error with an indication
-    *  of ECONNREFUSED or, if the underlying protocol supports retransmission, 
-    *  the request may be ignored so that a later reattempt at connection 
+    *  of ECONNREFUSED or, if the underlying protocol supports retransmission,
+    *  the request may be ignored so that a later reattempt at connection
     *  succeeds.
     *
     *   Return Value
     *     On success, zero is returned.
     *     On Error, -1 is returned, and errno is set appropriately.
-    *   Errors  
+    *   Errors
     *     EADDRINUSE   Another socket is already listening on the same port.
     *     EBADF        The argument sockfd is not a valid descriptor.
     *     ENOTSOCK     The argument sockfd is not a socket.
@@ -467,7 +467,7 @@ int tls_smp_server_task() {
     *
     *  ses: https://linux.die.net/man/2/listen
     */
-    
+
     if(ret == WOLFSSL_SUCCESS) {
         int soc_ret = listen(sockfd, 5);
         if (soc_ret > -1) {
@@ -477,22 +477,22 @@ int tls_smp_server_task() {
             ret = WOLFSSL_FAILURE;
             WOLFSSL_ERROR_MSG("ERROR: failed to listen to socket.\n");
         }
-    }    
-    
-    /* 
+    }
+
+    /*
     ***************************************************************************
-    * Initialize wolfSSL 
-    * 
+    * Initialize wolfSSL
+    *
     *  WOLFSSL_API int wolfSSL_Init    (void)
     *
-    *  Initializes the wolfSSL library for use. Must be called once per 
+    *  Initializes the wolfSSL library for use. Must be called once per
     *  application and before any other call to the library.
     *
     *  Returns
     *    SSL_SUCCESS  If successful the call will return.
     *    BAD_MUTEX_E  is an error that may be returned.
     *    WC_INIT_E    wolfCrypt initialization error returned.
-    * 
+    *
     *  see: https://www.wolfssl.com/doxygen/group__TLS.html#gae2a25854de5230820a6edf16281d8fd7
     ***************************************************************************
     */
@@ -512,13 +512,13 @@ int tls_smp_server_task() {
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_Init\n");
     }
 
-    /* 
+    /*
     ***************************************************************************
     * Create and initialize WOLFSSL_CTX (aka the context)
-    * 
+    *
     *  WOLFSSL_API WOLFSSL_CTX* wolfSSL_CTX_new    (WOLFSSL_METHOD *)
-    * 
-    *  This function creates a new SSL context, taking a desired 
+    *
+    *  This function creates a new SSL context, taking a desired
     *  SSL/TLS protocol method for input.
     *
     *  Returns
@@ -526,10 +526,10 @@ int tls_smp_server_task() {
     *    NULL upon failure.
     *
     *  Parameters
-    *    method pointer to the desired WOLFSSL_METHOD to use for the SSL context. 
+    *    method pointer to the desired WOLFSSL_METHOD to use for the SSL context.
     *    This is created using one of the wolfSSLvXX_XXXX_method() functions to
     *    specify SSL/TLS/DTLS protocol level.
-    * 
+    *
     *  see https://www.wolfssl.com/doxygen/group__Setup.html#gadfa552e771944a6a1102aa43f45378b5
     ***************************************************************************
     */
@@ -554,49 +554,49 @@ int tls_smp_server_task() {
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_new\n");
     }
 
-    /* 
+    /*
     ***************************************************************************
-    *  load CERT_FILE 
-    *  
-    *  
+    *  load CERT_FILE
+    *
+    *
     *  WOLFSSL_API int wolfSSL_use_certificate_buffer (WOLFSSL * ,
     *                                                  const unsigned char * ,
     *                                                  long,
-    *                                                  int      
+    *                                                  int
     *                                                  )
-    *  
-    *  The wolfSSL_use_certificate_buffer() function loads a certificate buffer 
-    *  into the WOLFSSL object. It behaves like the non-buffered version, only 
-    *  differing in its ability to be called with a buffer as input instead of 
-    *  a file. The buffer is provided by the in argument of size sz. 
-    *  
-    *  format specifies the format type of the buffer; SSL_FILETYPE_ASN1 or 
+    *
+    *  The wolfSSL_use_certificate_buffer() function loads a certificate buffer
+    *  into the WOLFSSL object. It behaves like the non-buffered version, only
+    *  differing in its ability to be called with a buffer as input instead of
+    *  a file. The buffer is provided by the in argument of size sz.
+    *
+    *  format specifies the format type of the buffer; SSL_FILETYPE_ASN1 or
     *  SSL_FILETYPE_PEM. Please see the examples for proper usage.
-    *  
+    *
     *  Returns
     *    SSL_SUCCESS      upon success.
     *    SSL_BAD_FILETYPE will be returned if the file is the wrong format.
     *    SSL_BAD_FILE     will be returned if the file doesn’t exist, can’t be read, or is corrupted.
     *    MEMORY_E         will be returned if an out of memory condition occurs.
     *    ASN_INPUT_E      will be returned if Base16 decoding fails on the file.
-    *  
+    *
     *  Parameters
     *    ssl    pointer to the SSL session, created with wolfSSL_new().
     *    in     buffer containing certificate to load.
     *    sz     size of the certificate located in buffer.
     *    format format of the certificate to be loaded. Possible values are SSL_FILETYPE_ASN1 or SSL_FILETYPE_PEM.
-    *  
+    *
     *
     *  Pay attention to expiration dates and the current date setting
-    *  
+    *
     *  see https://www.wolfssl.com/doxygen/group__CertsKeys.html#gaf4e8d912f3fe2c37731863e1cad5c97e
     ***************************************************************************
     */
     if (ret == WOLFSSL_SUCCESS) {
         WOLFSSL_MSG("Loading cert");
-        ret = wolfSSL_CTX_use_certificate_buffer(ctx, 
-            CERT_FILE, 
-            sizeof_CERT_FILE(), 
+        ret = wolfSSL_CTX_use_certificate_buffer(ctx,
+            CERT_FILE,
+            sizeof_CERT_FILE(),
             WOLFSSL_FILETYPE_PEM);
 
         if (ret == WOLFSSL_SUCCESS) {
@@ -609,28 +609,28 @@ int tls_smp_server_task() {
     else {
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_use_certificate_buffer\n");
     }
-        
-    
-    /* 
+
+
+    /*
     ***************************************************************************
-    *  Load client private key into WOLFSSL_CTX 
-    *  
+    *  Load client private key into WOLFSSL_CTX
+    *
     *  wolfSSL_CTX_use_PrivateKey_buffer()
-    *  
+    *
     *  WOLFSSL_API int wolfSSL_CTX_use_PrivateKey_buffer(WOLFSSL_CTX *,
     *                                                    const unsigned char *,
     *                                                    long,
-    *                                                    int      
+    *                                                    int
     *                                                   )
     *
-    *  This function loads a private key buffer into the SSL Context. 
-    *  It behaves like the non-buffered version, only differing in its 
-    *  ability to be called with a buffer as input instead of a file. 
-    *  
-    *  The buffer is provided by the in argument of size sz. format 
-    *  specifies the format type of the buffer; 
-    *  SSL_FILETYPE_ASN1 or SSL_FILETYPE_PEM. 
-    *  
+    *  This function loads a private key buffer into the SSL Context.
+    *  It behaves like the non-buffered version, only differing in its
+    *  ability to be called with a buffer as input instead of a file.
+    *
+    *  The buffer is provided by the in argument of size sz. format
+    *  specifies the format type of the buffer;
+    *  SSL_FILETYPE_ASN1 or SSL_FILETYPE_PEM.
+    *
     *  Please see the examples for proper usage.
     *
     *  Returns
@@ -644,19 +644,19 @@ int tls_smp_server_task() {
     *  Parameters
     *    ctx      pointer to the SSL context, created with wolfSSL_CTX_new().
     *             inthe input buffer containing the private key to be loaded.
-    *    
+    *
     *    sz          the size of the input buffer.
-    *    
-    *    format  the format of the private key located in the input buffer(in). 
+    *
+    *    format  the format of the private key located in the input buffer(in).
     *            Possible values are SSL_FILETYPE_ASN1 or SSL_FILETYPE_PEM.
     *
     *  see: https://www.wolfssl.com/doxygen/group__CertsKeys.html#ga71850887b87138b7c2d794bf6b1eafab
     ***************************************************************************
     */
     if (ret == WOLFSSL_SUCCESS) {
-        ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx, 
-                                                KEY_FILE, 
-                                                sizeof_KEY_FILE(), 
+        ret = wolfSSL_CTX_use_PrivateKey_buffer(ctx,
+                                                KEY_FILE,
+                                                sizeof_KEY_FILE(),
                                                 WOLFSSL_FILETYPE_PEM);
         if (ret == WOLFSSL_SUCCESS) {
             WOLFSSL_MSG("wolfSSL_CTX_use_PrivateKey_buffer successful\n");
@@ -670,38 +670,38 @@ int tls_smp_server_task() {
         WOLFSSL_ERROR_MSG("Skipping wolfSSL_CTX_use_PrivateKey_buffer\n");
     }
 
-    
-    /* 
+
+    /*
     ***************************************************************************
-    *  Load CA certificate into WOLFSSL_CTX 
-    * 
+    *  Load CA certificate into WOLFSSL_CTX
+    *
     *  wolfSSL_CTX_load_verify_buffer()
     *  WOLFSSL_API int wolfSSL_CTX_load_verify_buffer(WOLFSSL_CTX *,
     *                                                 const unsigned char *,
     *                                                 long,
-    *                                                 int      
-    *                                                )        
-    *                                                
-    *  This function loads a CA certificate buffer into the WOLFSSL Context. 
-    *  It behaves like the non-buffered version, only differing in its ability 
-    *  to be called with a buffer as input instead of a file. The buffer is 
-    *  provided by the in argument of size sz. format specifies the format type 
-    *  of the buffer; SSL_FILETYPE_ASN1 or SSL_FILETYPE_PEM. More than one 
+    *                                                 int
+    *                                                )
+    *
+    *  This function loads a CA certificate buffer into the WOLFSSL Context.
+    *  It behaves like the non-buffered version, only differing in its ability
+    *  to be called with a buffer as input instead of a file. The buffer is
+    *  provided by the in argument of size sz. format specifies the format type
+    *  of the buffer; SSL_FILETYPE_ASN1 or SSL_FILETYPE_PEM. More than one
     *  CA certificate may be loaded per buffer as long as the format is in PEM.
-    *  
+    *
     *  Please see the examples for proper usage.
-    *  
+    *
     *  Returns
-    *  
+    *
     *    SSL_SUCCESS upon success
     *    SSL_BAD_FILETYPE will be returned if the file is the wrong format.
     *    SSL_BAD_FILE will be returned if the file doesn’t exist, can’t be read, or is corrupted.
     *    MEMORY_E will be returned if an out of memory condition occurs.
     *    ASN_INPUT_E will be returned if Base16 decoding fails on the file.
     *    BUFFER_E will be returned if a chain buffer is bigger than the receiving buffer.
-    *    
+    *
     *  Parameters
-    *  
+    *
     *    ctx    pointer to the SSL context, created with wolfSSL_CTX_new().
     *    in    pointer to the CA certificate buffer.
     *    sz    size of the input CA certificate buffer, in.
@@ -722,24 +722,24 @@ int tls_smp_server_task() {
     else {
         WOLFSSL_ERROR_MSG("skipping wolfSSL_CTX_load_verify_buffer\n");
     }
- 
+
     /* Require mutual authentication */
     wolfSSL_CTX_set_verify(ctx,
         WOLFSSL_VERIFY_PEER | WOLFSSL_VERIFY_FAIL_IF_NO_PEER_CERT,
         NULL);
 
-    
 
-    
+
+
     /* Continue to accept clients until mShutdown is issued */
     while (!mShutdown && (ret == WOLFSSL_SUCCESS)) {
         WOLFSSL_MSG("Waiting for a connection...\n");
-        
+
         /* Accept client connections */
         if ((mConnd = accept(sockfd, (struct sockaddr*)&clientAddr, &size))
             == -1) {
             // fprintf(stderr, "ERROR: failed to accept the connection\n\n");
-            ret = -1; 
+            ret = -1;
             // TODO    goto exit;
                 WOLFSSL_ERROR_MSG("ERROR: failed socket accept\n");
                 ret = WOLFSSL_FAILURE;
@@ -748,7 +748,7 @@ int tls_smp_server_task() {
         /* Create a WOLFSSL object */
         if ((ssl = wolfSSL_new(ctx)) == NULL) {
             // fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
-            ret = -1; 
+            ret = -1;
             //TODO goto exit;
             WOLFSSL_ERROR_MSG("ERROR: filed wolfSSL_new during loop\n");
             ret = WOLFSSL_FAILURE;
@@ -826,11 +826,11 @@ int tls_smp_server_task() {
 
     WOLFSSL_MSG("Shutdown complete\n");
 
-    /* 
+    /*
     ***************************************************************************
-    *    
-    *    Cleanup and return 
-    *    
+    *
+    *    Cleanup and return
+    *
     ***************************************************************************
     */
     if (mConnd != SOCKET_INVALID) {
@@ -842,16 +842,16 @@ int tls_smp_server_task() {
         close(sockfd); /* Close the socket listening for clients   */
         sockfd = SOCKET_INVALID;
     }
-    
+
     if (ssl) {
         wolfSSL_free(ssl); /* Free the wolfSSL object */
     }
 
-    
+
     if (ctx) {
         wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
     }
-    
+
     wolfSSL_Cleanup(); /* Cleanup the wolfSSL environment          */
 
     return ret;
@@ -870,24 +870,24 @@ static void eth_event_handler(void *arg,
     switch (event_id) {
     case ETHERNET_EVENT_CONNECTED:
         /*
-         * see ESP-IDF 5.0 note at 
+         * see ESP-IDF 5.0 note at
          * https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/ethernet.html
-         * 
+         *
          * esp_eth_ioctl() third argument could take int (bool) number as an input in some cases.
-         * However, it was not properly documented and, in addition, the number had to be “unnaturally” 
+         * However, it was not properly documented and, in addition, the number had to be “unnaturally”
          * type casted to void * datatype to prevent compiler warnings as shown in below example:
-         * 
+         *
          * esp_eth_ioctl(eth_handle, ETH_CMD_S_FLOW_CTRL, (void *)true);
          *
-         * This could lead to misuse of the esp_eth_ioctl(). Therefore, ESP-IDF 5.0 unified usage of 
-         * esp_eth_ioctl(). Its third argument now always acts as pointer to a memory location of specific 
+         * This could lead to misuse of the esp_eth_ioctl(). Therefore, ESP-IDF 5.0 unified usage of
+         * esp_eth_ioctl(). Its third argument now always acts as pointer to a memory location of specific
          * type from/to where the configuration option is read/stored.
-         * 
+         *
          * TODO Migrate Ethernet Drivers to ESP-IDF 5.0
-         
+
         eth_duplex_t new_duplex_mode = ETH_DUPLEX_HALF;
         esp_eth_ioctl(eth_handle, ETH_CMD_S_DUPLEX_MODE, &new_duplex_mode);
-        
+
          */
         esp_eth_ioctl(eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
 
@@ -901,19 +901,19 @@ static void eth_event_handler(void *arg,
             mac_addr[4],
             mac_addr[5]);
         break;
-        
+
     case ETHERNET_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "Ethernet Link Down");
         break;
-        
+
     case ETHERNET_EVENT_START:
         ESP_LOGI(TAG, "Ethernet Started");
         break;
-        
+
     case ETHERNET_EVENT_STOP:
         ESP_LOGI(TAG, "Ethernet Stopped");
         break;
-        
+
     default:
         ESP_LOGI(TAG, "Other");
         break;
@@ -939,7 +939,7 @@ static void got_ip_event_handler(void *arg,
 int set_time() {
     /* we'll also return a result code of zero */
     int res = 0;
-    
+
     //*ideally, we'd like to set time from network, but let's set a default time, just in case */
     struct tm timeinfo;
     timeinfo.tm_year = 2022 - 1900;
@@ -952,18 +952,18 @@ int set_time() {
     t = mktime(&timeinfo);
 
     struct timeval now = { .tv_sec = t };
-    settimeofday(&now, NULL);   
+    settimeofday(&now, NULL);
 
     /* set timezone */
     setenv("TZ", TIME_ZONE, 1);
     tzset();
 
-    /* next, let's setup NTP time servers 
-     * 
+    /* next, let's setup NTP time servers
+     *
      * see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system_time.html#sntp-time-synchronization
     */
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    
+
     int i = 0;
     for (i = 0; i < NTP_SERVER_COUNT; i++) {
         const char* thisServer = ntpServerList[i];
@@ -1013,8 +1013,10 @@ int init_ENC28J60() {
     enc28j60_config.int_gpio_num = CONFIG_EXAMPLE_ENC28J60_INT_GPIO;
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
+#if ESP_IDF_VERSION_MAJOR < 5
     mac_config.smi_mdc_gpio_num = -1; // ENC28J60 doesn't have SMI interface
     mac_config.smi_mdio_gpio_num = -1;
+#endif
     esp_eth_mac_t *mac = esp_eth_mac_new_enc28j60(&enc28j60_config, &mac_config);
 
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
@@ -1026,35 +1028,35 @@ int init_ENC28J60() {
     esp_eth_handle_t eth_handle = NULL;
     ESP_ERROR_CHECK(esp_eth_driver_install(&eth_config, &eth_handle));
 
-       
+
     mac->set_addr(mac, myMacAddress);
 
 
     /* attach Ethernet driver to TCP/IP stack */
     ESP_ERROR_CHECK(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)));
 
-    /* Register user defined event handers 
-     * "ensure that they register the user event handlers as the last thing prior to starting the Ethernet driver." 
+    /* Register user defined event handers
+     * "ensure that they register the user event handlers as the last thing prior to starting the Ethernet driver."
     */
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
-    
+
     /* start Ethernet driver state machine */
-    ESP_ERROR_CHECK(esp_eth_start(eth_handle)); 
-    
+    ESP_ERROR_CHECK(esp_eth_start(eth_handle));
+
     return 0;
 }
 
 
 void app_main(void) {
     init_ENC28J60();
-    
+
     // one of the most important aspects of security is the time and date values
     set_time();
-    
+
     for (;;) {
         ESP_LOGI(TAG, "main loop");
-        vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */     
+        vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */
         tls_smp_server_task();
     }
 }

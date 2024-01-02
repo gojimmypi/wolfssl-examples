@@ -16,7 +16,11 @@
 #include <sys/cdefs.h>
 #include "esp_log.h"
 #include "esp_eth.h"
-#include "eth_phy_regs_struct.h"
+#if ESP_IDF_VERSION_MAJOR < 5
+    #include "eth_phy_regs_struct.h"
+#else
+    #include "eth_phy_802_3_regs.h"
+#endif
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -292,7 +296,9 @@ esp_eth_phy_t *esp_eth_phy_new_enc28j60(const eth_phy_config_t *config)
     enc28j60->parent.init = enc28j60_init;
     enc28j60->parent.deinit = enc28j60_deinit;
     enc28j60->parent.set_mediator = enc28j60_set_mediator;
+#if 1
     enc28j60->parent.negotiate = enc28j60_negotiate;
+#endif
     enc28j60->parent.get_link = enc28j60_get_link;
     enc28j60->parent.pwrctl = enc28j60_pwrctl;
     enc28j60->parent.get_addr = enc28j60_get_addr;

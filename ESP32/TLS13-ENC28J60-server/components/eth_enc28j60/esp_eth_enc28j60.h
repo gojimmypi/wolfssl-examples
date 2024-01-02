@@ -18,9 +18,11 @@
 extern "C" {
 #endif
 
-#include "esp_eth_phy.h"
-#include "esp_eth_mac.h"
-#include "driver/spi_master.h"
+#if ESP_IDF_VERSION_MAJOR < 5
+    #include "esp_eth_phy.h"
+    #include "esp_eth_mac.h"
+    #include "driver/spi_master.h"
+#endif
 
 #define CS_HOLD_TIME_MIN_NS 210
 
