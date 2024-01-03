@@ -14,6 +14,8 @@
 
 #include "sdkconfig.h"
 
+#include <esp_log.h>
+
 /* wolfSSL */
 #include <wolfssl/wolfcrypt/settings.h> /* includes wolfSSL user-settings.h */
 #include <wolfssl/wolfcrypt/port/Espressif/esp32-crypt.h>
@@ -22,22 +24,20 @@
     #warning "Check components/wolfssl/include"
 #endif
 
-#include "tls_smp_server_task.h"
 
 
 /* the usual suspects */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <string.h>
+//#include <errno.h>
+//
+//#include "freertos/FreeRTOS.h"
+//#include "freertos/task.h"
 
-#include "sdkconfig.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "esp_netif.h"
 #include "esp_eth.h"
 #include "esp_event.h"
-#include "esp_log.h"
 #include "driver/gpio.h"
 #include "enc28j60.h"
 #include "driver/spi_master.h"
@@ -48,19 +48,15 @@
 #endif
 
 /* socket includes */
-#include "lwip/netdb.h"
-#include "lwip/sockets.h"
+//#include "lwip/netdb.h"
+//#include "lwip/sockets.h"
 
 /* time */
 #include  <lwip/apps/sntp.h>
 
-/* wolfSSL */
-#include <wolfssl/wolfcrypt/settings.h> // make sure this appears before any other wolfSSL headers
-#include <wolfssl/ssl.h>
-
-#ifdef WOLFSSL_TRACK_MEMORY
-#include <wolfssl/wolfcrypt/mem_track.h>
-#endif
+#include "main.h"
+#include "tls_smp_server_task.h"
+#include "time_helper.h"
 
 /**
  ******************************************************************************
@@ -114,17 +110,6 @@ server file system versions:
 
 
 static const char *TAG = "eth_example";
-
-// see https://tf.nist.gov/tf-cgi/servers.cgi
-const int NTP_SERVER_COUNT = 3;
-const char* ntpServerList[] = {
-    "pool.ntp.org",
-    "time.nist.gov",
-    "utcnist.colorado.edu"
-};
-const char * TIME_ZONE = "PST-8";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
 
 TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
 /**
@@ -217,48 +202,6 @@ static void got_ip_event_handler(void *arg,
     ESP_LOGI(TAG, "~~~~~~~~~~~");
 }
 
-int set_time() {
-    /* we'll also return a result code of zero */
-    int res = 0;
-
-    //*ideally, we'd like to set time from network, but let's set a default time, just in case */
-    struct tm timeinfo;
-    timeinfo.tm_year = 2022 - 1900;
-    timeinfo.tm_mon = 3;
-    timeinfo.tm_mday = 15;
-    timeinfo.tm_hour = 8;
-    timeinfo.tm_min = 03;
-    timeinfo.tm_sec = 10;
-    time_t t;
-    t = mktime(&timeinfo);
-
-    struct timeval now = { .tv_sec = t };
-    settimeofday(&now, NULL);
-
-    /* set timezone */
-    setenv("TZ", TIME_ZONE, 1);
-    tzset();
-
-    /* next, let's setup NTP time servers
-     *
-     * see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system_time.html#sntp-time-synchronization
-    */
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-
-    int i = 0;
-    for (i = 0; i < NTP_SERVER_COUNT; i++) {
-        const char* thisServer = ntpServerList[i];
-        if (strncmp(thisServer, "\x00", 1)) {
-            /* just in case we run out of NTP servers */
-            break;
-        }
-        sntp_setservername(i, thisServer);
-    }
-    sntp_init();
-    return res;
-}
-
-
 
 int init_ENC28J60() {
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
@@ -328,16 +271,58 @@ int init_ENC28J60() {
     return 0;
 }
 
-
+/* for FreeRTOS */
 void app_main(void) {
+    int stack_start = 0;
+    esp_err_t ret = 0;
+    ESP_LOGI(TAG, "---------------- wolfSSL TLS Server Example ------------");
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG, "---------------------- BEGIN MAIN ----------------------");
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+#ifdef ESP_TASK_MAIN_STACK
+    ESP_LOGI(TAG, "ESP_TASK_MAIN_STACK: %d", ESP_TASK_MAIN_STACK);
+#endif
+#ifdef TASK_EXTRA_STACK_SIZE
+    ESP_LOGI(TAG, "TASK_EXTRA_STACK_SIZE: %d", TASK_EXTRA_STACK_SIZE);
+#endif
+#ifdef INCLUDE_uxTaskGetStackHighWaterMark
+    ESP_LOGI(TAG, "CONFIG_ESP_MAIN_TASK_STACK_SIZE = %d bytes (%d words)",
+                   CONFIG_ESP_MAIN_TASK_STACK_SIZE,
+                   (int)(CONFIG_ESP_MAIN_TASK_STACK_SIZE / sizeof(void*)));
+
+    /* Returns the high water mark of the stack associated with xTask. That is,
+     * the minimum free stack space there has been (in bytes not words, unlike
+     * vanilla FreeRTOS) since the task started. The smaller the returned
+     * number the closer the task has come to overflowing its stack.
+     * see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/freertos_idf.html
+     */
+    stack_start = uxTaskGetStackHighWaterMark(NULL);
+    ESP_LOGI(TAG, "Stack Start HWM: %d bytes", stack_start);
+#endif
+
+#ifdef HAVE_VERSION_EXTENDED_INFO
+    esp_ShowExtendedSystemInfo();
+#endif
+
+    /* Set time for cert validation.
+     * Some lwIP APIs, including SNTP functions, are not thread safe. */
+    ret = set_time(); /* need to setup NTP before WiFi */
+    if (ret == ESP_OK) {
+
+    }
+    else {
+        ESP_LOGW(TAG, "set_time() returned error = %d", ret);
+    }
+
     init_ENC28J60();
 
-    // one of the most important aspects of security is the time and date values
-    set_time();
 
     for (;;) {
         ESP_LOGI(TAG, "main loop");
         vTaskDelay(DelayTicks ? DelayTicks : 1); /* Minimum delay = 1 tick */
+
         tls_smp_server_task();
     }
 }

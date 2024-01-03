@@ -15,6 +15,10 @@
 #endif
 #include <wolfssl/ssl.h>
 
+#ifdef WOLFSSL_TRACK_MEMORY
+    #include <wolfssl/wolfcrypt/mem_track.h>
+#endif
+
 /* Local project sample certificate files */
 #include "embedded_CLIENT_CERT_FILE.h"
 #include "embedded_SERVER_CERT_FILE.h"

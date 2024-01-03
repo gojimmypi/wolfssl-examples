@@ -1,5 +1,7 @@
 set(srcs "main.c"
-         "tls_smp_server_task.c")
+         "tls_smp_server_task.c"
+         "time_helper.c"
+   )
 
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWOLFSSL_USER_SETTINGS")
