@@ -12,10 +12,6 @@
  *  see https://www.wolfssl.com/docs/quickstart/
  **/
 
-#define WOLFSSL_ESPIDF
-#define WOLFSSL_ESPWROOM32
-#define WOLFSSL_USER_SETTINGS
-
 #include "sdkconfig.h"
 
 /* wolfSSL */

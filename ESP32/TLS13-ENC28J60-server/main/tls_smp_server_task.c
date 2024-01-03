@@ -1,14 +1,8 @@
-#define WOLFSSL_ESPIDF
-#define WOLFSSL_ESPWROOM32
-#define WOLFSSL_USER_SETTINGS
-
 #define DEFAULT_PORT                     11111
 
 #define TLS_SMP_CLIENT_TASK_NAME         "tls_server_example"
 #define TLS_SMP_CLIENT_TASK_WORDS        10240
 #define TLS_SMP_CLIENT_TASK_PRIORITY     8
-
-
 
 #include "sdkconfig.h"
 
@@ -21,11 +15,10 @@
 #endif
 #include <wolfssl/ssl.h>
 
+/* Local project sample certificate files */
 #include "embedded_CLIENT_CERT_FILE.h"
 #include "embedded_SERVER_CERT_FILE.h"
 #include "embedded_SERVER_KEY_FILE.h"
-
-
 
 #ifdef HAVE_SIGNAL
 static void sig_handler(const int sig) {
