@@ -111,7 +111,7 @@ frequencies less than 8 MHz.
 
 Build the project and flash it to the board, then run monitor tool to view serial output:
 
-```
+```bash
 idf.py -p PORT -b 115200 build flash monitor
 ```
 
@@ -123,7 +123,7 @@ See the [Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/l
 
 ## Example Output
 
-```bash
+```text
 I (0) cpu_start: Starting scheduler on APP CPU.
 I (401) enc28j60: revision: 6
 I (411) esp_eth.netif.glue: 00:04:a3:12:34:56
@@ -141,6 +141,18 @@ I (4401) eth_example: ETHMASK:255.255.255.0
 I (4401) eth_example: ETHGW:192.168.2.2
 I (4411) eth_example: ~~~~~~~~~~~
 ```
+
+If all you see is the startup like this:
+
+```text
+I (488) enc28j60: revision: 6
+I (508) esp_eth.netif.netif_glue: 02:00:00:12:34:56
+I (508) esp_eth.netif.netif_glue: ethernet attached to netif
+I (508) eth_example: Ethernet Started
+I (508) eth_example: main loop
+```
+
+Check to make sure there's an available DHCP server on the wired network and that the Ethernet cable is properly inserted.
 
 Now you can ping your ESP32 in the terminal by entering `ping 192.168.2.34` (it depends on the actual IP address you get).
 
