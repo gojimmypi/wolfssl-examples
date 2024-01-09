@@ -1,16 +1,27 @@
-/* ENC28J60 Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
+/* ESP32-TLS13-enc28J60-server main.c
+ *
+ * Copyright (C) 2006-2023 wolfSSL Inc.
+ *
+ * This file is part of wolfSSL.
+ *
+ * wolfSSL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * wolfSSL is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
+ */
 
 /*
- *
- *  see https://www.wolfssl.com/docs/quickstart/
- **/
+ * see https://www.wolfssl.com/docs/quickstart/
+ */
 
 #include "sdkconfig.h"
 
@@ -24,17 +35,6 @@
     #warning "Check components/wolfssl/include"
 #endif
 
-
-
-/* the usual suspects */
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <errno.h>
-//
-//#include "freertos/FreeRTOS.h"
-//#include "freertos/task.h"
-
 #include "esp_netif.h"
 #include "esp_eth.h"
 #include "esp_event.h"
@@ -46,13 +46,6 @@
 #if ESP_IDF_VERSION_MAJOR >= 4
 // #include "protocol_examples_common.h"
 #endif
-
-/* socket includes */
-//#include "lwip/netdb.h"
-//#include "lwip/sockets.h"
-
-/* time */
-#include  <lwip/apps/sntp.h>
 
 #include "main.h"
 #include "tls_smp_server_task.h"
@@ -67,7 +60,8 @@
  **/
 
 /* ENC28J60 doesn't burn any factory MAC address, we need to set it manually.
-   02:00:00 is a Locally Administered OUI range so should not be used except when testing on a LAN under your control.
+   02:00:00 is a Locally Administered OUI range so should not be used except
+   when testing on a LAN under your control.
 */
 uint8_t myMacAddress[] = {
     0x02,
@@ -81,37 +75,10 @@ uint8_t myMacAddress[] = {
 /* ESP lwip */
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
 
-
-
-/* include certificates. Note that there is an experiation date!
- *
- * See also https://github.com/wolfSSL/wolfssl/blob/master/wolfssl/certs_test.h
-
-   for example:
-
-    #define USE_CERT_BUFFERS_2048
-    #include <wolfssl/certs_test.h>
-*/
-
-/*
-* for reference, embedded client uses:
-*
-* #include "embedded_CA_FILE.h"
-* #include "embedded_CERT_FILE.h"
-* #include "embedded_KEY_FILE.h"
-*/
-
-/*
-server file system versions:
-#define CA_FILE   "../../../../certs/client-cert.pem"
-#define CERT_FILE "../../../../certs/server-cert.pem"
-#define KEY_FILE  "../../../../certs/server-key.pem"
-*/
-
-
 static const char *TAG = "eth_example";
 
 TickType_t DelayTicks = 5000 / portTICK_PERIOD_MS;
+
 /**
  ******************************************************************************
  ******************************************************************************
@@ -313,7 +280,7 @@ void app_main(void) {
 
     }
     else {
-        ESP_LOGW(TAG, "set_time() returned error = %d", ret);
+        ESP_LOGE(TAG, "set_time() returned error = %d", ret);
     }
 
     init_ENC28J60();

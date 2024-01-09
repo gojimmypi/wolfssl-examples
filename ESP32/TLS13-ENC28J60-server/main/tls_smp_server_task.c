@@ -4,6 +4,7 @@
 #define TLS_SMP_CLIENT_TASK_WORDS        10240
 #define TLS_SMP_CLIENT_TASK_PRIORITY     8
 
+/* Espressif ESP-IDF */
 #include "sdkconfig.h"
 
 /* wolfSSL */
@@ -19,10 +20,27 @@
     #include <wolfssl/wolfcrypt/mem_track.h>
 #endif
 
+/* include certificates. Note that there is an experiation date!
+ *
+ * See also https://github.com/wolfSSL/wolfssl/blob/master/wolfssl/certs_test.h
+
+   for example:
+
+    #define USE_CERT_BUFFERS_2048
+    #include <wolfssl/certs_test.h>
+*/
+
 /* Local project sample certificate files */
 #include "embedded_CLIENT_CERT_FILE.h"
 #include "embedded_SERVER_CERT_FILE.h"
 #include "embedded_SERVER_KEY_FILE.h"
+
+/*
+server file system versions:
+#define CA_FILE   "../../../../certs/client-cert.pem"
+#define CERT_FILE "../../../../certs/server-cert.pem"
+#define KEY_FILE  "../../../../certs/server-key.pem"
+*/
 
 #ifdef HAVE_SIGNAL
 static void sig_handler(const int sig) {
@@ -462,7 +480,7 @@ int tls_smp_server_task(void) {
     *  Returns
     *    SSL_SUCCESS      upon success.
     *    SSL_BAD_FILETYPE will be returned if the file is the wrong format.
-    *    SSL_BAD_FILE     will be returned if the file doesn’t exist, can’t be read, or is corrupted.
+    *    SSL_BAD_FILE     will be returned if the file doesnâ€™t exist, canâ€™t be read, or is corrupted.
     *    MEMORY_E         will be returned if an out of memory condition occurs.
     *    ASN_INPUT_E      will be returned if Base16 decoding fails on the file.
     *
@@ -522,7 +540,7 @@ int tls_smp_server_task(void) {
     *  Returns
     *    SSL_SUCCESS upon success
     *    SSL_BAD_FILETYPE will be returned if the file is the wrong format.
-    *    SSL_BAD_FILE will be returned if the file doesn’t exist, can’t be read, or is corrupted.
+    *    SSL_BAD_FILE will be returned if the file doesnâ€™t exist, canâ€™t be read, or is corrupted.
     *    MEMORY_E will be returned if an out of memory condition occurs.
     *    ASN_INPUT_E will be returned if Base16 decoding fails on the file.
     *    NO_PASSWORD will be returned if the key file is encrypted but no password is provided.
@@ -581,7 +599,7 @@ int tls_smp_server_task(void) {
     *
     *    SSL_SUCCESS upon success
     *    SSL_BAD_FILETYPE will be returned if the file is the wrong format.
-    *    SSL_BAD_FILE will be returned if the file doesn’t exist, can’t be read, or is corrupted.
+    *    SSL_BAD_FILE will be returned if the file doesnâ€™t exist, canâ€™t be read, or is corrupted.
     *    MEMORY_E will be returned if an out of memory condition occurs.
     *    ASN_INPUT_E will be returned if Base16 decoding fails on the file.
     *    BUFFER_E will be returned if a chain buffer is bigger than the receiving buffer.
