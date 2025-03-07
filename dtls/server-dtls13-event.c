@@ -26,6 +26,12 @@
  * is not thread safe as access to global objects is not protected.
  *
  * Define USE_DTLS12 to use DTLS 1.2 instead of DTLS 1.3
+ *
+ * NOTE: we no longer recommend using `connect` on sockets on the server side.
+ * The Linux kernel only filters `connect`ed sockets on message ingress. This
+ * results in lost packets between when the messages are received and when
+ * `connect` is called. We recommend using one socket and de-multiplexing. See
+ * the server-dtls-demux.c example for how to do this.
  */
 
 #include <wolfssl/options.h>
@@ -42,7 +48,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-/* Requires libevent */
+/* Requires libevent-devel */
 #include <event2/event.h>
 
 #include "dtls-common.h"
@@ -58,7 +64,7 @@ typedef struct conn_ctx {
     WOLFSSL* ssl;
     struct event* readEv;
     struct event* writeEv;
-    char waitingOnData:1;
+    unsigned char waitingOnData:1;
 } conn_ctx;
 
 WOLFSSL_CTX*  ctx = NULL;
@@ -93,7 +99,7 @@ int main(int argc, char** argv)
 
     /* Set ctx to DTLS 1.3 */
     if ((ctx = wolfSSL_CTX_new(
-#ifndef USE_DTLS12
+#ifdef WOLFSSL_DTLS13
             wolfDTLSv1_3_server_method()
 #else
             wolfDTLSv1_2_server_method()
@@ -109,7 +115,7 @@ int main(int argc, char** argv)
         goto cleanup;
     }
     /* Load server certificates */
-    if (wolfSSL_CTX_use_certificate_file(ctx, servCertLoc, SSL_FILETYPE_PEM) != 
+    if (wolfSSL_CTX_use_certificate_file(ctx, servCertLoc, SSL_FILETYPE_PEM) !=
                                                                  SSL_SUCCESS) {
         fprintf(stderr, "Error loading %s, please check the file.\n", servCertLoc);
         goto cleanup;
@@ -286,7 +292,7 @@ static void newConn(evutil_socket_t fd, short events, void* arg)
 static void setHsTimeout(WOLFSSL* ssl, struct timeval *tv)
 {
     int timeout = wolfSSL_dtls_get_current_timeout(ssl);
-#ifndef USE_DTLS12
+#ifdef WOLFSSL_DTLS13
     if (wolfSSL_dtls13_use_quick_timeout(ssl)) {
         if (timeout >= QUICK_MULT)
             tv->tv_sec = timeout / QUICK_MULT;

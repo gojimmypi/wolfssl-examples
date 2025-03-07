@@ -1,12 +1,12 @@
 # MAXQ10xx Examples Makefile
 CC       = gcc
-LIB_PATH = /usr/local
-CFLAGS   = -Wall -I$(LIB_PATH)/include
-LIBS     = -L$(LIB_PATH)/lib -lm
+WOLFSSL_INSTALL_DIR = /usr/local
+CFLAGS   = -Wall -I$(WOLFSSL_INSTALL_DIR)/include
+LIBS     = -L$(WOLFSSL_INSTALL_DIR)/lib -lm
 
 # option variables
 DYN_LIB         = -lwolfssl
-STATIC_LIB      = $(LIB_PATH)/lib/libwolfssl.a
+STATIC_LIB      = $(WOLFSSL_INSTALL_DIR)/lib/libwolfssl.a
 DEBUG_FLAGS     = -g -DDEBUG
 DEBUG_INC_PATHS = -MD
 OPTIMIZE        = -Os
@@ -19,6 +19,10 @@ LIBS+=$(DYN_LIB)
 
 # build targets
 SRC=$(wildcard *.c)
+
+# Exclude wolfssl-lwip-client.c since it is not a stand-alone application, but
+# is needed for LWIP example
+SRC := $(filter-out wolfssl-lwip-client.c, $(SRC))
 TARGETS=$(patsubst %.c, %, $(SRC))
 
 .PHONY: clean all

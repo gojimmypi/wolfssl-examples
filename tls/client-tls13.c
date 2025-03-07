@@ -31,7 +31,9 @@
 #include <unistd.h>
 
 /* wolfSSL */
-#include <wolfssl/options.h>
+#ifndef WOLFSSL_USER_SETTINGS
+    #include <wolfssl/options.h>
+#endif
 #include <wolfssl/ssl.h>
 #include <wolfssl/wolfio.h>
 #include <wolfssl/wolfcrypt/error-crypt.h>

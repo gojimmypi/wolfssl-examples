@@ -67,6 +67,9 @@ static int tcp_select(SOCKET_T socketfd, int to_sec, int rx)
     else
         sendfds = &fds;
 
+    timeout.tv_sec = to_sec;
+    timeout.tv_usec = 0;
+
     result = select(nfds, recvfds, sendfds, &errfds, &timeout);
 
     if (result == 0)
@@ -131,7 +134,12 @@ int main(int argc, char** argv)
 
 
     /* Create and initialize WOLFSSL_CTX */
-    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL) {
+#ifdef USE_TLSV13
+    ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method());
+#else
+    ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method());
+#endif
+    if (ctx == NULL) {
         fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
         ret = -1;
         goto exit;

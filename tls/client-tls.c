@@ -100,7 +100,12 @@ int main(int argc, char** argv)
     }
 
     /* Create and initialize WOLFSSL_CTX */
-    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL) {
+#ifdef USE_TLSV13
+    ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method());
+#else
+    ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method());
+#endif
+    if (ctx == NULL) {
         fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
         ret = -1;
         goto socket_cleanup;
@@ -108,7 +113,7 @@ int main(int argc, char** argv)
 
     /* Load client certificates into WOLFSSL_CTX */
     if ((ret = wolfSSL_CTX_load_verify_locations(ctx, CERT_FILE, NULL))
-         != SSL_SUCCESS) {
+         != WOLFSSL_SUCCESS) {
         fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
                 CERT_FILE);
         goto ctx_cleanup;
@@ -128,7 +133,7 @@ int main(int argc, char** argv)
     }
 
     /* Connect to wolfSSL on the server side */
-    if ((ret = wolfSSL_connect(ssl)) != SSL_SUCCESS) {
+    if ((ret = wolfSSL_connect(ssl)) != WOLFSSL_SUCCESS) {
         fprintf(stderr, "ERROR: failed to connect to wolfSSL\n");
         goto cleanup;
     }
@@ -161,7 +166,7 @@ int main(int argc, char** argv)
     printf("Server: %s\n", buff);
 
     /* Bidirectional shutdown */
-    while (wolfSSL_shutdown(ssl) == SSL_SHUTDOWN_NOT_DONE) {
+    while (wolfSSL_shutdown(ssl) == WOLFSSL_SHUTDOWN_NOT_DONE) {
         printf("Shutdown not complete\n");
     }
 

@@ -1,14 +1,15 @@
 # ECC Examples Makefile
 CC       = gcc
-LIB_PATH = /usr/local
-CFLAGS   = -Wall -I$(LIB_PATH)/include
+WOLFSSL_INSTALL_DIR = /usr/local
+CFLAGS   = -Wall -I$(WOLFSSL_INSTALL_DIR)/include
 ZLIB     =
 #ZLIB    += -lz
-LIBS     = -L$(LIB_PATH)/lib -lm ${ZLIB}
+PSA_LIB  = -lmbedcrypto
+LIBS     = -L$(WOLFSSL_INSTALL_DIR)/lib -lm ${ZLIB}
 
 # option variables
 DYN_LIB         = -lwolfssl
-STATIC_LIB      = $(LIB_PATH)/lib/libwolfssl.a
+STATIC_LIB      = $(WOLFSSL_INSTALL_DIR)/lib/libwolfssl.a
 DEBUG_FLAGS     = -g -DDEBUG
 DEBUG_INC_PATHS = -MD
 OPTIMIZE        = -Os
@@ -18,6 +19,11 @@ OPTIMIZE        = -Os
 CFLAGS+=$(OPTIMIZE)
 #LIBS+=$(STATIC_LIB)
 LIBS+=$(DYN_LIB)
+
+ifneq ($(PSA),)
+LIBS+=$(PSA_LIB)
+CFLAGS+=-DUSE_PSA
+endif
 
 # build targets
 SRC=$(wildcard *.c)
@@ -49,4 +55,5 @@ clean:
         envelopedDataPWRI.der envelopedDataORI.der envelopedDataKEKRI.der \
         authEnvelopedDataKARI.der authEnvelopedDataKTRI.der \
         authEnvelopedDataORI.der authEnvelopedDataPWRI.der encryptedData.der \
-        authEnvelopedDataKEKRI.der compressedData.der
+        authEnvelopedDataKEKRI.der compressedData.der \
+        smime-created.p7s

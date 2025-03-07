@@ -51,14 +51,20 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 /dtls/client-dtls-ipv6
 /dtls/client-dtls-nonblocking
 /dtls/client-dtls-resume
+/dtls/client-dtls-rw-threads
 /dtls/client-dtls-shared
 /dtls/client-dtls
+/dtls/client-dtls13
 /dtls/client-udp
+/dtls/memory-bio-dtls
 /dtls/server-dtls-callback
 /dtls/server-dtls-ipv6
 /dtls/server-dtls-nonblocking
+/dtls/server-dtls-rw-threads
 /dtls/server-dtls-threaded
 /dtls/server-dtls
+/dtls/server-dtls13
+/dtls/server-dtls13-event
 /dtls/server-udp
 
 /psk/client-psk-bio-custom
@@ -73,6 +79,7 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 /psk/server-psk
 /psk/server-tcp
 
+/tls/client-async
 /tls/client-tcp
 /tls/client-tls
 /tls/client-tls13
@@ -80,6 +87,7 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 /tls/client-tls-bio
 /tls/client-tls-cacb
 /tls/client-tls-callback
+/tls/client-tls-cryptocb
 /tls/client-tls-ecdhe
 /tls/client-tls-nonblocking
 /tls/client-tls-perf
@@ -89,10 +97,12 @@ android/wolfssljni-ndk-sample/proguard-project.txt
 
 /tls/memory-tls
 
+/tls/server-async
 /tls/server-tcp
 /tls/server-tls
 /tls/server-tls13
 /tls/server-tls-callback
+/tls/server-tls-cryptocb
 /tls/server-tls-ecdhe
 /tls/server-tls-epoll-perf
 /tls/server-tls-epoll-threaded
@@ -114,6 +124,8 @@ crypto/3des/3des-file-encrypt
 crypto/aes/aes-file-encrypt
 crypto/aes/aescfb-file-encrypt
 crypto/aes/aesctr-file-encrypt
+crypto/aes/aesgcm-file-encrypt
+crypto/aes/aesgcm-oneshot
 crypto/camellia/camellia-encrypt
 crypto/pkcs12/pkcs12-create-example
 crypto/pkcs12/pkcs12-example
@@ -173,10 +185,12 @@ pkcs7/compressedData
 pkcs7/*.der
 pkcs7/envelopedData-kari
 pkcs7/envelopedData-ktri
+pkcs7/envelopedData-ktri-stream
 pkcs7/envelopedData-kekri
 pkcs7/envelopedData-pwri
 pkcs7/envelopedData-ori
 pkcs7/signedData
+pkcs7/signedData-stream
 pkcs7/signedData-cryptodev
 pkcs7/signedData-FirmwarePkgData
 pkcs7/signedData-DetachedSignature
@@ -191,6 +205,10 @@ pkcs7/signedData-verifyFile
 *.dSYM
 certmanager/certloadverifybuffer
 certmanager/certverify
+
+certvfy/certvfy
+certvfy/certsigvfy
+certvfy/sigvfycert
 
 rsa/sign
 rsa/verify
@@ -214,6 +232,7 @@ pk/rsa-pss/sign.txt
 pk/rsa/rsa-nb
 pk/ecc/ecc_verify
 pk/ecc/ecc_sign
+pk/ecc/ecc_sign_determinisitc
 pk/ecc/ecc_pub
 pk/ecc/ecc_keys
 
@@ -249,6 +268,11 @@ pq/stateful_hash_sig/xmss_example.key
 pq/stateful_hash_sig/lms_example
 pq/stateful_hash_sig/lms_example.key
 
+# PQ ML-DSA
+pq/ml_dsa/ml_dsa_test
+pq/ml_dsa/*.bin
+pq/ml_dsa/*.key
+
 embedded/tls-client-server
 embedded/tls-server-size
 embedded/tls-sock-client
@@ -257,6 +281,12 @@ embedded/tls-sock-server
 embedded/tls-sock-server-ca
 embedded/tls-sock-threaded
 embedded/tls-threaded
+
+# X509 Attribute Certificate (acert) example.
+x509_acert/acert_new.pem
+x509_acert/pkey_new.pem
+x509_acert/openssl_acert
+x509_acert/wolfssl_acert
 
 hash/sha256-hash
 
