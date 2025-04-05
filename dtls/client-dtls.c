@@ -62,7 +62,7 @@ int main (int argc, char** argv)
 
     /* Initialize wolfSSL before assigning ctx */
     wolfSSL_Init();
-  
+
     /* wolfSSL_Debugging_ON(); */
 
     if ( (ctx = wolfSSL_CTX_new(wolfDTLSv1_2_client_method())) == NULL) {
@@ -88,6 +88,7 @@ int main (int argc, char** argv)
     memset(&servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(SERV_PORT);
+    printf("Port %d", SERV_PORT);
     if (inet_pton(AF_INET, argv[1], &servAddr.sin_addr) < 1) {
         printf("Error and/or invalid IP address");
         return 1;

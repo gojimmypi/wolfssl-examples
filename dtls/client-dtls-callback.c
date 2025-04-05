@@ -41,7 +41,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-#define SERV_PORT   11111           /* define our server port number */
+#define SERV_PORT   2256           /* define our server port number */
 #define MSGLEN      4096
 #define DTLS_MTU    1500
 
@@ -261,6 +261,7 @@ int main (int argc, char** argv)
     shared.servSz = sizeof(shared.servAddr);
     shared.servAddr.sin_family = AF_INET;
     shared.servAddr.sin_port = htons(SERV_PORT);
+    printf("port: %d", SERV_PORT);
     if (inet_pton(AF_INET, argv[1], &shared.servAddr.sin_addr) < 1) {
         printf("Error and/or invalid IP address");
         goto exit;
