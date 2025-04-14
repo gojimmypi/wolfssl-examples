@@ -52,6 +52,14 @@ jobs:
       - name: Shallow clone wolfssl
         run: |
           git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
+
+          # fetch open PR changes
+          pushd wolfssl
+          git remote add gojimmypi https://github.com/gojimmypi/wolfssl.git
+          git fetch --depth 1 gojimmypi pr-arduino-print
+          git checkout pr-arduino-print
+          popd
+
           echo "Checking Arduino library directories..."
 
       - name: Install wolfSSL Arduino library
