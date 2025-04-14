@@ -120,10 +120,10 @@ jobs:
               fi
 
               # TODO: new wolfssl_AES_CTR known to fail. Fixed in https://github.com/wolfSSL/wolfssl/pull/8514
-              if [[ "$EXAMPLE" =~ "Arduino/sketches/wolfssl_AES_CTR" ]]; then
-                echo "Skipping $EXAMPLE for $BOARD (needs updated user_settings.h - see wolfssl/pull/8514)"
-                continue
-              fi
+              # if [[ "$EXAMPLE" =~ "Arduino/sketches/wolfssl_AES_CTR" ]]; then
+              #   echo "Skipping $EXAMPLE for $BOARD (needs updated user_settings.h - see wolfssl/pull/8514)"
+              #   continue
+              # fi
 
               # TODO skip Compiling Arduino/sketches/wolfssl_version for arduino:avr:mega
               if [[ "$BOARD" =~ "arduino:avr:mega" && "$EXAMPLE" =~ "Arduino/sketches/wolfssl_version" ]]; then
