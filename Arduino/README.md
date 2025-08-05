@@ -14,6 +14,8 @@ Functional examples:
 - [sketches/wolfssl_AES_CTR](./sketches/wolfssl_AES_CTR/README.md) AES CTR Encrypt / decrypt.
 - [sketches/wolfssl_client](./sketches/wolfssl_client/README.md) TLS Client.
 - [sketches/wolfssl_server](./sketches/wolfssl_server/README.md) TLS Server.
+- [sketches/wolfssl_client_dtls](./sketches/wolfssl_client_dtls/README.md) DTLS Client.
+- [sketches/wolfssl_server_dtls](./sketches/wolfssl_server_dtls/README.md) DTLS Server.
 
 Both the `template` and `wolfssl_AES_CTR` examples include VisualGDB project files.
 
@@ -50,6 +52,11 @@ from [stm32duino/Arduino_Core_STM32](https://github.com/stm32duino/Arduino_Core_
 ```
 https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
 ```
+
+There are Arduino-specific, compile-time (macros & includes) of interest for these files:
+
+- [settings.h]()
+- [settings.h]()
 
 ## Using wolfSSL from the Arduino IDE
 
