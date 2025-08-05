@@ -185,7 +185,11 @@ jobs:
               # Global variables use 2682 bytes (130%) of dynamic memory, leaving -634 bytes for local variables. Maximum is 2048 bytes.
               # AES const saved in AVR RAM, not flash.
               if [[ "$BOARD" =~ "arduino:avr:uno" && "$EXAMPLE" =~ "sketches/wolfssl_AES_CTR" ]]; then
-                echo "Skipping $EXAMPLE for $BOARD (needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14)"
+                echo "Skipping $EXAMPLE for $BOARD needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14"
+                continue
+              fi
+              if [[ "$BOARD" =~ "arduino:avr:nano" && "$EXAMPLE" =~ "sketches/wolfssl_AES_CTR" ]]; then
+                echo "Skipping $EXAMPLE for $BOARD needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14"
                 continue
               fi
 
