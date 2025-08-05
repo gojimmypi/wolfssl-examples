@@ -11,7 +11,7 @@ There are currently five example Arduino sketches:
 * [wolfssl_version](./wolfssl_version/README.md): Bare-bones wolfSSL example.
 
 Examples have been most recently confirmed operational on the
-[Arduino IDE](https://www.arduino.cc/en/software) 2.2.1.
+[Arduino IDE](https://www.arduino.cc/en/software) 2.3.6.
 
 For examples on other platforms, see the [IDE directory](https://github.com/wolfssl/wolfssl/tree/master/IDE).
 Additional wolfssl examples can be found at [wolfSSL/wolfssl-examples](https://github.com/wolfSSL/wolfssl-examples/).
