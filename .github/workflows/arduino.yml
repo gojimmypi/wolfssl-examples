@@ -1,6 +1,16 @@
 name: Arduino CI Build
 
 # See https://github.com/wolfSSL/Arduino-wolfSSL
+#
+# To test locally:
+# cd [your WOLFSSL_ROOT], e.g. cd /mnt/c/workspace/wolfssl-$USER
+# [optional checkout] e.g.     git checkout tags/v5.8.2-stable
+# pushd ./IDE/ARDUINO
+# export ARDUINO_ROOT="$HOME/Arduino/libraries"
+# ./wolfssl-arduino.sh INSTALL
+# cd [your WOLFSSL_EXAMPLES_ROOT] e.g. /mnt/c/workspace/wolfssl-examples-$USER
+# cd 
+
 
 # START OF COMMON SECTION
 on:
@@ -82,6 +92,9 @@ jobs:
           for BOARD in "arduino:avr:uno" "esp32:esp32:esp32"  "arduino:avr:mega" "arduino:avr:nano" "arduino:samd:arduino_zero_native" "esp8266:esp8266:generic" "teensy:avr:teensy40"; do
             echo "Compiling for $BOARD"
             for EXAMPLE in $(find Arduino/sketches -mindepth 1 -maxdepth 1 -type d); do
+              echo "***************************************************************"
+              echo "$EXAMPLE"
+              echo "***************************************************************"
 
               # skip known no-wifi SAMD boards
               if [[ "$BOARD" =~ "arduino:samd:arduino_zero_native" && ( "$EXAMPLE" =~ "wolfssl_server" || "$EXAMPLE" =~ "wolfssl_client" || "$EXAMPLE" =~ "test" ) ]]; then
@@ -93,6 +106,8 @@ jobs:
               if [[ "$BOARD" =~ ^arduino:avr:(uno|mega|nano)$ ]] && \
                ( [[ "$EXAMPLE" =~ "wolfssl_server" ]] || \
                  [[ "$EXAMPLE" =~ "wolfssl_client" ]] || \
+                 [[ "$EXAMPLE" =~ "wolfssl_server_dtls" ]] || \
+                 [[ "$EXAMPLE" =~ "wolfssl_client_dtls" ]] || \
                  [[ "$EXAMPLE" =~ "test" ]] ); then
                 echo "Skipping $EXAMPLE for $BOARD (No WiFi support)"
                 continue
@@ -102,6 +117,8 @@ jobs:
               if [[ "$BOARD" =~ ^teensy:avr:(teensy40)$ ]] && \
                ( [[ "$EXAMPLE" =~ "wolfssl_server" ]] || \
                  [[ "$EXAMPLE" =~ "wolfssl_client" ]] || \
+                 [[ "$EXAMPLE" =~ "wolfssl_server_dtls" ]] || \
+                 [[ "$EXAMPLE" =~ "wolfssl_client_dtls" ]] || \
                  [[ "$EXAMPLE" =~ "test" ]] ); then
                 echo "Skipping $EXAMPLE for $BOARD (needs ethernet update)"
                 continue
@@ -150,7 +167,10 @@ jobs:
               fi
 
               # If otherwise not excluded, compile this $EXAMPLE for this $BOARD
+              echo "***************************************************************"
               echo "Compiling $EXAMPLE for $BOARD"
+              echo "***************************************************************"
+              echo "arduino-cli compile --fqbn $BOARD \"$EXAMPLE\""
               arduino-cli compile --fqbn $BOARD "$EXAMPLE"
               EXIT_CODE=$?
               if [ "$EXIT_CODE" -ne 0 ]; then
@@ -159,8 +179,8 @@ jobs:
               else
                 echo "✅ Compilation succeeded for $EXAMPLE on $BOARD"
               fi
-            done
-          done
+            done # for each EXAMPLE
+          done # for each BOARD
 
           if [ "$SUCCESS" = true ]; then
             echo "✅ All sketches compiled successfully!"
