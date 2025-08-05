@@ -93,6 +93,10 @@ jobs:
         run: |
           # Arduino
           set +e
+
+          # need to reassign ARDUINO_ROOT in this run
+          ARDUINO_ROOT="$HOME/Arduino/libraries"
+
           echo "***************************************************************"
           ls  "$ARDUINO_ROOT" -al
           ls  "$ARDUINO_ROOT/wolfssl" -al
