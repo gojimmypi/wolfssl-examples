@@ -114,9 +114,9 @@ jobs:
           for BOARD in "arduino:avr:uno" "esp32:esp32:esp32"  "arduino:avr:mega" "arduino:avr:nano" "arduino:samd:arduino_zero_native" "esp8266:esp8266:generic" "teensy:avr:teensy40"; do
             echo "Compiling for $BOARD"
             for EXAMPLE in $(find Arduino/sketches -mindepth 1 -maxdepth 1 -type d); do
-              echo "***************************************************************"
+              echo "*************************************************************************************"
               echo "$EXAMPLE"
-              echo "***************************************************************"
+              echo "*************************************************************************************"
 
               # skip known no-wifi SAMD boards
               if [[ "$BOARD" =~ "arduino:samd:arduino_zero_native" && ( "$EXAMPLE" =~ "wolfssl_server" || "$EXAMPLE" =~ "wolfssl_client" || "$EXAMPLE" =~ "test" ) ]]; then
@@ -182,6 +182,13 @@ jobs:
               #  continue
               #fi
 
+              # Global variables use 2682 bytes (130%) of dynamic memory, leaving -634 bytes for local variables. Maximum is 2048 bytes.
+              # AES const saved in AVR RAM, not flash.
+              if [[ "$BOARD" =~ "arduino:avr:uno" && "$EXAMPLE" =~ "sketches/wolfssl_AES_CTR" ]]; then
+                echo "Skipping $EXAMPLE for $BOARD (needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14)"
+                continue
+              fi
+
               # TODO skip ESP8266
               if [[ "$BOARD" =~ "esp8266:esp8266:generic" ]]; then
                 echo "Skipping $EXAMPLE for $BOARD (needs testing)"
@@ -189,9 +196,9 @@ jobs:
               fi
 
               # If otherwise not excluded, compile this $EXAMPLE for this $BOARD
-              echo "***************************************************************"
+              echo "*************************************************************************************"
               echo "Compiling $EXAMPLE for $BOARD"
-              echo "***************************************************************"
+              echo "*************************************************************************************"
               echo "arduino-cli compile --fqbn $BOARD \"$EXAMPLE\""
               arduino-cli compile --fqbn $BOARD "$EXAMPLE"
               EXIT_CODE=$?
