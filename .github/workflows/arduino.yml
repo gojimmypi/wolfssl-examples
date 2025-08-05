@@ -18,12 +18,12 @@ on:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
       - 'Arduino/**'
-      - '.github/arduino.yml'
+      - '.github/arduino.yml' # detect changes on NEXT commit of this file
   pull_request:
     branches: [ '**' ]
     paths:
       - 'Arduino/**'
-      - '.github/arduino.yml'
+      - '.github/arduino.yml' # detect changes on NEXT commit of this file
   workflow_dispatch:
 
 concurrency:
