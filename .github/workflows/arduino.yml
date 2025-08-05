@@ -16,8 +16,14 @@ name: Arduino CI Build
 on:
   push:
     branches: [ '**', 'master', 'main', 'release/**' ]
+    paths:
+      - 'Arduino/**'
+      - '.github/arduino.yml'
   pull_request:
     branches: [ '**' ]
+    paths:
+      - 'Arduino/**'
+      - '.github/arduino.yml'
   workflow_dispatch:
 
 concurrency:
@@ -87,7 +93,12 @@ jobs:
       # Pending: "arduino:sam:arduino_due_x"
       - name: Compile Arduino Sketches for various boards
         run: |
+          # Arduino
+          set +e
           echo "***************************************************************"
+          ls  "$ARDUINO_ROOT" -al
+          ls  "$ARDUINO_ROOT/wolfssl" -al
+          ls  "$ARDUINO_ROOT/wolfssl/src/" -al
           ls  "$ARDUINO_ROOT/wolfssl/src/user_settings.h" -al
           echo "***************************************************************"
           cat "$ARDUINO_ROOT/wolfssl/src/user_settings.h"
@@ -97,7 +108,6 @@ jobs:
           ls $ARDUINO_ROOT -al
 
           echo "Begin compile"
-          set +e
           SUCCESS=true
           for BOARD in "arduino:avr:uno" "esp32:esp32:esp32"  "arduino:avr:mega" "arduino:avr:nano" "arduino:samd:arduino_zero_native" "esp8266:esp8266:generic" "teensy:avr:teensy40"; do
             echo "Compiling for $BOARD"
