@@ -1,0 +1,21 @@
+# Edit with caution.
+#
+# This is a list of Arduino fqbn (fully qualified board names).
+#
+# Each line is the exact text used in the ./compile-all-examples.sh
+#
+# See also /.guthub/workflows/arduino.yml
+#
+
+arduino:avr:mega
+arduino:avr:nano
+arduino:avr:uno
+
+arduino:sam:arduino_due_x
+arduino:samd:arduino_zero_native
+
+esp32:esp32:esp32
+
+esp8266:esp8266:generic
+
+teensy:avr:teensy40
