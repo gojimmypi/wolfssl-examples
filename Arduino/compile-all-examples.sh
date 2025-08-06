@@ -60,6 +60,8 @@ SUCCESS=true
 
 
 while IFS= read -r BOARD; do
+    BOARD="${BOARD//$'\r'/}"  # Remove carriage returns from the line
+
     if [[ "$BOARD" =~ ^[[:space:]]*$ ]]; then
         continue #skip blank lines
     fi
@@ -70,8 +72,9 @@ while IFS= read -r BOARD; do
 
     echo "Compiling for $BOARD"
     while IFS= read -r EXAMPLE; do
+        echo ""
         echo "*************************************************************************************"
-        echo "$EXAMPLE for $BOARD"
+        echo "Begin $EXAMPLE for $BOARD"
         echo "*************************************************************************************"
 
         # Assume no network unless otherwise known
@@ -80,6 +83,7 @@ while IFS= read -r BOARD; do
 
         if [[ "$BOARD" =~ ^esp32:esp32:(esp32|mega|nano)$ ]]; then
             HAS_NETWORK="true"
+            HAS_MEMORY="true"
         fi
 
         if [[ "$BOARD" =~ ^arduino:avr:(uno|mega|nano)$ ]]; then
@@ -211,8 +215,8 @@ while IFS= read -r BOARD; do
         echo "-------------------------------------------------------------------------------------"
         echo "Compiling $EXAMPLE for $BOARD"
         echo "-------------------------------------------------------------------------------------"
-        echo "arduino-cli compile --fqbn \"${BOARD}\" \"${EXAMPLE}\""
-              arduino-cli compile --fqbn   "$BOARD"     "$EXAMPLE"
+        echo "arduino-cli compile --fqbn \"$BOARD\" \"$EXAMPLE\""
+              arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
         EXIT_CODE=$?
 
         if [ "$EXIT_CODE" -ne 0 ]; then
