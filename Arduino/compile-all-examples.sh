@@ -59,7 +59,7 @@ echo "Begin compile"
 SUCCESS=true
 
 
-for BOARD in $(< board_list.txt); do
+while IFS= read -r BOARD; do
     if [[ "$BOARD" =~ ^[[:space:]]*$ ]]; then
         continue #skip blank lines
     fi
@@ -78,7 +78,7 @@ for BOARD in $(< board_list.txt); do
         HAS_NETWORK="false"
         HAS_MEMORY="false"
 
-        if [[ "$BOARD" =~ ^esp32:esp32:(uno|mega|nano)$ ]]; then
+        if [[ "$BOARD" =~ ^esp32:esp32:(esp32|mega|nano)$ ]]; then
             HAS_NETWORK="true"
         fi
 
@@ -222,7 +222,7 @@ for BOARD in $(< board_list.txt); do
             echo "$ICON_OK Compilation succeeded for $EXAMPLE on $BOARD"
         fi
     done < <(find ./sketches -mindepth 1 -maxdepth 1 -type d) # for each EXAMPLE directory name
-done # for each BOARD
+done < board_list.txt # for each BOARD
 
 if [ "$SUCCESS" = true ]; then
     echo "$ICON_OK All $BOARD_COMPILE_CT sketches compiled successfully! $BOARD_SKIP_CT boards skipped"
