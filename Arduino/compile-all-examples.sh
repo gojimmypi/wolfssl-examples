@@ -60,16 +60,16 @@ SUCCESS=true
 
 
 for BOARD in $(< board_list.txt); do
+    if [[ -z "$BOARD" ]]; then
+        continue  # Skip empty lines
+    fi
+
+    if [[ "$BOARD" == \#* || "$BOARD" == " "*#* ]]; then
+        continue  # Skip comments and lines starting with space + #
+    fi
+
     echo "Compiling for $BOARD"
     while IFS= read -r EXAMPLE; do
-        if [[ -z "$BOARD" ]]; then
-            continue  # Skip empty lines
-        fi
-
-        if [[ "$BOARD" == \#* || "$BOARD" == " "*#* ]]; then
-            continue  # Skip comments and lines starting with space + #
-        fi
-
         echo "*************************************************************************************"
         echo "$EXAMPLE for $BOARD"
         echo "*************************************************************************************"
