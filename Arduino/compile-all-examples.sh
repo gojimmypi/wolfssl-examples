@@ -60,8 +60,8 @@ SUCCESS=true
 
 
 for BOARD in $(< board_list.txt); do
-    if [[ -z "$BOARD" ]]; then
-        continue  # Skip empty lines
+    if [[ "$BOARD" =~ ^[[:space:]]*$ ]]; then
+        continue #skip blank lines
     fi
 
     if [[ "$BOARD" == \#* || "$BOARD" == " "*#* ]]; then
