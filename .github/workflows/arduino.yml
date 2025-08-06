@@ -202,8 +202,8 @@ jobs:
               fi
 
               # TODO skip ESP8266
-              if [[ "$BOARD" =~ "esp8266:esp8266:generic" ]]; then
-                echo "Skipping $EXAMPLE for $BOARD (needs testing)"
+              if [[ "$BOARD" =~ "esp8266:esp8266:generic"  && ( "$EXAMPLE" != "template" ) && ( "$EXAMPLE" != "wolfssl_version" ) ]]; then
+                echo "Skipping $EXAMPLE for $BOARD (network memory constraint testing)"
                 ((BOARD_SKIP_CT++))
                 continue
               fi
