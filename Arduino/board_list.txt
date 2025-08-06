@@ -11,7 +11,9 @@ arduino:avr:mega
 arduino:avr:nano
 arduino:avr:uno
 
-arduino:sam:arduino_due_x
+# Needs work:
+# arduino:sam:arduino_due_x
+
 arduino:samd:arduino_zero_native
 
 esp32:esp32:esp32

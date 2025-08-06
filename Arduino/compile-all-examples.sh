@@ -25,8 +25,8 @@ BOARD_SKIP_CT=0
 # need to reassign ARDUINO_ROOT in this run
 ARDUINO_ROOT="$HOME/Arduino/libraries"
 
-ICON_OK="\xE2\x9C\x85"
-ICON_FAIL="\xE2\x9D\x8C"
+ICON_OK=$(printf "\xE2\x9C\x85")
+ICON_FAIL=$(printf "\xE2\x9D\x8C")
 HAS_NETWORK=""
 HAS_MEMORY=""
 
@@ -81,7 +81,7 @@ while IFS= read -r BOARD; do
         HAS_NETWORK="false"
         HAS_MEMORY="false"
 
-        if [[ "$BOARD" =~ ^esp32:esp32:(esp32|mega|nano)$ ]]; then
+        if [[ "$BOARD" =~ ^esp32:esp32:(esp32)$ ]]; then
             HAS_NETWORK="true"
             HAS_MEMORY="true"
         fi
