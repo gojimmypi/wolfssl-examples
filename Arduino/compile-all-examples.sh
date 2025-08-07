@@ -95,6 +95,10 @@ while IFS= read -r BOARD; do
             echo "AVR"
         fi
 
+        if [[ "$BOARD" =~ ^arduino:avr:(mega)$ ]]; then
+            echo "AVR"
+            HAS_MEMORY="true"
+        fi
         if [[ "$BOARD" == "arduino:avr:uno" ]]; then
             echo "Skipping $EXAMPLE for $BOARD needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14"
         fi
