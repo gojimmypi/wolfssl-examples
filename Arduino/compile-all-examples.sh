@@ -81,9 +81,14 @@ while IFS= read -r BOARD; do
         HAS_NETWORK="false"
         HAS_MEMORY="false"
 
-        if [[ "$BOARD" =~ ^esp32:esp32:(esp32)$ ]]; then
+        if [[ "$BOARD" =~ ^esp32:esp32:[^[:space:]]+$ ]]; then
             HAS_NETWORK="true"
             HAS_MEMORY="true"
+        fi
+
+        # No WiFi on ESP32-H2
+        if [[ "$BOARD" =~ ^esp32:esp32:(esp32h2)$ ]]; then
+            HAS_NETWORK="false"
         fi
 
         if [[ "$BOARD" =~ ^arduino:avr:(uno|mega|nano)$ ]]; then
@@ -166,8 +171,15 @@ while IFS= read -r BOARD; do
                 ;;
 
             *)  # else
-                echo "Default handling for $EXAMPLE"
+                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+                echo "Default handling for new example: $EXAMPLE"
                 # TODO: Do not let examples fall though here, add checks above.
+                echo "Check for failed messages; add explicit support above"
+
+                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 ;;
         esac
 
