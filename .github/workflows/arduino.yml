@@ -46,24 +46,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set job environment variables
-        run: |
-          # Script to assign some common environment variables
-          echo "GITHUB_WORK=$(realpath "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
-          echo "ARDUINO_ROOT=$(realpath "$HOME/Arduino/libraries")" >> "$GITHUB_ENV"
-          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./")              >> "$GITHUB_ENV"
-
-          # Show predefined summary:
-          echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
-
-          # Show assigned env:
-          echo "REPO_OWNER            = $REPO_OWNER"
-
-          # Show ours:
-          echo "GITHUB_WORK           = $GITHUB_WORK"
-          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
-          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
-
       - name: Install Arduino CLI
         run: |
           # Script to fetch and run install.sh from arduino/arduino-cli
@@ -95,6 +77,25 @@ jobs:
           arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
 
           # arduino-cli lib install "wolfSSL"  # Install wolfSSL library from Arduino
+
+      - name: Set job environment variables
+        run: |
+          # Script to assign some common environment variables after everything is installed
+          echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
+          echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV"
+          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./")"                       >> "$GITHUB_ENV"
+
+          # Show predefined summary:
+          echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
+
+          # Show assigned env:
+          echo "REPO_OWNER            = $REPO_OWNER"
+
+          # Show ours:
+          echo "GITHUB_WORK           = $GITHUB_WORK"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+
 
           # Install current wolfSSL as an Arduino library:
       - name: Get wolfssl-examples
