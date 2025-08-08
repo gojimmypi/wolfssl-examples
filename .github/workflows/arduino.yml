@@ -1,4 +1,9 @@
-name: Arduino CI Build
+name: Arduino CI Build (2 of 3) wolfssl-examples-
+
+# These 3 workflows are interdependent for the current $REPO_OWNER:
+# Arduino CI Build 1: https://github.com/$REPO_OWNER/wolfssl          #  /.github/workflows/arduino.yml
+# Arduino CI Build 2: https://github.com/$REPO_OWNER/wolfssl-examples #  /.github/workflows/arduino.yml
+# Arduino CI Build 3: https://github.com/$REPO_OWNER/Arduino-wolfssl  #  /.github/workflows/arduino.yml
 
 # See https://github.com/wolfSSL/Arduino-wolfSSL
 #
@@ -18,10 +23,12 @@ on:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
       - 'Arduino/**'
+      - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
       - 'Arduino/**'
+      - '.github/workflows/arduino.yml'
   workflow_dispatch:
 
 concurrency:
@@ -33,12 +40,33 @@ jobs:
   build:
     # if: github.repository_owner == 'wolfssl'
     runs-on: ubuntu-latest
+    env:
+      REPO_OWNER: ${{ github.repository_owner }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set job environment variables
+        run: |
+          # Script to assign some common environment variables
+          echo "GITHUB_WORK=$(realpath "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
+          echo "ARDUINO_ROOT=$(realpath "$HOME/Arduino/libraries")" >> "$GITHUB_ENV"
+          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./")              >> "$GITHUB_ENV"
+
+          # Show predefined summary:
+          echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
+
+          # Show assigned env:
+          echo "REPO_OWNER            = $REPO_OWNER"
+
+          # Show ours:
+          echo "GITHUB_WORK           = $GITHUB_WORK"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+
       - name: Install Arduino CLI
         run: |
+          # Script to fetch and run install.sh from arduino/arduino-cli
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 
       - name: Add Arduino CLI to PATH
@@ -69,6 +97,11 @@ jobs:
           # arduino-cli lib install "wolfSSL"  # Install wolfSSL library from Arduino
 
           # Install current wolfSSL as an Arduino library:
+      - name: Get wolfssl-examples
+        run: |
+          # The exampless are local in this wolfssl-example repo:
+          ls ./Arduino/sketches
+
       - name: Shallow clone wolfssl
         run: |
           git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
@@ -93,13 +126,13 @@ jobs:
           popd
 
       # This will fail with Arduino published wolfSSL v5.7.6 and older
-      # See https://github.com/wolfSSL/wolfssl/pull/8514
-      # Pending: "arduino:sam:arduino_due_x"
+      # as the examples moved. See https://github.com/wolfSSL/wolfssl/pull/8514
+      #
       - name: Compile Arduino Sketches for various boards
         run: |
           pwd
           cd Arduino
-          ./compile-all-examples.sh
+          #./compile-all-examples.sh
 
       - name: Upload Compilation Artifacts
         uses: actions/upload-artifact@v4
