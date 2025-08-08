@@ -64,11 +64,14 @@ jobs:
       - name: Install Arduino CLI
         run: |
           # Script to fetch and run install.sh from arduino/arduino-cli
-          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-          echo "The arduino-cli not found is expected. We set it in the next step."
 
-      - name: Add Arduino CLI to PATH
-        run: echo "${PWD}/bin" >> $GITHUB_PATH
+          # The install script will test to see if the recently installed apps in in the path
+          # So set it up in advance:
+          mkdir -p "${PWD}/bin"
+          echo "${PWD}/bin" >> $GITHUB_PATH
+
+          # Run install script:
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 
       - name: Confirm Arduino CLI install
         run: arduino-cli version
@@ -99,7 +102,9 @@ jobs:
           # Script to assign some common environment variables after everything is installed
           echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
           echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV"
-          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./")"                       >> "$GITHUB_ENV"
+
+          # Repo-specific location of examples:
+          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV"
 
           # Show predefined summary:
           echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
@@ -130,10 +135,11 @@ jobs:
           git checkout pr-arduino-print
           popd
 
-          echo "Checking Arduino library directories..."
 
       - name: Install wolfSSL Arduino library
         run: |
+          echo "Run the cloned wolfssl-arduino.sh install script to install wolfssl Arduino library.
+
           pushd wolfssl/IDE/ARDUINO
 
           # Set default ARDUINO_ROOT. TODO: once script is updated, this should be removed.
@@ -148,9 +154,13 @@ jobs:
       - name: Compile Arduino Sketches for various boards
         run: |
           # Run the compile-all-examples.sh script from the local Arduino directory
-          pwd
-          cd Arduino
+
+          echo "Current directory     = $PWD"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+
+          pushd $WOLFSSL_EXAMPLES_ROOT
           ./compile-all-examples.sh
+          popd
 
       - name: Upload Compilation Artifacts
         uses: actions/upload-artifact@v4

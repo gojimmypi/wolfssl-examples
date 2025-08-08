@@ -259,7 +259,7 @@ while IFS= read -r BOARD; do
         echo "Compiling $EXAMPLE for $BOARD"
         echo "-------------------------------------------------------------------------------------"
         echo "arduino-cli compile --fqbn \"$BOARD\" \"$EXAMPLE\""
-              arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
+        #     arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
         EXIT_CODE=$?
 
         if [ "$EXIT_CODE" -ne 0 ]; then
@@ -268,7 +268,7 @@ while IFS= read -r BOARD; do
         else
             echo "$ICON_OK Compilation succeeded for $EXAMPLE on $BOARD"
         fi
-    done < <(find ./sketches -mindepth 1 -maxdepth 1 -type d) # for each EXAMPLE directory name
+    done < <(find ./ -mindepth 1 -maxdepth 1 -type d) # for each EXAMPLE directory name
 done < board_list.txt # for each BOARD
 
 

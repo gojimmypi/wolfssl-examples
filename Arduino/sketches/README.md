@@ -1,7 +1,5 @@
 # wolfSSL Arduino Examples
 
-PR trigger test #7b
-
 There are currently five example Arduino sketches:
 
 * [template](./template/README.md): Reference template wolfSSL example, including optional VisualGDB project files.
