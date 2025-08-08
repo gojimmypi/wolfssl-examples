@@ -40,7 +40,12 @@ jobs:
       - name: Install Arduino CLI
         run: |
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-          echo "$(pwd)/bin" >> $GITHUB_PATH
+
+      - name: Add Arduino CLI to PATH
+        run: echo "$(PWD)/bin" >> $GITHUB_PATH
+
+      - name: Confirm Arduino CLI install
+        run: arduino-cli version
 
       - name: Setup Arduino CLI
         run: |
