@@ -138,14 +138,15 @@ jobs:
 
       - name: Install wolfSSL Arduino library
         run: |
-          echo "Run the cloned wolfssl-arduino.sh install script to install wolfssl Arduino library.
+          echo "Run the cloned wolfssl-arduino.sh install script to install wolfssl Arduino library."
 
-          pushd wolfssl/IDE/ARDUINO
-
-          # Set default ARDUINO_ROOT. TODO: once script is updated, this should be removed.
+          # Set default ARDUINO_ROOT to install the wolfSSL library.
           export ARDUINO_ROOT="$HOME/Arduino/libraries"
 
+          pushd ./wolfssl/IDE/ARDUINO
+
           bash wolfssl-arduino.sh INSTALL  # Install wolfSSL library
+
           popd
 
       # This will fail with Arduino published wolfSSL v5.7.6 and older
