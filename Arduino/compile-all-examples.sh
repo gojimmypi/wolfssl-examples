@@ -89,11 +89,10 @@ while IFS= read -r BOARD; do
     fi
 
     echo "Compiling for $BOARD"
+    echo "*************************************************************************************"
+    echo "Begin Board: $BOARD"
+    echo "*************************************************************************************"
     while IFS= read -r EXAMPLE; do
-        echo ""
-        echo "*************************************************************************************"
-        echo "Begin $EXAMPLE for $BOARD"
-        echo "*************************************************************************************"
 
         # Assume no network unless otherwise known
         HAS_NETWORK="false"
@@ -121,6 +120,15 @@ while IFS= read -r BOARD; do
         if [[ "$BOARD" =~ ^arduino:avr:(mega|ethernet)$ ]]; then
             echo "AVR with enough memory: $BOARD"
             HAS_MEMORY="true"
+        fi
+
+        if [[ "$BOARD" =~ ^esp8266:esp8266:[^[:space:]]+$ ]]; then
+            HAS_NETWORK="true"
+            HAS_MEMORY="true"
+        fi
+
+        if [[ "$BOARD" =~ ^teensy:avr:[^[:space:]]+$ ]]; then
+            HAS_NETWORK="true"
         fi
 
         # Has pseudo-network, but:
@@ -195,7 +203,7 @@ while IFS= read -r BOARD; do
                 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-                echo "Default handling for new example: $EXAMPLE"
+                echo "Default handling for new example found: $EXAMPLE"
                 # TODO: Do not let examples fall though here, add checks above.
                 echo "Check for failed messages; add explicit support above"
 
@@ -206,44 +214,44 @@ while IFS= read -r BOARD; do
                 ;;
         esac
 
-        # skip known no-wifi AVR boards
-        if [[ "$BOARD" =~ ^arduino:avr:(uno|mega|nano)$ ]] && \
-        { [[ "$EXAMPLE" =~ "wolfssl_server" ]] || \
-            [[ "$EXAMPLE" =~ "wolfssl_client" ]] || \
-            [[ "$EXAMPLE" =~ "wolfssl_server_dtls" ]] || \
-            [[ "$EXAMPLE" =~ "wolfssl_client_dtls" ]] || \
-            [[ "$EXAMPLE" =~ "test" ]]; }; then
-            echo "Skipping $EXAMPLE for $BOARD (No WiFi support)"
-            ((BOARD_SKIP_CT++))
-            continue
-        fi
+#        # skip known no-wifi AVR boards
+#        if [[ "$BOARD" =~ ^arduino:avr:(uno|mega|nano)$ ]] && \
+#        { [[ "$EXAMPLE" =~ "wolfssl_server" ]] || \
+#            [[ "$EXAMPLE" =~ "wolfssl_client" ]] || \
+#            [[ "$EXAMPLE" =~ "wolfssl_server_dtls" ]] || \
+#            [[ "$EXAMPLE" =~ "wolfssl_client_dtls" ]] || \
+#            [[ "$EXAMPLE" =~ "test" ]]; }; then
+#            echo "Skipping $EXAMPLE for $BOARD (No WiFi support)"
+#            ((BOARD_SKIP_CT++))
+#            continue
+#        fi
+#
+#        # skip known no-wifi teensy AVR boards
+#        if [[ "$BOARD" =~ ^teensy:avr:(teensy40)$ ]] && \
+#        { [[ "$EXAMPLE" =~ "wolfssl_server" ]] || \
+#            [[ "$EXAMPLE" =~ "wolfssl_client" ]] || \
+#            [[ "$EXAMPLE" =~ "wolfssl_server_dtls" ]] || \
+#            [[ "$EXAMPLE" =~ "wolfssl_client_dtls" ]] || \
+#            [[ "$EXAMPLE" =~ "test" ]]; }; then
+#            echo "Skipping $EXAMPLE for $BOARD (needs ethernet update)"
+#            ((BOARD_SKIP_CT++))
+#            continue
+#        fi
+#
+#        # skip examples other than template and version for known tiny memory boards
+#        if  [[ "$BOARD" =~ ( "arduino:avr:uno"|"arduino:avr:nano" ) && ( "$EXAMPLE" != "template" ) && ( "$EXAMPLE" != "wolfssl_version" ) ]]; then
+#            echo "Skipping $EXAMPLE for $BOARD (memory limited)"
+#            ((BOARD_SKIP_CT++))
+#            continue
+#        fi
 
-        # skip known no-wifi teensy AVR boards
-        if [[ "$BOARD" =~ ^teensy:avr:(teensy40)$ ]] && \
-        { [[ "$EXAMPLE" =~ "wolfssl_server" ]] || \
-            [[ "$EXAMPLE" =~ "wolfssl_client" ]] || \
-            [[ "$EXAMPLE" =~ "wolfssl_server_dtls" ]] || \
-            [[ "$EXAMPLE" =~ "wolfssl_client_dtls" ]] || \
-            [[ "$EXAMPLE" =~ "test" ]]; }; then
-            echo "Skipping $EXAMPLE for $BOARD (needs ethernet update)"
-            ((BOARD_SKIP_CT++))
-            continue
-        fi
 
-        # skip examples other than template and version for known tiny memory boards
-        if  [[ "$BOARD" =~ ( "arduino:avr:uno"|"arduino:avr:nano" ) && ( "$EXAMPLE" != "template" ) && ( "$EXAMPLE" != "wolfssl_version" ) ]]; then
-            echo "Skipping $EXAMPLE for $BOARD (memory limited)"
-            ((BOARD_SKIP_CT++))
-            continue
-        fi
-
-
-        # TODO skip ESP8266
-        if [[ "$BOARD" =~ "esp8266:esp8266:generic"  && ( "$EXAMPLE" != "template" ) && ( "$EXAMPLE" != "wolfssl_version" ) ]]; then
-            echo "Skipping $EXAMPLE for $BOARD (network memory constraint testing)"
-            ((BOARD_SKIP_CT++))
-            continue
-        fi
+ #       # TODO skip ESP8266
+ #       if [[ "$BOARD" =~ "esp8266:esp8266:generic"  && ( "$EXAMPLE" != "template" ) && ( "$EXAMPLE" != "wolfssl_version" ) ]]; then
+ #           echo "Skipping $EXAMPLE for $BOARD (network memory constraint testing)"
+ #           ((BOARD_SKIP_CT++))
+ #           continue
+ #       fi
 
         # If otherwise not excluded, compile this $EXAMPLE for this $BOARD
         ((BOARD_COMPILE_CT++))
