@@ -58,6 +58,24 @@ ls "$ARDUINO_ROOT" -al
 echo "Begin compile"
 SUCCESS=true
 
+# Optional for each EXAMPLE / BOARD
+#
+#while IFS= read -r EXAMPLE; do
+#    echo "Checking example: for $EXAMPLE"
+#    while IFS= read -r BOARD; do
+#        # Clean board names,
+#        BOARD="${BOARD//$'\r'/}"  # Remove carriage returns from the line
+#
+#        # Skip any non-board fqbn lines
+#        if [[ "$BOARD" =~ ^[[:space:]]*$ ]]; then
+#            continue #skip blank lines
+#        fi#
+#
+#        if [[ "$BOARD" == \#* || "$BOARD" == " "*#* ]]; then
+#            continue  # Skip comments and lines starting with space + #
+#        fi
+#
+#        echo "Checking $EXAMPLE for $BOARD"
 
 while IFS= read -r BOARD; do
     BOARD="${BOARD//$'\r'/}"  # Remove carriage returns from the line
@@ -244,6 +262,12 @@ while IFS= read -r BOARD; do
         fi
     done < <(find ./sketches -mindepth 1 -maxdepth 1 -type d) # for each EXAMPLE directory name
 done < board_list.txt # for each BOARD
+
+
+# Optional for each EXAMPLE / BOARD
+#
+#    done < board_list.txt # for each BOARD
+#done < <(find ./sketches -mindepth 1 -maxdepth 1 -type d) # for each EXAMPLE directory name
 
 if [ "$SUCCESS" = true ]; then
     echo "$ICON_OK All $BOARD_COMPILE_CT sketches compiled successfully! $BOARD_SKIP_CT boards skipped"
