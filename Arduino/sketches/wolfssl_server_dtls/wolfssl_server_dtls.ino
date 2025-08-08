@@ -44,6 +44,10 @@ Tested with:
 /* If you have a private include, define it here, otherwise edit WiFi params */
 /* #define MY_PRIVATE_CONFIG "/workspace/my_private_config.h" */
 
+#if defined(ARDUINO) && defined(ESP8266)
+    #warning "This example is not yet supported on Arduino ESP8266"
+#endif
+
 #if defined(DEBUG_WOLFSSL)
     /* Optionally enabled verbose wolfSSL debugging */
     #define DEBUG_WOLFSSL_MESSAGES_ON
@@ -87,8 +91,8 @@ Tested with:
     /* the /workspace directory may contain a private config
      * excluded from GitHub with items such as WiFi passwords */
     #include MY_PRIVATE_CONFIG
-    static const char ssid[]     PROGMEM  = MY_ARDUINO_WIFI_SSID;
-    static const char password[] PROGMEM  = MY_ARDUINO_WIFI_PASSWORD;
+    static const char ssid[]     PROGMEM = MY_ARDUINO_WIFI_SSID;
+    static const char password[] PROGMEM = MY_ARDUINO_WIFI_PASSWORD;
 #else
     /* when using WiFi capable boards: */
     static const char ssid[]     PROGMEM = "your_SSID";
@@ -156,6 +160,10 @@ Tested with:
 #elif defined(ESP8266)
     #define USING_WIFI
     #include <ESP8266WiFi.h>
+    /* Ensure the F() flash macro is defined */
+    #ifndef F
+        #define F
+    #endif
     WiFiClient client;
     WiFiServer server(WOLFSSL_PORT);
 #elif defined(ARDUINO_SAM_DUE)
@@ -164,6 +172,12 @@ Tested with:
     /* Needs "Ethernet by Various" library to be installed. Tested with V2.0.2 */
     #include <Ethernet.h>
     EthernetClient client;
+    EthernetClient server(WOLFSSL_PORT);
+#elif defined(ARDUINO_AVR_ETHERNET) || defined(ARDUINO_AVR_LEONARDO_ETH)
+    /* Boards such as arduino:avr:ethernet and arduino:avr:leonardoeth */
+    #include <Ethernet.h>
+    EthernetClient client;
+
     EthernetClient server(WOLFSSL_PORT);
 #elif defined(ARDUINO_SAMD_NANO_33_IOT)
     #define USING_WIFI
@@ -177,6 +191,12 @@ Tested with:
     #include <WiFiNINA.h>
     WiFiClient client;
     WiFiServer server(WOLFSSL_PORT);
+#elif defined(ARDUINO_SAMD_TIAN)
+    #include <Bridge.h>
+    #include <HttpClient.h>
+    HttpClient client;
+    /*  Arduino Tian does not support network shields like the standard Ethernet or Wi-Fi shields. */
+    #error "HttpClient cannot be used for this example"
 #elif defined(USING_WIFI)
     #define USING_WIFI
     #include <WiFi.h>
@@ -229,7 +249,10 @@ static char errBuf[80];
 static int EthernetSend(WOLFSSL* ssl, char* msg, int sz, void* ctx);
 static int EthernetReceive(WOLFSSL* ssl, char* reply, int sz, void* ctx);
 static int reconnect = RECONNECT_ATTEMPTS;
+#if 0
+/* optional showPeerEx, currently disabled  */
 static int lng_index PROGMEM = 0; /* 0 = English */
+#endif
 static int listenfd = INVALID_SOCKET;   /* Initialize our socket */
 
 #if defined(__arm__)
@@ -334,24 +357,24 @@ int setup_datetime(void) {
 
     /* we need a date in the range of cert expiration */
 #ifdef USE_NTP_LIB
-#if defined(ESP32)
-    NTPClient timeClient(ntpUDP, "pool.ntp.org");
+    #if defined(ESP32)
+        NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
-    timeClient.begin();
-    timeClient.update();
-    delay(1000);
-    while (!timeClient.isTimeSet() && (ntp_tries > 0)) {
-        timeClient.forceUpdate();
-        Serial.println(F("Waiting for NTP update"));
-        delay(2000);
-        ntp_tries--;
-    }
-    if (ntp_tries <= 0) {
-        Serial.println(F("Warning: gave up waiting on NTP"));
-    }
-    Serial.println(timeClient.getFormattedTime());
-    Serial.println(timeClient.getEpochTime());
-#endif
+        timeClient.begin();
+        timeClient.update();
+        delay(1000);
+        while (!timeClient.isTimeSet() && (ntp_tries > 0)) {
+            timeClient.forceUpdate();
+            Serial.println(F("Waiting for NTP update"));
+            delay(2000);
+            ntp_tries--;
+        }
+        if (ntp_tries <= 0) {
+            Serial.println(F("Warning: gave up waiting on NTP"));
+        }
+        Serial.println(timeClient.getFormattedTime());
+        Serial.println(timeClient.getEpochTime());
+    #endif
 #endif
 
 #if defined(ESP32)
@@ -381,21 +404,21 @@ int setup_network(void) {
     int status = WL_IDLE_STATUS;
 
     /* The ESP8266 & ESP32 support both AP and STA. We'll use STA: */
-#if defined(ESP8266) || defined(ESP32)
-    WiFi.mode(WIFI_STA);
-#else
-    String fv;
-    if (WiFi.status() == WL_NO_MODULE) {
-        Serial.println("Communication with WiFi module failed!");
-        /* don't continue if no network */
-        while (true);
-    }
+    #if defined(ESP8266) || defined(ESP32)
+        WiFi.mode(WIFI_STA);
+    #else
+        String fv;
+        if (WiFi.status() == WL_NO_MODULE) {
+            Serial.println("Communication with WiFi module failed!");
+            /* don't continue if no network */
+            while (true) ;
+        }
 
-    fv = WiFi.firmwareVersion();
-    if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-        Serial.println("Please upgrade the firmware");
-    }
-#endif
+        fv = WiFi.firmwareVersion();
+        if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+            Serial.println("Please upgrade the firmware");
+        }
+    #endif
 
     Serial.print(F("Connecting to WiFi "));
     Serial.print(ssid);
@@ -639,7 +662,8 @@ show_memory();
 /* Arduino setup()                                                           */
 /*****************************************************************************/
 /*****************************************************************************/
-void setup(void) {
+void setup(void)
+{
     int i = 0;
     Serial.begin(SERIAL_BAUD);
     while (!Serial && (i < 10)) {
@@ -647,6 +671,7 @@ void setup(void) {
         delay(1000);
         i++;
     }
+
     Serial.println(F(""));
     Serial.println(F(""));
     Serial.println(F("wolfSSL DTLS Server Example Startup."));
@@ -676,11 +701,11 @@ void setup(void) {
         Serial.println(THIS_USER_SETTINGS_VERSION)
 #endif
 
-        /* Start the server
-         * See https://www.arduino.cc/reference/en/libraries/ethernet/server.begin/
-         */
+    /* Start the server
+     * See https://www.arduino.cc/reference/en/libraries/ethernet/server.begin/
+     */
 
-        Serial.println(F("Completed Arduino setup()"));
+    Serial.println(F("Completed Arduino setup()"));
 
     server.begin();
     Serial.println("Begin Server... (waiting for remote client to connect)");

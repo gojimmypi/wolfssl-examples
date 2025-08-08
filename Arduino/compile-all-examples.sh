@@ -81,6 +81,10 @@ while IFS= read -r BOARD; do
         HAS_NETWORK="false"
         HAS_MEMORY="false"
 
+        # Known to have too little memory:
+        # arduino:avr:ethernet
+
+        # Assume all ESP32 will have ethernet (see later exception)
         if [[ "$BOARD" =~ ^esp32:esp32:[^[:space:]]+$ ]]; then
             HAS_NETWORK="true"
             HAS_MEMORY="true"
@@ -88,19 +92,26 @@ while IFS= read -r BOARD; do
 
         # No WiFi on ESP32-H2
         if [[ "$BOARD" =~ ^esp32:esp32:(esp32h2)$ ]]; then
+            echo "No network: $BOARD"
             HAS_NETWORK="false"
         fi
 
         if [[ "$BOARD" =~ ^arduino:avr:(uno|mega|nano)$ ]]; then
-            echo "AVR"
+            echo "AVR: $BOARD"
         fi
 
-        if [[ "$BOARD" =~ ^arduino:avr:(mega)$ ]]; then
-            echo "AVR"
+        if [[ "$BOARD" =~ ^arduino:avr:(mega|ethernet)$ ]]; then
+            echo "AVR with enough memory: $BOARD"
             HAS_MEMORY="true"
         fi
-        if [[ "$BOARD" == "arduino:avr:uno" ]]; then
-            echo "Skipping $EXAMPLE for $BOARD needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14"
+
+        # Has pseudo-network, but:
+        # No Ethernet
+        # No WiFiClient
+        # No connect() or write() or stop() on HttpClient
+        if [[ "$BOARD" =~ ^arduino:samd(tian)$ ]]; then
+            echo "SAMD TIAN special case"
+            HAS_MEMORY="true"
         fi
 
         # skip known no-wifi SAMD boards
@@ -116,7 +127,6 @@ while IFS= read -r BOARD; do
 
         if [[ "$BOARD" == "arduino:avr:nano" && "$EXAMPLE" == *wolfssl_AES_CTR ]]; then
             echo "Skipping $EXAMPLE for $BOARD needs updated code - see https://github.com/wolfSSL/Arduino-wolfSSL/issues/14"
-            ((BOARD_SKIP_CT++))
         fi
 
 
@@ -133,7 +143,7 @@ while IFS= read -r BOARD; do
                 fi
                 ;;
 
-            *wolfssl_client)
+            *wolfssl_client|*wolfssl_client_dtls)
                 if [[ "$HAS_MEMORY" != "true" ]]; then
                     echo "Skipping $EXAMPLE for $BOARD (Not enough memory)"
                     ((BOARD_SKIP_CT++))
@@ -146,25 +156,14 @@ while IFS= read -r BOARD; do
                 fi
                 ;;
 
-            *wolfssl_client_dtls)
+            *wolfssl_server|*wolfssl_server_dtls)
                 if [[ "$HAS_MEMORY" != "true" ]]; then
                     echo "Skipping $EXAMPLE for $BOARD (Not enough memory)"
                     ((BOARD_SKIP_CT++))
                     continue
                 fi
-                ;;
-
-            *wolfssl_server)
-                if [[ "$HAS_MEMORY" != "true" ]]; then
-                    echo "Skipping $EXAMPLE for $BOARD (Not enough memory)"
-                    ((BOARD_SKIP_CT++))
-                    continue
-                fi
-                ;;
-
-            *wolfssl_server_dtls)
-                if [[ "$HAS_MEMORY" != "true" ]]; then
-                    echo "Skipping $EXAMPLE for $BOARD (Not enough memory)"
+                if [[ "$HAS_NETWORK" != "true" ]]; then
+                    echo "Skipping $EXAMPLE for $BOARD (No network capability)"
                     ((BOARD_SKIP_CT++))
                     continue
                 fi
@@ -181,6 +180,8 @@ while IFS= read -r BOARD; do
                 echo "Default handling for new example: $EXAMPLE"
                 # TODO: Do not let examples fall though here, add checks above.
                 echo "Check for failed messages; add explicit support above"
+
+                SUCCESS=false
 
                 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

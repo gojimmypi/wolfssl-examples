@@ -6,17 +6,30 @@
 #
 # See also /.guthub/workflows/arduino.yml
 #
+# To view available boards:
+#   arduino-cli board listall | grep '^esp32:esp32:'
+#
 
 arduino:avr:mega
 arduino:avr:nano
 arduino:avr:uno
 
-# Needs work:
-# arduino:sam:arduino_due_x
+# Although it may have ethernet, flash is pretty small:
+arduino:avr:ethernet
+
+arduino:sam:arduino_due_x
 
 arduino:samd:arduino_zero_native
 
+# Pseudo network via bridge.h only. No connect / write / etc.
+arduino:samd:tian
+
 esp32:esp32:esp32
+esp32:esp32:esp32s2
+esp32:esp32:esp32s3
+esp32:esp32:esp32c3
+esp32:esp32:esp32c6
+esp32:esp32:esp32h2
 
 esp8266:esp8266:generic
 
