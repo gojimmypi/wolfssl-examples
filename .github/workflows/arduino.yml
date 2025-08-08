@@ -1,10 +1,25 @@
-name: Arduino CI Build (2 of 3) wolfssl-examples-
+name: Arduino CI Build (2 of 3) wolfssl-examples
 
 # These 3 workflows are interdependent for the current $REPO_OWNER:
 # Arduino CI Build 1: https://github.com/$REPO_OWNER/wolfssl          #  /.github/workflows/arduino.yml
+#   - Builds Arduino library from local wolfssl and fetches wolfssl-examples
+#
 # Arduino CI Build 2: https://github.com/$REPO_OWNER/wolfssl-examples #  /.github/workflows/arduino.yml
+#   - Fetches current wolfSSL from other repo
+#   - Creates an updated Arduino library
+#   - Compiles local examples
+#
 # Arduino CI Build 3: https://github.com/$REPO_OWNER/Arduino-wolfssl  #  /.github/workflows/arduino.yml
-
+#    - Assembles and installs an updated Arduino wolfssl library
+#    - Copies only compile script copied from wolfssl-examples
+#    - Builds local examples
+#    - No other repos used
+#
+# ** NOTE TO MAINTAINERS **
+#
+# Suggest using winmerge or similar tool to keep the 3 arduino.yml files in relative sync.
+# Although there are some specific differences, most of the contents are otherwise identical.
+#
 # See https://github.com/wolfSSL/Arduino-wolfSSL
 #
 # To test locally:
@@ -50,6 +65,7 @@ jobs:
         run: |
           # Script to fetch and run install.sh from arduino/arduino-cli
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "The arduino-cli not found is expected. We set it in the next step."
 
       - name: Add Arduino CLI to PATH
         run: echo "${PWD}/bin" >> $GITHUB_PATH
@@ -131,9 +147,10 @@ jobs:
       #
       - name: Compile Arduino Sketches for various boards
         run: |
+          # Run the compile-all-examples.sh script from the local Arduino directory
           pwd
           cd Arduino
-          #./compile-all-examples.sh
+          ./compile-all-examples.sh
 
       - name: Upload Compilation Artifacts
         uses: actions/upload-artifact@v4
