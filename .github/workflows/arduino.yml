@@ -1,9 +1,9 @@
-name: Arduino CI Build (3 of 4) wolfssl-examples
+name: Arduino CI Build (3 of 4) wolfssl-examples with latest wolfssl
 
 #
 # Test local Arduino examples with clone of LATEST github master branch wolfssl
 #
-# These 4 workflows are interdependent for the current $REPO_OWNER:
+# These 4 workflows across 3 repos are interdependent for the current $REPO_OWNER:
 #
 # Arduino CI Build 1: https://github.com/$REPO_OWNER/wolfssl               #  /.github/workflows/arduino.yml
 #   - Builds Arduino library from local clone of wolfssl master branch
@@ -44,13 +44,12 @@ name: Arduino CI Build (3 of 4) wolfssl-examples
 #
 # To test locally:
 # cd [your WOLFSSL_ROOT], e.g. cd /mnt/c/workspace/wolfssl-$USER
-# [optional checkout] e.g.     git checkout tags/v5.8.2-stable
+# [optional checkout]     e.g. git checkout tags/v5.8.2-stable
 # pushd ./IDE/ARDUINO
 # export ARDUINO_ROOT="$HOME/Arduino/libraries"
 # ./wolfssl-arduino.sh INSTALL
 # cd [your WOLFSSL_EXAMPLES_ROOT] e.g. /mnt/c/workspace/wolfssl-examples-$USER
-# cd
-
+#
 
 # START OF COMMON SECTION
 on:
@@ -58,12 +57,13 @@ on:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
       - 'Arduino/**'
+      - '.github/workflows/arduino-release.yml'
       - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
       - 'Arduino/**'
-      - '.github/workflows/arduino.yml'
+      - '.github/workflows/arduino-release.yml'
   workflow_dispatch:
 
 concurrency:
@@ -115,16 +115,11 @@ jobs:
           arduino-cli lib install "Ethernet"        # Install Ethernet library
           arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
 
-          # arduino-cli lib install "wolfSSL"  # Install wolfSSL library from Arduino
-
       - name: Set job environment variables
         run: |
           # Script to assign some common environment variables after everything is installed
-          echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
-          echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV"
-
-          # Show repo-specific location of examples:
-          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV"
+          echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV" || exit 1
+          echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV" || exit 1
 
           # Show predefined summary:
           echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
@@ -137,9 +132,11 @@ jobs:
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
-      - name: Get wolfssl-examples
+      - name: Show wolfssl-examples
         run: |
           # The examples are local in this wolfssl-example repo:
+          echo "PWD:$PWD"
+          echo
           ls ./Arduino/sketches
 
       - name: Shallow clone wolfssl
@@ -167,16 +164,20 @@ jobs:
 
       - name: Install wolfSSL Arduino library
         run: |
-          echo "Run the cloned wolfssl-arduino.sh install script to install wolfssl Arduino library."
+          # Run the cloned wolfssl-arduino.sh install script to install wolfssl Arduino library.
+
+          # Even though the examples are in this library, we'll test as installed for library publishing
+          # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
+          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV" || exit 1
 
           # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
-          echo "ARDUINO_ROOT=ARDUINO_ROOT"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
           # The install script is in the wolfssl repo, in /IDE/ARDUINO directory:
           pushd ./wolfssl/IDE/ARDUINO
-
-          bash wolfssl-arduino.sh INSTALL  # Install wolfSSL as Arduino library in ARDUINO_ROOT
-
+          chmod +x ./wolfssl-arduino.sh
+          bash ./wolfssl-arduino.sh INSTALL  # Install wolfSSL as Arduino library in ARDUINO_ROOT
           popd
 
       # This will fail with Arduino published wolfSSL v5.7.6 and older
