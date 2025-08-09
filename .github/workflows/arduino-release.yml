@@ -118,6 +118,10 @@ jobs:
       - name: Set job environment variables
         run: |
           # Script to assign some common environment variables after everything is installed
+
+          ICON_OK=$(printf "\xE2\x9C\x85")
+          ICON_FAIL=$(printf "\xE2\x9D\x8C")
+
           echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
           echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV"
 
@@ -133,18 +137,20 @@ jobs:
           # Show our custom values:
           echo "GITHUB_WORK           = $GITHUB_WORK"
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+
+          # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
-      - name: Get wolfssl-examples
+      - name: Show wolfssl-examples
         run: |
-          # The examples are local in this wolfssl-example repo:
+          # The examples are local in this wolfssl-example repo, but should have been copied to library, above
           ls ./Arduino/sketches
 
           # - name: Shallow clone wolfssl not used here, we'll install with arduino-cli in next step
 
       - name: Install wolfSSL Published Arduino library
         run: |
-          echo "Get the latest version of wolfSSL library and install it locally ."
+          # Install wolfssl with arduino-cli lib install
 
           arduino-cli lib install "wolfSSL"
 
@@ -153,15 +159,26 @@ jobs:
       #
       - name: Compile Arduino Sketches for various boards
         run: |
-          # Run the compile-all-examples.sh script from the local Arduino directory
+          # Call the compile-all-examples.sh script from the installed
 
           echo "Current directory     = $PWD"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
-          pushd $WOLFSSL_EXAMPLES_ROOT
+          pushd ./Arduino/sketches
           chmod +x ./compile-all-examples.sh
-          echo "Examples skipped for current release of wolfSSL"
-          # ./compile-all-examples.sh
+
+          # The script expects all the examples to be in the current directory.
+          # So copy from local directory to newly instlled wolfssl arduino library to compile there.
+          cp ./compile-all-examples.sh "$ARDUINO_ROOT/wolfssl/examples/compile-all-examples.sh"
+          cp ./board_list.txt          "$ARDUINO_ROOT/wolfssl/examples/board_list.txt"
+
+          # Compile the Arduino library examples in-place
+          pushd "$ARDUINO_ROOT/wolfssl/examples/"
+          echo "PWD=$PWD"
+          ./compile-all-examples.sh
+
+          popd
           popd
 
       - name: Upload Compilation Artifacts

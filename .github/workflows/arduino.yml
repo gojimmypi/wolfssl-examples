@@ -100,19 +100,19 @@ jobs:
         run: |
           arduino-cli config init
           arduino-cli core update-index
-          # arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
-          # arduino-cli core update-index
-          # arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          # arduino-cli core update-index
-          # arduino-cli core install esp32:esp32      # ESP32
+          arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
+          arduino-cli core update-index
+          arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32      # ESP32
           arduino-cli core install arduino:avr      # Arduino Uno, Mega, Nano
-          # arduino-cli core install arduino:sam      # Arduino Due
-          # arduino-cli core install arduino:samd     # Arduino Zero
-          # arduino-cli core install teensy:avr       # PJRC Teensy
-          # arduino-cli core install esp8266:esp8266  # ESP8266
-          # arduino-cli lib install "ArduinoJson"     # Example dependency
-          # arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
-          # arduino-cli lib install "Ethernet"        # Install Ethernet library
+          arduino-cli core install arduino:sam      # Arduino Due
+          arduino-cli core install arduino:samd     # Arduino Zero
+          arduino-cli core install teensy:avr       # PJRC Teensy
+          arduino-cli core install esp8266:esp8266  # ESP8266
+          arduino-cli lib install "ArduinoJson"     # Example dependency
+          arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
+          arduino-cli lib install "Ethernet"        # Install Ethernet library
           arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
 
       - name: Set job environment variables
@@ -140,9 +140,7 @@ jobs:
 
       - name: Show wolfssl-examples
         run: |
-          # The examples are local in this wolfssl-example repo:
-          echo "PWD:$PWD"
-          echo "contents of ./Arduino/sketches"
+          # The examples are local in this wolfssl-example repo, but should have been copied to library, above
           ls ./Arduino/sketches
 
       - name: Shallow clone wolfssl
@@ -218,6 +216,7 @@ jobs:
           chmod +x ./compile-all-examples.sh
 
           # The script expects all the examples to be in the current directory.
+          # So copy from local directory to newly instlled wolfssl arduino library to compile there.
           cp ./compile-all-examples.sh "$ARDUINO_ROOT/wolfssl/examples/compile-all-examples.sh"
           cp ./board_list.txt          "$ARDUINO_ROOT/wolfssl/examples/board_list.txt"
 
