@@ -140,7 +140,7 @@ jobs:
           # The examples are local in this wolfssl-example repo:
           ls ./Arduino/sketches
 
-          # - name: Shallow clone wolfssl not used here
+          # - name: Shallow clone wolfssl not used here, we'll install with arduino-cli in next step
 
       - name: Install wolfSSL Published Arduino library
         run: |

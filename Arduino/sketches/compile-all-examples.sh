@@ -58,8 +58,13 @@ echo "**************************************************************************
 cat "$ARDUINO_ROOT/wolfssl/src/user_settings.h"
 echo "********************************************************************************"
 echo "********************************************************************************"
-
-echo "Begin compile"
+echo "Begin compile for board_list.txt"
+cat board_list.txt
+echo "--------------------------------------------------------------------------------"
+echo "Examples found:"
+find ./ -mindepth 1 -maxdepth 1 -type d
+echo "********************************************************************************"
+echo "********************************************************************************"
 
 # Assume success unless proven otherwise
 SUCCESS="true"
@@ -265,10 +270,6 @@ while IFS= read -r BOARD; do
         echo "Compiling $EXAMPLE for $BOARD"
         echo "-------------------------------------------------------------------------------------"
         echo "arduino-cli compile --fqbn \"$BOARD\" \"$EXAMPLE\""
-
-        echo "Skipping compile!"
-        continue
-
               arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
         EXIT_CODE=$?
 

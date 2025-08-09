@@ -172,9 +172,9 @@ jobs:
         run: |
           # Run the cloned wolfssl-arduino.sh install script to install wolfssl Arduino library.
 
-          # Even though the examples are in this library, we'll test as installed for library publishing
+          # Even though the examples are in this library, we'll test as installed for library publishing.
           # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
-          # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
+          # WOLFSSL_EXAMPLES_ROOT is the repo root, not example directory location (./Arduino/sketches) within.
           export WOLFSSL_EXAMPLES_ROOT=$(realpath "./")
 
           # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
@@ -198,10 +198,22 @@ jobs:
       #
       - name: Compile Arduino Sketches for various boards
         run: |
-          # Run the compile-all-examples.sh script from the local Arduino directory
+          # Call the compile-all-examples.sh script from the local repo ./Arduino/sketches directory
+
+          # Even though the examples are in this library, we'll test as installed for library publishing.
+          # WOLFSSL_EXAMPLES_ROOT is not different than prior step, to point to installed library examples.
+          export WOLFSSL_EXAMPLES_ROOT=$(realpath "$ARDUINO_ROOT/wolfssl/src/examples")
 
           echo "Current directory     = $PWD"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+
+          if [ -z "$WOLFSSL_EXAMPLES_ROOT" ]; then
+            echo "$ICON_FAIL ERROR: Tests should be performed on in-place examples. WOLFSSL_EXAMPLES_ROOT is blank"
+          else
+            echo "Found examples:"
+            ls -al "$WOLFSSL_EXAMPLES_ROOT"
+          fi
 
           pushd $WOLFSSL_EXAMPLES_ROOT
           chmod +x ./compile-all-examples.sh
