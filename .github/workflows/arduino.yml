@@ -193,8 +193,8 @@ jobs:
           bash ./wolfssl-arduino.sh INSTALL  # Install wolfSSL as Arduino library in ARDUINO_ROOT
           popd
 
-          echo "Examples installed in $ARDUINO_ROOT/examples"
-          ls "$ARDUINO_ROOT/examples" -al
+          echo "Examples installed in $ARDUINO_ROOT/wolfssl/examples"
+          ls "$ARDUINO_ROOT/wolfssl/examples" -al
 
       # This will fail with Arduino published wolfSSL v5.7.6 and older
       # as the examples moved. See https://github.com/wolfSSL/wolfssl/pull/8514
