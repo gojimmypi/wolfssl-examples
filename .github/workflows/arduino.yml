@@ -206,12 +206,13 @@ jobs:
       #
       - name: Compile Arduino Sketches for various boards
         run: |
-          # Call the compile-all-examples.sh script from the local repo ./Arduino/sketches directory
+          # Call the compile-all-examples.sh script from the installed
 
           echo "Current directory     = $PWD"
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
-          pushd $WOLFSSL_EXAMPLES_ROOT/Arduino/sketches
+          pushd ./Arduino/sketches
           chmod +x ./compile-all-examples.sh
 
           # The script expects all the examples to be in the current directory.
