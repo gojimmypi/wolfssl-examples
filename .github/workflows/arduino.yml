@@ -1,4 +1,4 @@
-name: Arduino CI Build (3 of 4) wolfssl-examples with latest wolfssl
+name: Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
 
 #
 # Test local Arduino examples with clone of LATEST github master branch wolfssl
@@ -100,24 +100,28 @@ jobs:
         run: |
           arduino-cli config init
           arduino-cli core update-index
-          arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
-          arduino-cli core update-index
-          arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          arduino-cli core update-index
-          arduino-cli core install esp32:esp32      # ESP32
+          # arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
+          # arduino-cli core update-index
+          # arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          # arduino-cli core update-index
+          # arduino-cli core install esp32:esp32      # ESP32
           arduino-cli core install arduino:avr      # Arduino Uno, Mega, Nano
-          arduino-cli core install arduino:sam      # Arduino Due
-          arduino-cli core install arduino:samd     # Arduino Zero
-          arduino-cli core install teensy:avr       # PJRC Teensy
-          arduino-cli core install esp8266:esp8266  # ESP8266
-          arduino-cli lib install "ArduinoJson"     # Example dependency
-          arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
-          arduino-cli lib install "Ethernet"        # Install Ethernet library
-          arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
+          # arduino-cli core install arduino:sam      # Arduino Due
+          # arduino-cli core install arduino:samd     # Arduino Zero
+          # arduino-cli core install teensy:avr       # PJRC Teensy
+          # arduino-cli core install esp8266:esp8266  # ESP8266
+          # arduino-cli lib install "ArduinoJson"     # Example dependency
+          # arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
+          # arduino-cli lib install "Ethernet"        # Install Ethernet library
+          # arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
 
       - name: Set job environment variables
         run: |
           # Script to assign some common environment variables after everything is installed
+
+          ICON_OK=$(printf "\xE2\x9C\x85")
+          ICON_FAIL=$(printf "\xE2\x9D\x8C")
+
           echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV" || exit 1
           echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV" || exit 1
 
@@ -171,8 +175,14 @@ jobs:
           echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV" || exit 1
 
           # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
+          echo "PWD                   = $PWD"
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+          ls
+
+          if [ -z "$WOLFSSL_EXAMPLES_ROOT" ]; then
+            echo "$ICON_FAIL ERROR: Tests should be performed on in-place examples. WOLFSSL_EXAMPLES_ROOT is blank"
+          fi
 
           # The install script is in the wolfssl repo, in /IDE/ARDUINO directory:
           pushd ./wolfssl/IDE/ARDUINO

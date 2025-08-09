@@ -1,4 +1,4 @@
-name: Arduino CI Build (2 of 4) wolfssl-examples with published arduino wolfssl
+name: Arduino CI Build (2 of 4) Release Arduino wolfSSL for Local Examples
 
 #
 # Test local Arduino examples with published Arduino wolfssl

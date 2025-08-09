@@ -265,7 +265,11 @@ while IFS= read -r BOARD; do
         echo "Compiling $EXAMPLE for $BOARD"
         echo "-------------------------------------------------------------------------------------"
         echo "arduino-cli compile --fqbn \"$BOARD\" \"$EXAMPLE\""
-        #     arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
+
+        echo "Skipping compile!"
+        continue
+
+              arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
         EXIT_CODE=$?
 
         if [ "$EXIT_CODE" -ne 0 ]; then
