@@ -1,9 +1,9 @@
-name: Arduino CI Build (2 of 4) wolfssl-examples
+name: Arduino CI Build (2 of 4) wolfssl-examples with published arduino wolfssl
 
 #
 # Test local Arduino examples with published Arduino wolfssl
 #
-# These 4 workflows are interdependent for the current $REPO_OWNER:
+# These 4 workflows across 3 repos are interdependent for the current $REPO_OWNER:
 #
 # Arduino CI Build 1: https://github.com/$REPO_OWNER/wolfssl               #  /.github/workflows/arduino.yml
 #   - Builds Arduino library from local clone of wolfssl master branch
@@ -44,13 +44,12 @@ name: Arduino CI Build (2 of 4) wolfssl-examples
 #
 # To test locally:
 # cd [your WOLFSSL_ROOT], e.g. cd /mnt/c/workspace/wolfssl-$USER
-# [optional checkout] e.g.     git checkout tags/v5.8.2-stable
+# [optional checkout]     e.g. git checkout tags/v5.8.2-stable
 # pushd ./IDE/ARDUINO
 # export ARDUINO_ROOT="$HOME/Arduino/libraries"
 # ./wolfssl-arduino.sh INSTALL
 # cd [your WOLFSSL_EXAMPLES_ROOT] e.g. /mnt/c/workspace/wolfssl-examples-$USER
-# cd
-
+#
 
 # START OF COMMON SECTION
 on:
@@ -58,12 +57,13 @@ on:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
       - 'Arduino/**'
+      - '.github/workflows/arduino-release.yml'
       - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
       - 'Arduino/**'
-      - '.github/workflows/arduino.yml'
+      - '.github/workflows/arduino-release.yml'
   workflow_dispatch:
 
 concurrency:
@@ -140,13 +140,13 @@ jobs:
           # The examples are local in this wolfssl-example repo:
           ls ./Arduino/sketches
 
+          # - name: Shallow clone wolfssl not used here
 
       - name: Install wolfSSL Published Arduino library
         run: |
           echo "Get the latest version of wolfSSL library and install it locally ."
 
           arduino-cli lib install "wolfSSL"
-
 
       # This will fail with Arduino published wolfSSL v5.7.6 and older
       # as the examples moved. See https://github.com/wolfSSL/wolfssl/pull/8514
@@ -159,6 +159,7 @@ jobs:
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
           pushd $WOLFSSL_EXAMPLES_ROOT
+          chmod +x ./compile-all-examples.sh
           ./compile-all-examples.sh
           popd
 

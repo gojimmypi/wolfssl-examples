@@ -191,6 +191,7 @@ jobs:
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
           pushd $WOLFSSL_EXAMPLES_ROOT
+          chmod +x ./compile-all-examples.sh
           ./compile-all-examples.sh
           popd
 
