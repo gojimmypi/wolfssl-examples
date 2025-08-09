@@ -145,6 +145,7 @@ jobs:
 
       - name: Shallow clone wolfssl
         run: |
+          # Clone the wolfssl to use for example build
           git clone --depth 1 https://github.com/$REPO_OWNER/wolfssl.git
 
           # Assign your PR branch for testing here:
