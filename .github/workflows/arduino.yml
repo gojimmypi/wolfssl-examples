@@ -134,13 +134,15 @@ jobs:
           # Show our custom values:
           echo "GITHUB_WORK           = $GITHUB_WORK"
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+
+          # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
       - name: Show wolfssl-examples
         run: |
           # The examples are local in this wolfssl-example repo:
           echo "PWD:$PWD"
-          echo
+          echo "contents of ./Arduino/sketches"
           ls ./Arduino/sketches
 
       - name: Shallow clone wolfssl
@@ -172,7 +174,8 @@ jobs:
 
           # Even though the examples are in this library, we'll test as installed for library publishing
           # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
-          export WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")
+          # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
+          export WOLFSSL_EXAMPLES_ROOT=$(realpath "./")
 
           # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
           echo "PWD                   = $PWD"
