@@ -113,7 +113,7 @@ jobs:
           # arduino-cli lib install "ArduinoJson"     # Example dependency
           # arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
           # arduino-cli lib install "Ethernet"        # Install Ethernet library
-          # arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
+          arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
 
       - name: Set job environment variables
         run: |
