@@ -172,7 +172,7 @@ jobs:
 
           # Even though the examples are in this library, we'll test as installed for library publishing
           # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
-          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV" || exit 1
+          WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")
 
           # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
           echo "PWD                   = $PWD"
