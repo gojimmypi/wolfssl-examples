@@ -28,17 +28,11 @@ name: Arduino CI Build (2 of 4) Release Arduino wolfSSL for Local Examples
 #    - Builds local examples
 #    - No other repos used
 #
-# Arduino CI Build 4: https://github.com/$REPO_OWNER/Arduino-wolfssl       #  /.github/workflows/arduino-release.yml
-#    - Tests examples based on latest published release of Arduino library, NOT wolfssl github.
-#    - Should be identical to Arduino CI Build 3 in every way but wolfssl install.
-#    - Copies only compile script from wolfssl-examples
-#    - Builds local examples
-#    - No other repos used
-
-# ** NOTE TO MAINTAINERS **
 #
-# Consider using winmerge or similar tool to keep the 4 arduino.yml files in relative sync.
-# Although there are some specific differences, most of the contents are otherwise identical.
+#                                   ** NOTE TO MAINTAINERS **
+#
+#           Consider using winmerge or similar tool to keep the 4 arduino[-release].yml files in relative sync.
+#           Although there are some specific differences, most of the contents are otherwise identical.
 #
 # See https://github.com/wolfSSL/Arduino-wolfSSL
 #
@@ -148,10 +142,12 @@ jobs:
           
           # end Show wolfssl-examples
 
-          # - name: Shallow clone wolfssl not used here, we'll install with arduino-cli in next step
+          # - name: Shallow clone wolfssl 
+          #
+          #         not used here, we'll install with arduino-cli in next step
 
           # 
-          # These comments are mainly here to aligh with arduino.yml source sync
+          # These comments are mainly here to help align with arduino.yml source side-by-side sync
           #
           # end wolfssl source
 
@@ -165,12 +161,15 @@ jobs:
 
           # End Install wolfSSL Arduino library
 
+      - name: List installed Arduino libraries
+        run: arduino-cli lib list
+
       # This will fail with Arduino published wolfSSL v5.7.6 and older
       # as the examples moved. See https://github.com/wolfSSL/wolfssl/pull/8514
       #
-      - name: Compile Arduino Sketches for various boards
+      - name: Compile Arduino Sketches for Various Boards
         run: |
-          # Call the compile-all-examples.sh script from the installed
+          # Call the compile-all-examples.sh script to compile all the examples for each of the fqbn names in the local copy of board_list.txt
 
           echo "Current directory     = $PWD"
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
@@ -190,6 +189,8 @@ jobs:
               ./compile-all-examples.sh
             popd
           popd
+          
+          # End Compile Arduino Sketches for Various Boards
 
       - name: Upload Compilation Artifacts
         uses: actions/upload-artifact@v4
