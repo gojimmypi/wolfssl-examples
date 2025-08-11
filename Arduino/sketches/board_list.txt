@@ -71,8 +71,8 @@ arduino:samd:mkrfox1200
 
 arduino:mbed_nano:nanorp2040connect
     # 	Wi-Fi	NINA-W102 module
-  --no-wolfssl_client_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-  --no-wolfssl_server_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:mbed_portenta:portenta_h7
     # 	Wi-Fi & Ethernet	via onboard module
@@ -86,6 +86,8 @@ arduino:mbed_edge:edge_control
   --no-wolfssl_server      # TODO Wrong network? WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_client      # TODO Wrong network? WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_server      # TODO Wrong network? WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
+  --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:renesas_uno:unor4wifi
     # 	Wi-Fi & BT	UNO R4 Wi-Fi (ESP32-S3 coprocessor)
