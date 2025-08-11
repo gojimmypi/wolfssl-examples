@@ -194,7 +194,7 @@ jobs:
             cp ./board_list.txt          "$ARDUINO_ROOT/wolfssl/examples/board_list.txt"
 
             # TODO Use standard board_list.txt after next release of wolfSSL
-            cp ./board_list_v5.8.2.txt   "$ARDUINO_ROOT/wolfssl/examples/board_list_v5.8.2.txt
+            cp ./board_list_v5.8.2.txt   "$ARDUINO_ROOT/wolfssl/examples/board_list_v5.8.2.txt"
 
             # Compile the Arduino library examples in-place
             pushd "$ARDUINO_ROOT/wolfssl/examples/"
