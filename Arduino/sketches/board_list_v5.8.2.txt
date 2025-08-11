@@ -87,6 +87,7 @@ arduino:avr:ethernet
   --no-wolfssl_server_dtls # there's no wolfssl_server_dtls example for the v5.8.2 release
 
 arduino:sam:arduino_due_x
+  --no-wolfssl_AES_CTR     # Fixed in https://github.com/wolfSSL/wolfssl/pull/9076 Disallow atomics during fence & WOLFSSL_NO_ATOMIC
   --no-wolfssl_version     # Fixed in https://github.com/wolfSSL/wolfssl/pull/9076 Disallow atomics during fence & WOLFSSL_NO_ATOMIC
   --no-template            # Fixed in https://github.com/wolfSSL/wolfssl/pull/9076 Disallow atomics during fence & WOLFSSL_NO_ATOMIC
   --no-wolfssl_client      # Fixed in https://github.com/wolfSSL/wolfssl/pull/9076 Disallow atomics during fence & WOLFSSL_NO_ATOMIC
@@ -121,6 +122,7 @@ esp32:esp32:esp32h2
   --no-wolfssl_server_dtls # there's no wolfssl_client_dtls example for the v5.8.2 release
 
 esp8266:esp8266:generic
+  --no-wolfssl_AES_CTR     # Fixed in upcoming PR
   --no-wolfssl_version     # Fixed in upcoming PR
   --no-template            # Fixed in upcoming PR
   --no-wolfssl_client      # TODO there's not enough memory on ESP8266 at this time
