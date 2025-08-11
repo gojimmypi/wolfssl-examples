@@ -30,6 +30,7 @@ BOARD_LIST="./board_list.txt"
 BOARD_CT=0
 BOARD_COMPILE_CT=0
 BOARD_SKIP_CT=0
+BOARD_FAIL_CT=0
 EXAMPLE_CT=0
 
 if [ $# -gt 0 ]; then
@@ -47,6 +48,7 @@ fi
 ARDUINO_ROOT="$HOME/Arduino/libraries"
 
 ICON_OK=$(printf "\xE2\x9C\x85")
+ICON_WARN=$(printf "\xE2\x9A\xA0")
 ICON_FAIL=$(printf "\xE2\x9D\x8C")
 #HAS_NETWORK=""
 #HAS_MEMORY=""
@@ -98,9 +100,16 @@ SUCCESS="true"
 
 EXAMPLES=(wolfssl_client wolfssl_client_dtls server)
 
+# associative array, where the keys are arbitrary strings
 declare -A DISABLED          # per FQBN: DISABLED["example-name"]=1
 declare -A COMMENT           # per FQBN: COMMENT["example-name"]="some comment"
 declare -A VALID_EXAMPLES    # set of valid example names
+
+# Indexed arrays to hold results
+declare -a SUMMARY_STATUS
+declare -a SUMMARY_BOARD
+declare -a SUMMARY_EXAMPLE
+
 #FAIL_LIST=()                 # items like "fqbn example exitcode"
 #OVERALL_OK=1                 # flip to 0 on first failure
 
@@ -198,7 +207,7 @@ build_valid_examples() {
 warn_unknown_flag() {
     # $1 is raw flag text after --no-
     # $2 is current FQBN for context
-    printf 'WARN: Unknown example in flag "--no-%s" under FQBN "%s" (ignored)\n' "$1" "$2" >&2
+    printf '%s WARN: Unknown example in flag "--no-%s" under FQBN "%s" (ignored)\n' "$ICON_WARN" "$1" "$2" >&2
 } # warn_unknown_flag
 
 set_flag() {
@@ -382,10 +391,16 @@ while :; do
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]; then
                 echo "$ICON_FAIL Compilation failed for $EXAMPLE on $BOARD (Exit code: $EXIT_CODE)"
+                ((BOARD_FAIL_CT++))
                 SUCCESS=false
+                SUMMARY_STATUS+=("$ICON_FAIL")
             else
                 echo "$ICON_OK Compilation succeeded for $EXAMPLE on $BOARD"
+                SUMMARY_STATUS+=("$ICON_OK")
             fi # exit code
+
+            SUMMARY_BOARD+=("$BOARD")
+            SUMMARY_EXAMPLE+=("$EXAMPLE")
         fi # is_disabled check
 
         echo "-------------------------------------------------------------------------------------"
@@ -403,10 +418,28 @@ echo "--------------------------------------------------------------------------
 echo "Boards found: $BOARD_CT"
 echo "Examples found: $EXAMPLE_CT"
 
+echo "Compilation Summary:"
+for i in "${!SUMMARY_STATUS[@]}"; do
+    printf "%s %s on %s\n" \
+        "${SUMMARY_STATUS[$i]}" \
+        "${SUMMARY_EXAMPLE[$i]}" \
+        "${SUMMARY_BOARD[$i]}"
+done
 
 if [ "$SUCCESS" = true ]; then
     echo "$ICON_OK All $BOARD_COMPILE_CT sketches compiled successfully! $BOARD_SKIP_CT board examples skipped."
 else
-    echo "$ICON_FAIL One or more sketches failed to compile."
+    case "$BOARD_FAIL_CT" in
+        0)
+            echo "$ICON_FAIL no sketches failed to compile. Other error?"
+            ;;
+        1)
+            echo "$ICON_FAIL 1 sketch failed to compile."
+            ;;
+        *)
+            echo "$ICON_FAIL $BOARD_FAIL_CT sketches failed to compile."
+            ;;
+    esac
+
     exit 1
 fi
