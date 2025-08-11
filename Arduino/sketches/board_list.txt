@@ -74,7 +74,10 @@ arduino:mbed_nano:nanorp2040connect
   --no-wolfssl_client_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
-arduino:mbed_portenta:portenta_h7_m7
+arduino:mbed_portenta:portenta_h7
+    # 	Wi-Fi & Ethernet	via onboard module
+
+arduino:mbed_portenta:portenta_x8
     # 	Wi-Fi & Ethernet	via onboard module
 
 arduino:mbed_edge:edge_control
