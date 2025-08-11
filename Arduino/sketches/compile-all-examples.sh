@@ -54,7 +54,7 @@ ICON_FAIL=$(printf "\xE2\x9D\x8C")
 #HAS_MEMORY=""
 
 echo "Icon check:"
-printf '--OK: %s; Warn: "$ICON_WARN" Not OK: %s\n'  "$ICON_OK" "$ICON_FAIL"
+printf '--OK: %s; Warn: %s; Not OK: %s\n'  "$ICON_OK" "$ICON_WARN" "$ICON_FAIL"
 
 if [[ $SHOW_DIR_CONTENTS -ne 0 ]]; then
     echo "********************************************************************************"
