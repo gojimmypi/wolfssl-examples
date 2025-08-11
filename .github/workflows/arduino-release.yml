@@ -58,7 +58,6 @@ on:
     paths:
       - 'Arduino/**'
       - '.github/workflows/arduino-release.yml'
-      - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
@@ -197,7 +196,7 @@ jobs:
             # Compile the Arduino library examples in-place
             pushd "$ARDUINO_ROOT/wolfssl/examples/"
               echo "PWD=$PWD"
-              ./compile-all-examples.sh
+              ./compile-all-examples.sh board_list_v5.8.2.txt
             popd
           popd
 

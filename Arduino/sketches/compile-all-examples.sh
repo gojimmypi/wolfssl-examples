@@ -24,11 +24,24 @@ SHOW_BOARD_LIST=0
 SHOW_EXAMPLE_LIST=0
 
 set +e
+
+# default board list is board_list.txt, may be overridden
 BOARD_LIST="./board_list.txt"
 BOARD_CT=0
 BOARD_COMPILE_CT=0
 BOARD_SKIP_CT=0
 EXAMPLE_CT=0
+
+if [ $# -gt 0 ]; then
+    # First parameter may be alternate fqbn list
+    if [[ -f "$1" ]]; then
+        BOARD_LIST="$1"
+        echo "Using specified fqbn list file: $BOARD_LIST"
+    else
+        echo "Error: Parameter specified for board list file does not exist: $1"
+        exit 1
+    fi
+fi
 
 # need to reassign ARDUINO_ROOT in this run
 ARDUINO_ROOT="$HOME/Arduino/libraries"
@@ -70,7 +83,7 @@ if [[ $SHOW_USER_SETTINGS -ne 0 ]]; then
 fi
 if [[ $SHOW_BOARD_LIST -ne 0 ]]; then
     echo "Begin compile for $BOARD_LIST"
-    cat $BOARD_LIST
+    cat "$BOARD_LIST"
     echo "--------------------------------------------------------------------------------"
 fi
 if [[ $SHOW_EXAMPLE_LIST -ne 0 ]]; then
