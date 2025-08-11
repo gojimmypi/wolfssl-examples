@@ -415,9 +415,9 @@ done < "$BOARD_LIST" # for each BOARD
 
 echo "Done!"
 echo "-------------------------------------------------------------------------------------"
-echo "Boards found: $BOARD_CT"
+echo "Boards found:   $BOARD_CT"
 echo "Examples found: $EXAMPLE_CT"
-
+echo "Board Examples: $(( ${BOARD_CT:-0} * ${EXAMPLE_CT:-0} ))"
 echo "Compilation Summary:"
 for i in "${!SUMMARY_STATUS[@]}"; do
     printf "%s %s on %s\n" \
@@ -427,7 +427,7 @@ for i in "${!SUMMARY_STATUS[@]}"; do
 done
 
 if [ "$SUCCESS" = true ]; then
-    echo "$ICON_OK All $BOARD_COMPILE_CT sketches compiled successfully! $BOARD_SKIP_CT board examples skipped."
+    echo "$ICON_OK All $BOARD_COMPILE_CT sketches compiled successfully! $BOARD_SKIP_CT board examples skipped (see $BOARD_LIST)."
 else
     case "$BOARD_FAIL_CT" in
         0)
