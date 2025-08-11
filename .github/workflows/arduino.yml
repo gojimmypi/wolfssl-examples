@@ -51,11 +51,13 @@ on:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
       - 'Arduino/**'
+      - '!Arduino/sketches/board_list_v5.8.2.txt' # Not triggered on arduino-release.yml file. TODO remove this line after next Arduino wolfssl release
       - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
       - 'Arduino/**'
+      - '!Arduino/sketches/board_list_v5.8.2.txt' # Not triggered on arduino-release.yml file. TODO remove this line after next Arduino wolfssl release
       - '.github/workflows/arduino.yml'
   workflow_dispatch:
 
