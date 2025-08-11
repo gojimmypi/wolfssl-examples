@@ -78,7 +78,7 @@ Tested with:
 #define INVALID_SOCKET -1
 
 /* Maximum size in bytes of buffer to send and receive */
-#define MAXLINE   4096
+#define MAXLINE   128
 
 /* Optional stress test. Define to consume memory until exhausted: */
 /* #define MEMORY_STRESS_TEST */
