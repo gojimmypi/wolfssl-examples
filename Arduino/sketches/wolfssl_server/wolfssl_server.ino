@@ -156,12 +156,12 @@ Tested with:
     /* Needs "Ethernet by Various" library to be installed. Tested with V2.0.2 */
     #include <Ethernet.h>
     EthernetClient client;
-    EthernetClient server(WOLFSSL_PORT);
+    EthernetServer server(WOLFSSL_PORT);
 #elif defined(ARDUINO_AVR_ETHERNET) || defined(ARDUINO_AVR_LEONARDO_ETH)
     /* Boards such as arduino:avr:ethernet and arduino:avr:leonardoeth */
     #include <Ethernet.h>
     EthernetClient client;
-    EthernetClient server(WOLFSSL_PORT);
+    EthernetServer server(WOLFSSL_PORT);
 #elif defined(ARDUINO_SAMD_NANO_33_IOT)
     #define USING_WIFI
     #include <SPI.h>
