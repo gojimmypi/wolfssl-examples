@@ -291,6 +291,11 @@ while :; do
     fi
 
     line=$(strip_cr "$line")
+    if [[ "$line" == "exit" ]]; then
+        echo "Encountered exit; aborting"
+        break
+    fi
+
 
     if is_skip "$line"; then
         # echo "This line skipped: $line"
@@ -299,7 +304,10 @@ while :; do
 
     BOARD="${line//$'\r'/}"  # Remove carriage returns from the line
 
+    echo ""
+    echo "*************************************************************************************"
     echo "Found board: $BOARD"
+    echo "*************************************************************************************"
 
     echo "Checking flags..."
     clear_flags
@@ -339,10 +347,7 @@ while :; do
     #    continue
     # fi
 
-    echo ""
-    echo "*************************************************************************************"
     echo "Begin Board: $BOARD"
-    echo "*************************************************************************************"
     ((BOARD_CT++))
     for EXAMPLE in "${EXAMPLES[@]}"; do
         echo "Checking $EXAMPLE for $BOARD"
@@ -361,8 +366,7 @@ while :; do
             ((BOARD_COMPILE_CT++))
             echo "arduino-cli compile --fqbn \"$BOARD\" \"$EXAMPLE\""
                   arduino-cli compile --fqbn  "$BOARD"   "$EXAMPLE"
-            #EXIT_CODE=$?
-            EXIT_CODE=0
+            EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]; then
                 echo "$ICON_FAIL Compilation failed for $EXAMPLE on $BOARD (Exit code: $EXIT_CODE)"
                 SUCCESS=false
