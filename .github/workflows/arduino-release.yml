@@ -1,5 +1,11 @@
 name: Arduino CI Build (2 of 4) Release Arduino wolfSSL for Local Examples
 
+# TODO - implement this once future wolfSSL is released
+#
+#      Known to fail on current 5.8.2 wolfSSL Arduino Release
+#
+# See ardduino.yml - Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
+
 #
 # Test local Arduino examples with published Arduino wolfssl
 #
@@ -98,16 +104,21 @@ jobs:
           arduino-cli core update-index
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
-          arduino-cli core install esp32:esp32      # ESP32
-          arduino-cli core install arduino:avr      # Arduino Uno, Mega, Nano
-          arduino-cli core install arduino:sam      # Arduino Due
-          arduino-cli core install arduino:samd     # Arduino Zero
-          arduino-cli core install teensy:avr       # PJRC Teensy
-          arduino-cli core install esp8266:esp8266  # ESP8266
-          arduino-cli lib install "ArduinoJson"     # Example dependency
-          arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
-          arduino-cli lib install "Ethernet"        # Install Ethernet library
-          arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
+          arduino-cli core install esp32:esp32            # ESP32
+          arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
+          arduino-cli core install arduino:sam            # Arduino Due
+          arduino-cli core install arduino:samd           # Arduino Zero
+          arduino-cli core install teensy:avr             # PJRC Teensy
+          arduino-cli core install esp8266:esp8266        # ESP8266
+          arduino-cli core install arduino:mbed_nano      # nanorp2040connect
+          arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
+          arduino-cli core install arduino:mbed_edge
+          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
+          arduino-cli core install arduino:renesas_uno
+          arduino-cli lib install "ArduinoJson"           # Example dependency
+          arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
+          arduino-cli lib install "Ethernet"              # Install Ethernet library
+          arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
 
       - name: Set job environment variables
         run: |
@@ -139,14 +150,14 @@ jobs:
         run: |
           # The examples are local in this wolfssl-example repo, but should have been copied to library, above
           ls ./Arduino/sketches
-          
+
           # end Show wolfssl-examples
 
-          # - name: Shallow clone wolfssl 
+          # - name: Shallow clone wolfssl
           #
           #         not used here, we'll install with arduino-cli in next step
 
-          # 
+          #
           # These comments are mainly here to help align with arduino.yml source side-by-side sync
           #
           # end wolfssl source
@@ -189,7 +200,7 @@ jobs:
               ./compile-all-examples.sh
             popd
           popd
-          
+
           # End Compile Arduino Sketches for Various Boards
 
       - name: Upload Compilation Artifacts
