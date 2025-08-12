@@ -84,10 +84,6 @@ jobs:
           # So set it up in advance:
           mkdir -p "${PWD}/bin"
           echo "${PWD}/bin" >> $GITHUB_PATH
-          # Download and run install script from Arduino:
-          # curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-
-          # Instead, we have our own local copy that is more reliable and can add out own debugging
 
           # Sets the install directory to a consistent path at the repo root.
           ROOT_BIN="$GITHUB_WORKSPACE/bin"
@@ -97,6 +93,15 @@ jobs:
 
           # Save as a lobal environment variable
           echo "$ROOT_BIN" >> "$GITHUB_PATH"
+
+
+          # Download and run install script from Arduino:
+          # -S show errors; -L follow redirects; -v Verbose
+          curl -vSL --retry 5 --retry-delay 10 \
+             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+             | sh -x
+
+          # Instead, we have our own local copy that is more reliable and can add out own debugging
 
           pushd ./Arduino/sketches
             chmod +x ./arduino_install.sh
