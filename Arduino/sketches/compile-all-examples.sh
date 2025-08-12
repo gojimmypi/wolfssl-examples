@@ -388,6 +388,7 @@ while :; do
     ((BOARD_CT++))
     THIS_EXAMPLE_CT=0
     for EXAMPLE in "${EXAMPLES[@]}"; do
+        start_time=$(date +%s)  # record start time (epoch seconds)
         echo "Checking $EXAMPLE for $BOARD"
         if is_disabled "$EXAMPLE"; then
             echo "Skipped"
@@ -418,6 +419,10 @@ while :; do
             SUMMARY_BOARD+=("$BOARD")
             SUMMARY_EXAMPLE+=("$EXAMPLE")
         fi # is_disabled check
+
+        end_time=$(date +%s)    # record end time
+        elapsed=$(( end_time - start_time ))
+        echo "Block took ${elapsed} seconds"
 
         if [[ $THIS_EXAMPLE_CT -lt $EXAMPLE_CT ]]; then
             echo "-------------------------------------------------------------------------------------"
