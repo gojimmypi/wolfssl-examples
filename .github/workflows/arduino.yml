@@ -91,7 +91,9 @@ jobs:
           # Instead, we have our own local copy that is more reliable and can add out own debugging
           pushd ./Arduino/sketches
             chmod +x ./arduino_install.sh
-            ./arduino_install.sh
+
+            # Mimic curl install, does not use current directory:
+            cat ./arduino_install.sh | BINDIR="$PWD/bin" sh
           popd
 
       - name: Confirm Arduino CLI install
