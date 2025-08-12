@@ -26,8 +26,18 @@
  * Be sure to include these files in all libraries that reference
  * wolfssl in this order: */
 
-#include <Arduino.h>
-/* settings.h is typically included in wolfssl.h, but here as a reminder: */
+#if defined(ARDUINO_PORTENTA_X8)
+    /* This file is purposely a c and not .cpp file for testing.
+     * On Portenta X8 the core headers assume C++, and things like A6,
+     * PIN_SPI_MOSI, etc. - rely on C++-only constructs.
+     * So don't include Arduino.h here for Portenta. */
+#else
+    /* Assume all other target boards would want to include Arduino.h in a
+     * helper such as this one. Not needed in this wolfssl_helper.c example. */
+    #include <Arduino.h>
+#endif
+
+ /* settings.h is typically included in wolfssl.h, but here as a reminder: */
 #include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl.h>
 
