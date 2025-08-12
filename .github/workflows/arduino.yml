@@ -89,8 +89,10 @@ jobs:
           # curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 
           # Instead, we have our own local copy that is more reliable and can add out own debugging
-          chmod +x /arduino_install.sh
-          ./arduino_install.sh
+          pushd ./Arduino/sketches
+            chmod +x /arduino_install.sh
+            ./arduino_install.sh
+          popd
 
       - name: Confirm Arduino CLI install
         run: arduino-cli version
