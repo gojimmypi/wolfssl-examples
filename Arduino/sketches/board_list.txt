@@ -29,21 +29,6 @@
 #   arduino-cli board listall | grep '^esp32:esp32:'
 #
 
-arduino:mbed_portenta:envie_m7
-    # Wi-Fi & Ethernet via onboard module
-  --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-  --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-
-arduino:mbed_portenta:portenta_x8
-    #  Wi-Fi & Ethernet via onboard module
-  --no-wolfssl_client      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
-  --no-wolfssl_server      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
-  --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-  --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-
-# TODO Remove:
-exit
-
 arduino:avr:leonardoeth
     # Ethernet Leonardo ETH (ATmega32u4 + W5500 Ethernet), only 2K RAM
   --no-wolfssl_AES_CTR     # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.

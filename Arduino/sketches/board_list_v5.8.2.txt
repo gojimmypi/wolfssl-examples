@@ -33,20 +33,6 @@
 #   arduino-cli board listall | grep '^esp32:esp32:'
 #
 
-# Edit with caution.
-#
-# This is a list of Arduino fqbn (fully qualified board names).
-#
-# Each line is the exact text used in the ./compile-all-examples.sh
-#
-# See also [this wolfssl-examples]/.github/workflows/arduino.yml
-#
-# This exact boardlist.txt is also used by: [owner]/Arduino-wolfSSL/.github/workflows/arduino.yml
-#
-# To view available boards:
-#   arduino-cli board listall | grep '^esp32:esp32:'
-#
-
 arduino:avr:mega
   --no-wolfssl_version     # Fixed in https://github.com/wolfSSL/wolfssl/pull/9075 Force old OID values: WOLFSSL_OLD_OID_SUM for WC_16BIT_CPU
   --no-template            # Fixed in https://github.com/wolfSSL/wolfssl/pull/9075 Force old OID values: WOLFSSL_OLD_OID_SUM for WC_16BIT_CPU
