@@ -100,7 +100,7 @@ jobs:
           set -o pipefail
 
           curl -vSL --retry 5 --retry-delay 10 \
-             https://raw.githubusercontent.com/arduino/arduino-cli/master/install-bad.sh  \
+             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh  \
              | sh -x
           rc=$?
           c_rc=${PIPESTATUS[0]}  # curl's exit code
@@ -111,6 +111,7 @@ jobs:
           # If there was a curl error, we have our own local copy that is more reliable and can add our own debugging
           if [ "$rc" -ne 0 ]; then
             echo "Primary install failed: curl=$c_rc, sh=$s_rc. Falling back..." >&2
+            echo "Using local copy of arduino_install.sh"
             pushd ./Arduino/sketches
               chmod +x ./arduino_install.sh
 

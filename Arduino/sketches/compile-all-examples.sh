@@ -193,7 +193,7 @@ discover_examples() {
         EXAMPLES+=("$name")
         echo "Found example directory: $name"
         ((EXAMPLE_CT++))
-    done < <(find ./ -mindepth 1 -maxdepth 1 -type d -print0)
+    done < <(find ./ -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
 
     # Optional: filter out hidden dirs or known exclusions
     # local keep=()
@@ -324,7 +324,7 @@ while :; do
 
     line=$(strip_cr "$line")
     if [[ "$line" == "exit" ]]; then
-        echo "Encountered exit; aborting"
+        echo "Encountered exit in $BOARD_LIST; aborting"
         break
     fi
 
@@ -442,7 +442,8 @@ printf "%-4s %-*s %-*s\n" "STAT" "$MAX_FQBN_LEN" "EXAMPLE" "$MAX_FQBN_LEN" "BOAR
 printf "%-4s %-*s %-*s\n" "----" "$MAX_FQBN_LEN" "-------" "$MAX_FQBN_LEN" "-----"
 
 for i in "${!SUMMARY_STATUS[@]}"; do
-    printf "%-4s %-*s %-*s\n" \
+    printf "%-4s  %-*s %-*s\n" \
+    printf "%-4s  %-*s %-*s\n" \
         "${SUMMARY_STATUS[$i]}" \
         "$MAX_FQBN_LEN" "${SUMMARY_EXAMPLE[$i]}" \
         "$MAX_FQBN_LEN" "${SUMMARY_BOARD[$i]}"
