@@ -84,16 +84,25 @@ jobs:
           # So set it up in advance:
           mkdir -p "${PWD}/bin"
           echo "${PWD}/bin" >> $GITHUB_PATH
-
           # Download and run install script from Arduino:
           # curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 
           # Instead, we have our own local copy that is more reliable and can add out own debugging
+
+          # Sets the install directory to a consistent path at the repo root.
+          ROOT_BIN="$GITHUB_WORKSPACE/bin"
+
+          # Ensures that BINDIR exists before the installer runs
+          mkdir -p "$ROOT_BIN"
+
+          # Save as a lobal environment variable
+          echo "$ROOT_BIN" >> "$GITHUB_PATH"
+
           pushd ./Arduino/sketches
             chmod +x ./arduino_install.sh
 
             # Mimic curl install, does not use current directory:
-            cat ./arduino_install.sh | BINDIR="$PWD/bin" sh
+            BINDIR="$ROOT_BIN" sh -x ./arduino_install.sh
           popd
 
       - name: Confirm Arduino CLI install
