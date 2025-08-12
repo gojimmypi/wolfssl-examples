@@ -29,9 +29,21 @@
 #   arduino-cli board listall | grep '^esp32:esp32:'
 #
 
+arduino:mbed_portenta:envie_m7
+    # Wi-Fi & Ethernet via onboard module
+
+arduino:mbed_portenta:portenta_x8
+    #  Wi-Fi & Ethernet via onboard module
+  --no-wolfssl_client      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
+  --no-wolfssl_server      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
+  --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+
+# TODO Remove:
+exit
 
 arduino:avr:leonardoeth
-    # Ethernet	Leonardo ETH (ATmega32u4 + W5500 Ethernet)
+    # Ethernet Leonardo ETH (ATmega32u4 + W5500 Ethernet), only 2K RAM
   --no-wolfssl_AES_CTR     # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
   --no-wolfssl_client      # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
   --no-wolfssl_server      # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
@@ -40,7 +52,7 @@ arduino:avr:leonardoeth
 
 
 arduino:avr:yun
-    # Ethernet & Wi-Fi	Has AR9331 Linux module for networking
+    # Ethernet & Wi-Fi has AR9331 Linux module for networking, but only 2K RAM
   --no-wolfssl_AES_CTR     # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
   --no-wolfssl_client      # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
   --no-wolfssl_server      # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
@@ -48,12 +60,12 @@ arduino:avr:yun
   --no-wolfssl_server_dtls # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
 
 arduino:samd:mkrwifi1010
-    # 	Wi-Fi	NINA-W102 module
+    # Wi-Fi NINA-W102 module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:samd:mkr1000
-    # 	Wi-Fi	WINC1500 module
+    # Wi-Fi uses WINC1500 module
   --no-template            # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
   --no-wolfssl_AES_CTR     # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
   --no-wolfssl_client      # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
@@ -63,29 +75,29 @@ arduino:samd:mkr1000
   --no-wolfssl_version     # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
 
 arduino:samd:mkrfox1200
-    # 	Sigfox	Low-power IoT radio
+    # Sigfox Low-power IoT radio
   --no-wolfssl_client      # TODO WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_server      # TODO WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_client_dtls # TODO WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_server_dtls # TODO WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
 
 arduino:mbed_nano:nanorp2040connect
-    # 	Wi-Fi	NINA-W102 module
+    # Wi-Fi NINA-W102 module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
-arduino:mbed_portenta:portenta_h7
-    # 	Wi-Fi & Ethernet	via onboard module
+arduino:mbed_portenta:envie_m7
+    # Wi-Fi & Ethernet via onboard module
 
 arduino:mbed_portenta:portenta_x8
-    # 	Wi-Fi & Ethernet	via onboard module
+    #  Wi-Fi & Ethernet via onboard module
   --no-wolfssl_client      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
   --no-wolfssl_server      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:mbed_edge:edge_control
-    # 	Cellular	LTE Cat-M/NB-IoT
+    # Cellular LTE Cat-M/NB-IoT
   --no-wolfssl_client      # TODO Wrong network? WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_server      # TODO Wrong network? WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
   --no-wolfssl_client      # TODO Wrong network? WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
@@ -94,27 +106,27 @@ arduino:mbed_edge:edge_control
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:renesas_uno:unor4wifi
-    # 	Wi-Fi & BT	UNO R4 Wi-Fi (ESP32-S3 coprocessor)
+    # Wi-Fi & BT UNO R4 Wi-Fi (ESP32-S3 coprocessor)
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:avr:mega
-  --no-wolfssl_client      # there's no wifi on mega for client example
-  --no-wolfssl_server      # there's no wifi on mega for server example
-  --no-wolfssl_client_dtls # there's no wifi on mega for client DTLS example
-  --no-wolfssl_server_dtls # there's no wifi on mega for server DTLS example
+  --no-wolfssl_client      # There's no wifi on mega for client example
+  --no-wolfssl_server      # There's no wifi on mega for server example
+  --no-wolfssl_client_dtls # There's no wifi on mega for client DTLS example
+  --no-wolfssl_server_dtls # There's no wifi on mega for server DTLS example
 arduino:avr:nano
   --no-wolfssl_AES_CTR     # Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
-  --no-wolfssl_client      # there's no wifi on nano for client example
-  --no-wolfssl_server      # there's no wifi on nano for server example
-  --no-wolfssl_client_dtls # there's no wifi on nano for client DTLS example
-  --no-wolfssl_server_dtls # there's no wifi on nano for server DTLS example
+  --no-wolfssl_client      # There's no wifi on nano for client example
+  --no-wolfssl_server      # There's no wifi on nano for server example
+  --no-wolfssl_client_dtls # There's no wifi on nano for client DTLS example
+  --no-wolfssl_server_dtls # There's no wifi on nano for server DTLS example
 arduino:avr:uno
   --no-wolfssl_AES_CTR     # Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
-  --no-wolfssl_client      # there's no wifi on uno for client example
-  --no-wolfssl_server      # there's no wifi on uno for server example
-  --no-wolfssl_client_dtls # there's no wifi on uno for client DTLS example
-  --no-wolfssl_server_dtls # there's no wifi on uno for server DTLS example
+  --no-wolfssl_client      # There's no wifi on uno for client example
+  --no-wolfssl_server      # There's no wifi on uno for server example
+  --no-wolfssl_client_dtls # There's no wifi on uno for client DTLS example
+  --no-wolfssl_server_dtls # There's no wifi on uno for server DTLS example
 
 # Although it may have network capability, flash is pretty small:
 arduino:avr:ethernet
@@ -125,14 +137,14 @@ arduino:avr:ethernet
   --no-wolfssl_server_dtls # Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
 
 arduino:sam:arduino_due_x
-  --no-wolfssl_client_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-  --no-wolfssl_server_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:samd:arduino_zero_native
-  --no-wolfssl_client      # error: 'NINA_GPIO0' was not declared in this scope
-  --no-wolfssl_server      # error: 'NINA_GPIO0' was not declared in this scope
-  --no-wolfssl_client_dtls # error: 'NINA_GPIO0' was not declared in this scope
-  --no-wolfssl_server_dtls # error: 'NINA_GPIO0' was not declared in this scope
+  --no-wolfssl_client      # TODO error: 'NINA_GPIO0' was not declared in this scope
+  --no-wolfssl_server      # TODO error: 'NINA_GPIO0' was not declared in this scope
+  --no-wolfssl_client_dtls # TODO error: 'NINA_GPIO0' was not declared in this scope
+  --no-wolfssl_server_dtls # TODO error: 'NINA_GPIO0' was not declared in this scope
 
 
 # Pseudo network via bridge.h only. No connect / write / etc.
@@ -151,19 +163,19 @@ esp32:esp32:esp32c6
 
 # Except for the ESP32-H2 what does not have WiFi
 esp32:esp32:esp32h2
-  --no-wolfssl_client      # there's no WiFi on esp32h2 for client example
-  --no-wolfssl_server      # there's no WiFi on esp32h2 for server example
-  --no-wolfssl_client_dtls # there's no WiFi on esp32h2 for client DTLS example
-  --no-wolfssl_server_dtls # there's no WiFi on esp32h2 for server DTLS example
+  --no-wolfssl_client      # There's no WiFi on esp32h2 for client example
+  --no-wolfssl_server      # There's no WiFi on esp32h2 for server example
+  --no-wolfssl_client_dtls # There's no WiFi on esp32h2 for client DTLS example
+  --no-wolfssl_server_dtls # There's no WiFi on esp32h2 for server DTLS example
 
 esp8266:esp8266:generic
-  --no-wolfssl_client      # there's not enough memory on ESP8266 at this time (TODO)
-  --no-wolfssl_server      # there's not enough memory on ESP8266 at this time (TODO)
-  --no-wolfssl_client_dtls # there's not enough memory on ESP8266 at this time (TODO)
-  --no-wolfssl_server_dtls # there's not enough memory on ESP8266 at this time (TODO)
+  --no-wolfssl_client      # There's not enough memory on ESP8266 at this time (TODO)
+  --no-wolfssl_server      # There's not enough memory on ESP8266 at this time (TODO)
+  --no-wolfssl_client_dtls # There's not enough memory on ESP8266 at this time (TODO)
+  --no-wolfssl_server_dtls # There's not enough memory on ESP8266 at this time (TODO)
 
 teensy:avr:teensy40
-  --no-wolfssl_client      # Wrong network? WiFiNINA/src/utility/wifi_drv.h:300:12: error: 'PinStatus' does not name a type
-  --no-wolfssl_server      # Wrong network? WiFiNINA/src/utility/wifi_drv.h:300:12: error: 'PinStatus' does not name a type
-  --no-wolfssl_client_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-  --no-wolfssl_server_dtls # This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_client      # TODO: Wrong network? WiFiNINA/src/utility/wifi_drv.h:300:12: error: 'PinStatus' does not name a type
+  --no-wolfssl_server      # TODO: Wrong network? WiFiNINA/src/utility/wifi_drv.h:300:12: error: 'PinStatus' does not name a type
+  --no-wolfssl_client_dtls # TODO: This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+  --no-wolfssl_server_dtls # TODO: This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library

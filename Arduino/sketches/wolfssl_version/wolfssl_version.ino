@@ -21,6 +21,13 @@
 
 #include <Arduino.h>
 
+#if defined(ARDUINO_PORTENTA_X8)
+    /* The Portenta is a Linux device. See wolfSSL examples:
+     * https://github.com/wolfSSL/wolfssl/tree/master/examples
+     * By default Serial is disabled and mapped to ErrorSerial */
+    #include <SerialRPC.h>
+#endif
+
  /* wolfSSL user_settings.h must be included from settings.h
   * Make all configurations changes in user_settings.h
   * Do not edit wolfSSL `settings.h` or `config.h` files.

@@ -197,6 +197,30 @@ Tested with:
     HttpClient client;
     /*  Arduino Tian does not support network shields like the standard Ethernet or Wi-Fi shields. */
     #error "HttpClient cannot be used for this example"
+#elif defined(ARDUINO_PORTENTA_X8)
+    /* The Portenta is a Linux device. See wolfSSL examples:
+     * https://github.com/wolfSSL/wolfssl/tree/master/examples
+     * By default Serial is disabled and mapped to ErrorSerial */
+    #include <SerialRPC.h>
+
+    /* ----No - network placeholders(compile - only) ---- */
+    #include <IPAddress.h>
+    struct X8NoNetClient {
+        int write(const uint8_t*, size_t) { return -1; }
+        int available() { return 0; }
+        int read() { return -1; }
+        void stop() {}
+        bool connected() { return false; }
+        IPAddress remoteIP() { return IPAddress(0, 0, 0, 0); }
+    };
+    struct X8NoNetServer {
+        explicit X8NoNetServer(uint16_t) {}
+        void begin() {}
+        X8NoNetClient available() { return X8NoNetClient(); }
+    };
+
+    X8NoNetClient client;
+    X8NoNetServer server(WOLFSSL_PORT);
 #elif defined(USING_WIFI)
     #define USING_WIFI
     #include <WiFi.h>
