@@ -94,21 +94,32 @@ jobs:
           # Save as a lobal environment variable
           echo "$ROOT_BIN" >> "$GITHUB_PATH"
 
-
           # Download and run install script from Arduino:
           # -S show errors; -L follow redirects; -v Verbose
+          set +e                 # don't abort on error
+          set -o pipefail
+
           curl -vSL --retry 5 --retry-delay 10 \
-             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh  \
              | sh -x
+          rc=$?
+          c_rc=${PIPESTATUS[0]}  # curl's exit code
+          s_rc=${PIPESTATUS[1]}  # sh's  exit code
 
-          # Instead, we have our own local copy that is more reliable and can add out own debugging
+          set -e                 # restore default abort-on-error
 
-          pushd ./Arduino/sketches
-            chmod +x ./arduino_install.sh
+          # If there was a curl error, we have our own local copy that is more reliable and can add our own debugging
+          if [ "$rc" -ne 0 ]; then
+            echo "Primary install failed: curl=$c_rc, sh=$s_rc. Falling back..." >&2
+            pushd ./Arduino/sketches
+              chmod +x ./arduino_install.sh
 
-            # Mimic curl install, does not use current directory:
-            BINDIR="$ROOT_BIN" sh -x ./arduino_install.sh
-          popd
+              # Mimic curl install, does not use current directory:
+              BINDIR="$ROOT_BIN" sh -x ./arduino_install.sh
+            popd
+          else
+            echo "Alternative install script not needed."
+          fi
 
       - name: Confirm Arduino CLI install
         run: arduino-cli version
