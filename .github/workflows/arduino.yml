@@ -90,7 +90,7 @@ jobs:
 
           # Instead, we have our own local copy that is more reliable and can add out own debugging
           pushd ./Arduino/sketches
-            chmod +x /arduino_install.sh
+            chmod +x ./arduino_install.sh
             ./arduino_install.sh
           popd
 
