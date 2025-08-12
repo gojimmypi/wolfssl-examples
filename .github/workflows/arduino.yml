@@ -100,7 +100,7 @@ jobs:
           set -o pipefail
 
           curl -vSL --retry 5 --retry-delay 10 \
-             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh  \
+             https://raw.githubusercontent.com/arduino/arduino-cli/master/install-bad.sh  \
              | sh -x
           rc=$?
           c_rc=${PIPESTATUS[0]}  # curl's exit code
