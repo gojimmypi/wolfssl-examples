@@ -1,0 +1,544 @@
+Using specified fqbn list file: ./board_list_v5.8.2.txt
+Icon check
+OK: ✅; Not OK: ❌
+Discovering examples in current directory /mnt/c/workspace/wolfssl-examples-gojimmypi/Arduino/sketches
+Found example directory: template
+Found example directory: wolfssl_AES_CTR
+Found example directory: wolfssl_client
+Found example directory: wolfssl_client_dtls
+Found example directory: wolfssl_server
+Found example directory: wolfssl_server_dtls
+Found example directory: wolfssl_version
+Here we go!
+
+*************************************************************************************
+Found board: arduino:avr:mega
+*************************************************************************************
+Checking flags...
+--no-wolfssl_client: there's no wifi on mega for client examplex
+--no-wolfssl_server: there's no wifi on mega for server example
+--no-wolfssl_client_dtls: there's no wifi on mega for client DTLS example
+--no-wolfssl_server_dtls: there's no wifi on mega for server DTLS example
+Begin Board: arduino:avr:mega
+Checking template for arduino:avr:mega
+arduino-cli compile --fqbn "arduino:avr:mega" "template"
+Sketch uses 5260 bytes (2%) of program storage space. Maximum is 253952 bytes.
+Global variables use 854 bytes (10%) of dynamic memory, leaving 7338 bytes for local variables. Maximum is 8192 bytes.
+✅ Compilation succeeded for template on arduino:avr:mega
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:avr:mega
+arduino-cli compile --fqbn "arduino:avr:mega" "wolfssl_AES_CTR"
+Sketch uses 20022 bytes (7%) of program storage space. Maximum is 253952 bytes.
+Global variables use 5010 bytes (61%) of dynamic memory, leaving 3182 bytes for local variables. Maximum is 8192 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on arduino:avr:mega
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:avr:mega
+Skipped
+Comment: there's no wifi on mega for client examplex
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:avr:mega
+Skipped
+Comment: there's no wifi on mega for client DTLS example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:avr:mega
+Skipped
+Comment: there's no wifi on mega for server example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:avr:mega
+Skipped
+Comment: there's no wifi on mega for server DTLS example
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:avr:mega
+arduino-cli compile --fqbn "arduino:avr:mega" "wolfssl_version"
+Sketch uses 2164 bytes (0%) of program storage space. Maximum is 253952 bytes.
+Global variables use 244 bytes (2%) of dynamic memory, leaving 7948 bytes for local variables. Maximum is 8192 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:avr:mega
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: arduino:avr:nano
+*************************************************************************************
+Checking flags...
+--no-wolfssl_AES_CTR: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+--no-wolfssl_client: there's no wifi on nano for client example
+--no-wolfssl_server: there's no wifi on nano for server example
+--no-wolfssl_client_dtls: there's no wifi on nano for client DTLS example
+--no-wolfssl_server_dtls: there's no wifi on nano for server DTLS example
+Begin Board: arduino:avr:nano
+Checking template for arduino:avr:nano
+arduino-cli compile --fqbn "arduino:avr:nano" "template"
+Sketch uses 4932 bytes (16%) of program storage space. Maximum is 30720 bytes.
+Global variables use 854 bytes (41%) of dynamic memory, leaving 1194 bytes for local variables. Maximum is 2048 bytes.
+✅ Compilation succeeded for template on arduino:avr:nano
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:avr:nano
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:avr:nano
+Skipped
+Comment: there's no wifi on nano for client example
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:avr:nano
+Skipped
+Comment: there's no wifi on nano for client DTLS example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:avr:nano
+Skipped
+Comment: there's no wifi on nano for server example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:avr:nano
+Skipped
+Comment: there's no wifi on nano for server DTLS example
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:avr:nano
+arduino-cli compile --fqbn "arduino:avr:nano" "wolfssl_version"
+Sketch uses 1818 bytes (5%) of program storage space. Maximum is 30720 bytes.
+Global variables use 244 bytes (11%) of dynamic memory, leaving 1804 bytes for local variables. Maximum is 2048 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:avr:nano
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: arduino:avr:uno
+*************************************************************************************
+Checking flags...
+--no-wolfssl_AES_CTR: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+--no-wolfssl_client: there's no wifi on uno for client example
+--no-wolfssl_server: there's no wifi on uno for server example
+--no-wolfssl_client_dtls: there's no wifi on uno for client DTLS example
+--no-wolfssl_server_dtls: there's no wifi on uno for server DTLS example
+Begin Board: arduino:avr:uno
+Checking template for arduino:avr:uno
+arduino-cli compile --fqbn "arduino:avr:uno" "template"
+Sketch uses 4932 bytes (15%) of program storage space. Maximum is 32256 bytes.
+Global variables use 854 bytes (41%) of dynamic memory, leaving 1194 bytes for local variables. Maximum is 2048 bytes.
+✅ Compilation succeeded for template on arduino:avr:uno
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:avr:uno
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:avr:uno
+Skipped
+Comment: there's no wifi on uno for client example
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:avr:uno
+Skipped
+Comment: there's no wifi on uno for client DTLS example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:avr:uno
+Skipped
+Comment: there's no wifi on uno for server example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:avr:uno
+Skipped
+Comment: there's no wifi on uno for server DTLS example
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:avr:uno
+arduino-cli compile --fqbn "arduino:avr:uno" "wolfssl_version"
+Sketch uses 1818 bytes (5%) of program storage space. Maximum is 32256 bytes.
+Global variables use 244 bytes (11%) of dynamic memory, leaving 1804 bytes for local variables. Maximum is 2048 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:avr:uno
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: arduino:avr:ethernet
+*************************************************************************************
+Checking flags...
+--no-wolfssl_AES_CTR: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+--no-wolfssl_client: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+--no-wolfssl_server: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+--no-wolfssl_client_dtls: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+--no-wolfssl_server_dtls: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+Begin Board: arduino:avr:ethernet
+Checking template for arduino:avr:ethernet
+arduino-cli compile --fqbn "arduino:avr:ethernet" "template"
+Sketch uses 4916 bytes (15%) of program storage space. Maximum is 32256 bytes.
+Global variables use 850 bytes (41%) of dynamic memory, leaving 1198 bytes for local variables. Maximum is 2048 bytes.
+✅ Compilation succeeded for template on arduino:avr:ethernet
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:avr:ethernet
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:avr:ethernet
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:avr:ethernet
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:avr:ethernet
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:avr:ethernet
+Skipped
+Comment: Global variables use 5010 bytes (244%) of dynamic memory, leaving -2962 bytes for local variables. Maximum is 2048 bytes.
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:avr:ethernet
+arduino-cli compile --fqbn "arduino:avr:ethernet" "wolfssl_version"
+Sketch uses 1818 bytes (5%) of program storage space. Maximum is 32256 bytes.
+Global variables use 244 bytes (11%) of dynamic memory, leaving 1804 bytes for local variables. Maximum is 2048 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:avr:ethernet
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: arduino:sam:arduino_due_x
+*************************************************************************************
+Checking flags...
+--no-wolfssl_client_dtls: This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+--no-wolfssl_server_dtls: This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+Begin Board: arduino:sam:arduino_due_x
+Checking template for arduino:sam:arduino_due_x
+arduino-cli compile --fqbn "arduino:sam:arduino_due_x" "template"
+Sketch uses 46036 bytes (8%) of program storage space. Maximum is 524288 bytes.
+✅ Compilation succeeded for template on arduino:sam:arduino_due_x
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:sam:arduino_due_x
+arduino-cli compile --fqbn "arduino:sam:arduino_due_x" "wolfssl_AES_CTR"
+Sketch uses 28372 bytes (5%) of program storage space. Maximum is 524288 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on arduino:sam:arduino_due_x
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:sam:arduino_due_x
+arduino-cli compile --fqbn "arduino:sam:arduino_due_x" "wolfssl_client"
+Sketch uses 277200 bytes (52%) of program storage space. Maximum is 524288 bytes.
+✅ Compilation succeeded for wolfssl_client on arduino:sam:arduino_due_x
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:sam:arduino_due_x
+Skipped
+Comment: This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:sam:arduino_due_x
+arduino-cli compile --fqbn "arduino:sam:arduino_due_x" "wolfssl_server"
+/mnt/c/workspace/wolfssl-examples-gojimmypi/Arduino/sketches/wolfssl_server/wolfssl_server.ino: In function 'void setup()':
+/mnt/c/workspace/wolfssl-examples-gojimmypi/Arduino/sketches/wolfssl_server/wolfssl_server.ino:690:12: error: 'class EthernetClient' has no member named 'begin'
+     server.begin();
+            ^
+
+[92mUsed library[0m [92mVersion[0m [90mPath[0m
+[93mwolfssl[0m      5.8.2   [90m/home/gojimmypi/Arduino/libraries/wolfssl[0m
+[93mSPI[0m          1.0     [90m/home/gojimmypi/.arduino15/packages/arduino/hardware/sam/1.6.12/libraries/SPI[0m
+[93mEthernet[0m     2.0.2   [90m/home/gojimmypi/Arduino/libraries/Ethernet[0m
+
+[92mUsed platform[0m [92mVersion[0m [90mPath[0m
+[93marduino:sam[0m   1.6.12  [90m/home/gojimmypi/.arduino15/packages/arduino/hardware/sam/1.6.12[0m
+Error during build: exit status 1
+❌ Compilation failed for wolfssl_server on arduino:sam:arduino_due_x (Exit code: 1)
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:sam:arduino_due_x
+Skipped
+Comment: This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:sam:arduino_due_x
+arduino-cli compile --fqbn "arduino:sam:arduino_due_x" "wolfssl_version"
+Sketch uses 12900 bytes (2%) of program storage space. Maximum is 524288 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:sam:arduino_due_x
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: arduino:samd:arduino_zero_native
+*************************************************************************************
+Checking flags...
+--no-wolfssl_client: error: 'NINA_GPIO0' was not declared in this scope
+--no-wolfssl_server: error: 'NINA_GPIO0' was not declared in this scope
+--no-wolfssl_client_dtls: error: 'NINA_GPIO0' was not declared in this scope
+--no-wolfssl_server_dtls: error: 'NINA_GPIO0' was not declared in this scope
+Begin Board: arduino:samd:arduino_zero_native
+Checking template for arduino:samd:arduino_zero_native
+arduino-cli compile --fqbn "arduino:samd:arduino_zero_native" "template"
+Sketch uses 17740 bytes (6%) of program storage space. Maximum is 262144 bytes.
+Global variables use 3020 bytes (9%) of dynamic memory, leaving 29748 bytes for local variables. Maximum is 32768 bytes.
+✅ Compilation succeeded for template on arduino:samd:arduino_zero_native
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:samd:arduino_zero_native
+arduino-cli compile --fqbn "arduino:samd:arduino_zero_native" "wolfssl_AES_CTR"
+Sketch uses 27408 bytes (10%) of program storage space. Maximum is 262144 bytes.
+Global variables use 3668 bytes (11%) of dynamic memory, leaving 29100 bytes for local variables. Maximum is 32768 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on arduino:samd:arduino_zero_native
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:samd:arduino_zero_native
+Skipped
+Comment: error: 'NINA_GPIO0' was not declared in this scope
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:samd:arduino_zero_native
+Skipped
+Comment: error: 'NINA_GPIO0' was not declared in this scope
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:samd:arduino_zero_native
+Skipped
+Comment: error: 'NINA_GPIO0' was not declared in this scope
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:samd:arduino_zero_native
+Skipped
+Comment: error: 'NINA_GPIO0' was not declared in this scope
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:samd:arduino_zero_native
+arduino-cli compile --fqbn "arduino:samd:arduino_zero_native" "wolfssl_version"
+Sketch uses 12008 bytes (4%) of program storage space. Maximum is 262144 bytes.
+Global variables use 2988 bytes (9%) of dynamic memory, leaving 29780 bytes for local variables. Maximum is 32768 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:samd:arduino_zero_native
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: arduino:samd:tian
+*************************************************************************************
+Checking flags...
+--no-wolfssl_client: HttpClient cannot be used for this example
+--no-wolfssl_server: HttpClient cannot be used for this example
+--no-wolfssl_client_dtls: HttpClient cannot be used for this example
+--no-wolfssl_server_dtls: HttpClient cannot be used for this example
+Begin Board: arduino:samd:tian
+Checking template for arduino:samd:tian
+arduino-cli compile --fqbn "arduino:samd:tian" "template"
+Sketch uses 17776 bytes (6%) of program storage space. Maximum is 262144 bytes.
+Global variables use 3012 bytes (9%) of dynamic memory, leaving 29756 bytes for local variables. Maximum is 32768 bytes.
+✅ Compilation succeeded for template on arduino:samd:tian
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for arduino:samd:tian
+arduino-cli compile --fqbn "arduino:samd:tian" "wolfssl_AES_CTR"
+Sketch uses 27444 bytes (10%) of program storage space. Maximum is 262144 bytes.
+Global variables use 3660 bytes (11%) of dynamic memory, leaving 29108 bytes for local variables. Maximum is 32768 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on arduino:samd:tian
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for arduino:samd:tian
+Skipped
+Comment: HttpClient cannot be used for this example
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for arduino:samd:tian
+Skipped
+Comment: HttpClient cannot be used for this example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for arduino:samd:tian
+Skipped
+Comment: HttpClient cannot be used for this example
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for arduino:samd:tian
+Skipped
+Comment: HttpClient cannot be used for this example
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for arduino:samd:tian
+arduino-cli compile --fqbn "arduino:samd:tian" "wolfssl_version"
+Sketch uses 12044 bytes (4%) of program storage space. Maximum is 262144 bytes.
+Global variables use 2980 bytes (9%) of dynamic memory, leaving 29788 bytes for local variables. Maximum is 32768 bytes.
+✅ Compilation succeeded for wolfssl_version on arduino:samd:tian
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: esp32:esp32:esp32
+*************************************************************************************
+Checking flags...
+Begin Board: esp32:esp32:esp32
+Checking template for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "template"
+Sketch uses 296944 bytes (22%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 20312 bytes (6%) of dynamic memory, leaving 307368 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for template on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "wolfssl_AES_CTR"
+Sketch uses 309752 bytes (23%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 20728 bytes (6%) of dynamic memory, leaving 306952 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "wolfssl_client"
+Sketch uses 1182868 bytes (90%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 47376 bytes (14%) of dynamic memory, leaving 280304 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "wolfssl_client_dtls"
+Sketch uses 1186400 bytes (90%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 47376 bytes (14%) of dynamic memory, leaving 280304 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client_dtls on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "wolfssl_server"
+Sketch uses 1183732 bytes (90%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 47336 bytes (14%) of dynamic memory, leaving 280344 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "wolfssl_server_dtls"
+Sketch uses 1185604 bytes (90%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 47256 bytes (14%) of dynamic memory, leaving 280424 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server_dtls on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for esp32:esp32:esp32
+arduino-cli compile --fqbn "esp32:esp32:esp32" "wolfssl_version"
+Sketch uses 294480 bytes (22%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 20048 bytes (6%) of dynamic memory, leaving 307632 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_version on esp32:esp32:esp32
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: esp32:esp32:esp32s2
+*************************************************************************************
+Checking flags...
+Begin Board: esp32:esp32:esp32s2
+Checking template for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "template"
+Sketch uses 268763 bytes (20%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 15596 bytes (4%) of dynamic memory, leaving 312084 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for template on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "wolfssl_AES_CTR"
+Sketch uses 281507 bytes (21%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 16020 bytes (4%) of dynamic memory, leaving 311660 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "wolfssl_client"
+Sketch uses 1114943 bytes (85%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 41452 bytes (12%) of dynamic memory, leaving 286228 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "wolfssl_client_dtls"
+Sketch uses 1118479 bytes (85%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 41452 bytes (12%) of dynamic memory, leaving 286228 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client_dtls on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "wolfssl_server"
+Sketch uses 1115707 bytes (85%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 41412 bytes (12%) of dynamic memory, leaving 286268 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "wolfssl_server_dtls"
+Sketch uses 1117583 bytes (85%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 41332 bytes (12%) of dynamic memory, leaving 286348 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server_dtls on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for esp32:esp32:esp32s2
+arduino-cli compile --fqbn "esp32:esp32:esp32s2" "wolfssl_version"
+Sketch uses 266159 bytes (20%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 15340 bytes (4%) of dynamic memory, leaving 312340 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_version on esp32:esp32:esp32s2
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: esp32:esp32:esp32s3
+*************************************************************************************
+Checking flags...
+Begin Board: esp32:esp32:esp32s3
+Checking template for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "template"
+Sketch uses 301292 bytes (22%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 19968 bytes (6%) of dynamic memory, leaving 307712 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for template on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "wolfssl_AES_CTR"
+Sketch uses 314164 bytes (23%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 20384 bytes (6%) of dynamic memory, leaving 307296 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "wolfssl_client"
+Sketch uses 1141868 bytes (87%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 45684 bytes (13%) of dynamic memory, leaving 281996 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "wolfssl_client_dtls"
+Sketch uses 1145404 bytes (87%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 45684 bytes (13%) of dynamic memory, leaving 281996 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client_dtls on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "wolfssl_server"
+Sketch uses 1142628 bytes (87%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 45628 bytes (13%) of dynamic memory, leaving 282052 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "wolfssl_server_dtls"
+Sketch uses 1144564 bytes (87%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 45564 bytes (13%) of dynamic memory, leaving 282116 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server_dtls on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for esp32:esp32:esp32s3
+arduino-cli compile --fqbn "esp32:esp32:esp32s3" "wolfssl_version"
+Sketch uses 298824 bytes (22%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 19704 bytes (6%) of dynamic memory, leaving 307976 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_version on esp32:esp32:esp32s3
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: esp32:esp32:esp32c3
+*************************************************************************************
+Checking flags...
+Begin Board: esp32:esp32:esp32c3
+Checking template for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "template"
+Sketch uses 282896 bytes (21%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 11988 bytes (3%) of dynamic memory, leaving 315692 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for template on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "wolfssl_AES_CTR"
+Sketch uses 297302 bytes (22%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 12420 bytes (3%) of dynamic memory, leaving 315260 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "wolfssl_client"
+Sketch uses 1238224 bytes (94%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 37124 bytes (11%) of dynamic memory, leaving 290556 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "wolfssl_client_dtls"
+Sketch uses 1241920 bytes (94%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 37124 bytes (11%) of dynamic memory, leaving 290556 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client_dtls on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+Checking wolfssl_server for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "wolfssl_server"
+Sketch uses 1239166 bytes (94%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 37084 bytes (11%) of dynamic memory, leaving 290596 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+Checking wolfssl_server_dtls for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "wolfssl_server_dtls"
+Sketch uses 1240828 bytes (94%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 37012 bytes (11%) of dynamic memory, leaving 290668 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_server_dtls on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+Checking wolfssl_version for esp32:esp32:esp32c3
+arduino-cli compile --fqbn "esp32:esp32:esp32c3" "wolfssl_version"
+Sketch uses 280032 bytes (21%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 11732 bytes (3%) of dynamic memory, leaving 315948 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_version on esp32:esp32:esp32c3
+-------------------------------------------------------------------------------------
+
+*************************************************************************************
+Found board: esp32:esp32:esp32c6
+*************************************************************************************
+Checking flags...
+Begin Board: esp32:esp32:esp32c6
+Checking template for esp32:esp32:esp32c6
+arduino-cli compile --fqbn "esp32:esp32:esp32c6" "template"
+Sketch uses 241003 bytes (18%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 12912 bytes (3%) of dynamic memory, leaving 314768 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for template on esp32:esp32:esp32c6
+-------------------------------------------------------------------------------------
+Checking wolfssl_AES_CTR for esp32:esp32:esp32c6
+arduino-cli compile --fqbn "esp32:esp32:esp32c6" "wolfssl_AES_CTR"
+Sketch uses 255647 bytes (19%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 13328 bytes (4%) of dynamic memory, leaving 314352 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_AES_CTR on esp32:esp32:esp32c6
+-------------------------------------------------------------------------------------
+Checking wolfssl_client for esp32:esp32:esp32c6
+arduino-cli compile --fqbn "esp32:esp32:esp32c6" "wolfssl_client"
+Sketch uses 1235907 bytes (94%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 43136 bytes (13%) of dynamic memory, leaving 284544 bytes for local variables. Maximum is 327680 bytes.
+✅ Compilation succeeded for wolfssl_client on esp32:esp32:esp32c6
+-------------------------------------------------------------------------------------
+Checking wolfssl_client_dtls for esp32:esp32:esp32c6
+arduino-cli compile --fqbn "esp32:esp32:esp32c6" "wolfssl_client_dtls"

@@ -51,14 +51,13 @@ on:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
       - 'Arduino/**'
-      - '!Arduino/sketches/board_list_v5.8.2.txt' # Not triggered on arduino-release.yml file. TODO remove this line after next Arduino wolfssl release
+      - '.github/workflows/arduino-release.yml'
       - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
       - 'Arduino/**'
-      - '!Arduino/sketches/board_list_v5.8.2.txt' # Not triggered on arduino-release.yml file. TODO remove this line after next Arduino wolfssl release
-      - '.github/workflows/arduino.yml'
+      - '.github/workflows/arduino-release.yml'
   workflow_dispatch:
 
 concurrency:
@@ -85,12 +84,8 @@ jobs:
           mkdir -p "${PWD}/bin"
           echo "${PWD}/bin" >> $GITHUB_PATH
 
-          # Download and run install script from Arduino:
-          # curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-
-          # Instead, we have our own local copy that is more reliable and can add out own debugging
-          chmod +x /arduino_install.sh
-          ./arduino_install.sh
+          # Run install script:
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 
       - name: Confirm Arduino CLI install
         run: arduino-cli version
@@ -103,21 +98,16 @@ jobs:
           arduino-cli core update-index
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
-          arduino-cli core install esp32:esp32            # ESP32
-          arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
-          arduino-cli core install arduino:sam            # Arduino Due
-          arduino-cli core install arduino:samd           # Arduino Zero
-          arduino-cli core install teensy:avr             # PJRC Teensy
-          arduino-cli core install esp8266:esp8266        # ESP8266
-          arduino-cli core install arduino:mbed_nano      # nanorp2040connect
-          arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
-          arduino-cli core install arduino:mbed_edge
-          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
-          arduino-cli core install arduino:renesas_uno
-          arduino-cli lib install "ArduinoJson"           # Example dependency
-          arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
-          arduino-cli lib install "Ethernet"              # Install Ethernet library
-          arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
+          arduino-cli core install esp32:esp32      # ESP32
+          arduino-cli core install arduino:avr      # Arduino Uno, Mega, Nano
+          arduino-cli core install arduino:sam      # Arduino Due
+          arduino-cli core install arduino:samd     # Arduino Zero
+          arduino-cli core install teensy:avr       # PJRC Teensy
+          arduino-cli core install esp8266:esp8266  # ESP8266
+          arduino-cli lib install "ArduinoJson"     # Example dependency
+          arduino-cli lib install "WiFiNINA"        # ARDUINO_SAMD_NANO_33_IOT
+          arduino-cli lib install "Ethernet"        # Install Ethernet library
+          arduino-cli lib install "Bridge"          # Pseudo-network for things like arduino:samd:tian
 
       - name: Set job environment variables
         run: |
@@ -149,7 +139,7 @@ jobs:
         run: |
           # The examples are local in this wolfssl-example repo, but should have been copied to library, above
           ls ./Arduino/sketches
-
+          
           # end Show wolfssl-examples
 
       - name: Shallow clone wolfssl
@@ -211,7 +201,7 @@ jobs:
 
           echo "Examples installed in $ARDUINO_ROOT/wolfssl/examples"
           ls "$ARDUINO_ROOT/wolfssl/examples" -al
-
+          
           # End Install wolfSSL Arduino library
 
       - name: List installed Arduino libraries
@@ -224,10 +214,6 @@ jobs:
         run: |
           # Call the compile-all-examples.sh script to compile all the examples for each of the fqbn names in the local copy of board_list.txt
 
-          echo "Current directory     = $PWD"
-          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
-          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
-
           pushd ./Arduino/sketches
             chmod +x ./compile-all-examples.sh
 
@@ -239,10 +225,10 @@ jobs:
             # Compile the Arduino library examples in-place
             pushd "$ARDUINO_ROOT/wolfssl/examples/"
               echo "PWD=$PWD"
-              ./compile-all-examples.sh ./board_list.txt
+              ./compile-all-examples.sh
             popd
           popd
-
+          
           # End Compile Arduino Sketches for Various Boards
 
       - name: Upload Compilation Artifacts

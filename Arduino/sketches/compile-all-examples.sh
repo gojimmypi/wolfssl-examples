@@ -371,6 +371,9 @@ while :; do
         peek=$next
         break
     done
+    if [[ $THIS_FOUND_FLAG -ne 0 ]]; then
+        echo "-------------------------------------------------------------------------------------"
+    fi
 
     # echo "Flags done..."
 
@@ -379,7 +382,6 @@ while :; do
     #    echo "Continue, skipping blank line..."
     #    continue
     # fi
-
     echo "Begin Board: $BOARD"
 
     echo "-------------------------------------------------------------------------------------"
