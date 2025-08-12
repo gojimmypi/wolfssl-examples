@@ -419,9 +419,11 @@ echo "Boards found:   $BOARD_CT"
 echo "Examples found: $EXAMPLE_CT"
 echo "Board Examples: $(( ${BOARD_CT:-0} * ${EXAMPLE_CT:-0} ))"
 echo "Compilation Summary:"
+printf "%-4s %-30s %-30s\n" "STAT" "EXAMPLE" "BOARD"
+printf "%-4s %-30s %-30s\n" "----" "-------" "-----"
 for i in "${!SUMMARY_STATUS[@]}"; do
-    printf "%s %s on %s\n" \
-        "${SUMMARY_STATUS[$i]}" \
+    printf "%-4s %-30s %-30s\n"  \
+        "${SUMMARY_STATUS[$i]}"  \
         "${SUMMARY_EXAMPLE[$i]}" \
         "${SUMMARY_BOARD[$i]}"
 done
