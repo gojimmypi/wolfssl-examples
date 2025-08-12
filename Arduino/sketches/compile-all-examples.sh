@@ -18,21 +18,29 @@ else
     exit 1
 fi
 
+set +e
+
+# Configuration parameters
 SHOW_DIR_CONTENTS=0
 SHOW_USER_SETTINGS=0
 SHOW_BOARD_LIST=0
 SHOW_EXAMPLE_LIST=0
 
-set +e
+# need to reassign ARDUINO_ROOT in this run
+ARDUINO_ROOT="$HOME/Arduino/libraries"
+
+# Used for column alignment; e.g. len(wolfssl_client_dtls) + 2
+MAX_FQBN_LEN=21
 
 # default board list is board_list.txt, may be overridden
 BOARD_LIST="./board_list.txt"
-BOARD_CT=0
-BOARD_COMPILE_CT=0
-BOARD_SKIP_CT=0
-BOARD_FAIL_CT=0
-EXAMPLE_CT=0
 
+# Unicode in a UTF8 file
+ICON_OK=$(printf "\xE2\x9C\x85")
+ICON_WARN=$(printf "\xE2\x9A\xA0")
+ICON_FAIL=$(printf "\xE2\x9D\x8C")
+
+# Check if board list specified.
 if [ $# -gt 0 ]; then
     # First parameter may be alternate fqbn list
     if [[ -f "$1" ]]; then
@@ -44,14 +52,29 @@ if [ $# -gt 0 ]; then
     fi
 fi
 
-# need to reassign ARDUINO_ROOT in this run
-ARDUINO_ROOT="$HOME/Arduino/libraries"
+# Internal variabled
+BOARD_CT=0
+BOARD_COMPILE_CT=0
+BOARD_SKIP_CT=0
+BOARD_FAIL_CT=0
+EXAMPLE_CT=0
+THIS_FOUND_FLAG=0
 
-ICON_OK=$(printf "\xE2\x9C\x85")
-ICON_WARN=$(printf "\xE2\x9A\xA0")
-ICON_FAIL=$(printf "\xE2\x9D\x8C")
-#HAS_NETWORK=""
-#HAS_MEMORY=""
+# Assume success unless proven otherwise
+SUCCESS="true"
+
+# Same example names, initialized later
+EXAMPLES=(wolfssl_client wolfssl_client_dtls server)
+
+# associative array, where the keys are arbitrary strings
+declare -A DISABLED          # per FQBN: DISABLED["example-name"]=1
+declare -A COMMENT           # per FQBN: COMMENT["example-name"]="some comment"
+declare -A VALID_EXAMPLES    # set of valid example names
+
+# Indexed arrays to hold results
+declare -a SUMMARY_STATUS
+declare -a SUMMARY_BOARD
+declare -a SUMMARY_EXAMPLE
 
 echo "Icon check:"
 printf '--OK: %s; Warn: %s; Not OK: %s\n'  "$ICON_OK" "$ICON_WARN" "$ICON_FAIL"
@@ -95,20 +118,6 @@ if [[ $SHOW_EXAMPLE_LIST -ne 0 ]]; then
     echo "********************************************************************************"
 fi
 
-# Assume success unless proven otherwise
-SUCCESS="true"
-
-EXAMPLES=(wolfssl_client wolfssl_client_dtls server)
-
-# associative array, where the keys are arbitrary strings
-declare -A DISABLED          # per FQBN: DISABLED["example-name"]=1
-declare -A COMMENT           # per FQBN: COMMENT["example-name"]="some comment"
-declare -A VALID_EXAMPLES    # set of valid example names
-
-# Indexed arrays to hold results
-declare -a SUMMARY_STATUS
-declare -a SUMMARY_BOARD
-declare -a SUMMARY_EXAMPLE
 
 #FAIL_LIST=()                 # items like "fqbn example exitcode"
 #OVERALL_OK=1                 # flip to 0 on first failure
@@ -230,6 +239,7 @@ clear_flags() {
         unset -v "DISABLED[$k]"
         unset -v "COMMENT[$k]"
     done
+    THIS_FOUND_FLAG=0
 } # clear_flags
 
 is_disabled() {
@@ -328,7 +338,7 @@ while :; do
 
     echo ""
     echo "*************************************************************************************"
-    echo "Found board: $BOARD"
+    echo "Testing board: $BOARD"
     echo "*************************************************************************************"
 
     echo "Checking flags..."
@@ -352,6 +362,7 @@ while :; do
                 echo "$LINE_VALUE: (No comment provided; Consider adding reason in $BOARD_LIST)"
             fi
             set_flag "$LINE_VALUE" "$LINE_COMMENT"
+            THIS_FOUND_FLAG=1
             continue
         # else
             # not a line stat starts with --no
@@ -370,7 +381,10 @@ while :; do
     # fi
 
     echo "Begin Board: $BOARD"
+
+    echo "-------------------------------------------------------------------------------------"
     ((BOARD_CT++))
+    THIS_EXAMPLE_CT=0
     for EXAMPLE in "${EXAMPLES[@]}"; do
         echo "Checking $EXAMPLE for $BOARD"
         if is_disabled "$EXAMPLE"; then
@@ -403,7 +417,10 @@ while :; do
             SUMMARY_EXAMPLE+=("$EXAMPLE")
         fi # is_disabled check
 
-        echo "-------------------------------------------------------------------------------------"
+        if [[ $THIS_EXAMPLE_CT -lt $EXAMPLE_CT ]]; then
+            echo "-------------------------------------------------------------------------------------"
+        fi
+        ((THIS_EXAMPLE_CT++))
     done # for each example
 done < "$BOARD_LIST" # for each BOARD
 
@@ -419,13 +436,14 @@ echo "Boards found:   $BOARD_CT"
 echo "Examples found: $EXAMPLE_CT"
 echo "Board Examples: $(( ${BOARD_CT:-0} * ${EXAMPLE_CT:-0} ))"
 echo "Compilation Summary:"
-printf "%-4s %-30s %-30s\n" "STAT" "EXAMPLE" "BOARD"
-printf "%-4s %-30s %-30s\n" "----" "-------" "-----"
+printf "%-4s %-*s %-*s\n" "STAT" "$MAX_FQBN_LEN" "EXAMPLE" "$MAX_FQBN_LEN" "BOARD"
+printf "%-4s %-*s %-*s\n" "----" "$MAX_FQBN_LEN" "-------" "$MAX_FQBN_LEN" "-----"
+
 for i in "${!SUMMARY_STATUS[@]}"; do
-    printf "%-4s %-30s %-30s\n"  \
-        "${SUMMARY_STATUS[$i]}"  \
-        "${SUMMARY_EXAMPLE[$i]}" \
-        "${SUMMARY_BOARD[$i]}"
+    printf "%-4s %-*s %-*s\n" \
+        "${SUMMARY_STATUS[$i]}" \
+        "$MAX_FQBN_LEN" "${SUMMARY_EXAMPLE[$i]}" \
+        "$MAX_FQBN_LEN" "${SUMMARY_BOARD[$i]}"
 done
 
 if [ "$SUCCESS" = true ]; then

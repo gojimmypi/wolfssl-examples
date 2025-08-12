@@ -39,7 +39,7 @@ arduino:avr:leonardoeth
 
 
 arduino:avr:yun
-    # Ethernet & Wi-Fi has AR9331 Linux module for networking, but only 2K RAM
+    # Ethernet & WiFi has AR9331 Linux module for networking, but only 2K RAM
   --no-wolfssl_AES_CTR     # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
   --no-wolfssl_client      # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
   --no-wolfssl_server      # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
@@ -47,12 +47,15 @@ arduino:avr:yun
   --no-wolfssl_server_dtls # Global variables use 4973 bytes (194%) of dynamic memory, leaving -2413 bytes for local variables. Maximum is 2560 bytes.
 
 arduino:samd:mkrwifi1010
-    # Wi-Fi NINA-W102 module
+    # WiFi NINA-W102 module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
+
+exit
+
 arduino:samd:mkr1000
-    # Wi-Fi uses WINC1500 module
+    # WiFi uses WINC1500 module
   --no-template            # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
   --no-wolfssl_AES_CTR     # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
   --no-wolfssl_client      # TODO wolfio.h:290:32: error: 'EWOULDBLOCK' undeclared (first use in this function); did you mean 'MP_WOULDBLOCK'?
@@ -69,20 +72,20 @@ arduino:samd:mkrfox1200
   --no-wolfssl_server_dtls # TODO WiFiNINA/src/utility/spi_drv.cpp:103:15: error: 'NINA_GPIO0' was not declared in this scope
 
 arduino:mbed_nano:nanorp2040connect
-    # Wi-Fi NINA-W102 module
+    # WiFi NINA-W102 module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 # The like (ABX00045) and regular (ABX00042) are considered equivalent
-# The Portentas are Linux-like and not typical Aruino boards
+# The Portenta devices are Linux-like and not typical Arduino boards
 arduino:mbed_portenta:envie_m7
-    # Wi-Fi & Ethernet via onboard module
+    # WiFi & Ethernet via onboard module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
-# The Portentas are Linux-like and not typical Aruino boards
+# The Portenta devices are Linux-like and not typical Arduino boards
 arduino:mbed_portenta:portenta_x8
-    #  Wi-Fi & Ethernet via onboard module
+    #  WiFi & Ethernet via onboard module
   --no-wolfssl_client      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
   --no-wolfssl_server      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
@@ -98,7 +101,7 @@ arduino:mbed_edge:edge_control
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 arduino:renesas_uno:unor4wifi
-    # Wi-Fi & BT UNO R4 Wi-Fi (ESP32-S3 coprocessor)
+    # WiFi & BT UNO R4 WiFi (ESP32-S3 coprocessor)
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
