@@ -89,11 +89,13 @@ arduino:mbed_nano:nanorp2040connect
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
 # The like (ABX00045) and regular (ABX00042) are considered equivalent
+# The Portentas are Linux-like and not typical Aruino boards
 arduino:mbed_portenta:envie_m7
     # Wi-Fi & Ethernet via onboard module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
 
+# The Portentas are Linux-like and not typical Aruino boards
 arduino:mbed_portenta:portenta_x8
     #  Wi-Fi & Ethernet via onboard module
   --no-wolfssl_client      # TODO mbed_portenta/4.4.1/libraries/WiFi/src/WiFi.h:188:3: error: 'WiFiAccessPoint' does not name a type

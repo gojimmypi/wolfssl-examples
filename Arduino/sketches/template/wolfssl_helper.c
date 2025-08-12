@@ -31,15 +31,31 @@
      * On Portenta X8 the core headers assume C++, and things like A6,
      * PIN_SPI_MOSI, etc. - rely on C++-only constructs.
      * So don't include Arduino.h here for Portenta. */
+
+    #include <wolfssl/wolfcrypt/settings.h>
+    #include <wolfssl/ssl.h> /* The ssl.h usually included by wolfssl.h */
+
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+
+    /* Sample source code is C, but Arduino is compiling with C++
+     * Declare a helper function to be used in wolfssl/wolfcrypt/logging.c */
+    int wolfSSL_Arduino_Serial_Print(const char* const s);
+
+    #ifdef __cplusplus
+    }
+    #endif
 #else
     /* Assume all other target boards would want to include Arduino.h in a
      * helper such as this one. Not needed in this wolfssl_helper.c example. */
     #include <Arduino.h>
+
+     /* settings.h is typically included in wolfssl.h, but here as a reminder: */
+    #include <wolfssl/wolfcrypt/settings.h>
+    #include <wolfssl.h> /* The wolfssl core Arduino library file */
 #endif
 
- /* settings.h is typically included in wolfssl.h, but here as a reminder: */
-#include <wolfssl/wolfcrypt/settings.h>
-#include <wolfssl.h>
 
 #include "wolfssl_helper.h"
 
