@@ -9,7 +9,7 @@
 # Syntax:
 #
 # fqbn # fully qualified Arduino board name in format x:y:z, with optional comment after "#"
-#   --no-[example] # to optionally exclude and example. This comment displayed as for reason
+#   --no-[example] # to optionally exclude an example. This comment displayed as for reason
 #
 # Each line is the exact text used in the ./compile-all-examples.sh
 #

@@ -5,7 +5,7 @@
 # Syntax:
 #
 # fqbn # fully qualified Arduino board name in format x:y:z, with optional comment after "#"
-#   --no-[example] # to optionally exclude and example. This comment displayed as for reason
+#   --no-[example] # to optionally exclude an example. This comment displayed as for reason
 #
 # Each line is the exact text used in the ./compile-all-examples.sh
 #
@@ -50,9 +50,6 @@ arduino:samd:mkrwifi1010
     # WiFi NINA-W102 module
   --no-wolfssl_client_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
   --no-wolfssl_server_dtls # TODO This example requires WOLFSSL_DTLS. See user_settings.h in the Arduino wolfssl library
-
-
-exit
 
 arduino:samd:mkr1000
     # WiFi uses WINC1500 module

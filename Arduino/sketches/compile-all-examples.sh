@@ -443,7 +443,6 @@ printf "%-4s %-*s %-*s\n" "----" "$MAX_FQBN_LEN" "-------" "$MAX_FQBN_LEN" "----
 
 for i in "${!SUMMARY_STATUS[@]}"; do
     printf "%-4s  %-*s %-*s\n" \
-    printf "%-4s  %-*s %-*s\n" \
         "${SUMMARY_STATUS[$i]}" \
         "$MAX_FQBN_LEN" "${SUMMARY_EXAMPLE[$i]}" \
         "$MAX_FQBN_LEN" "${SUMMARY_BOARD[$i]}"
