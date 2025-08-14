@@ -4,7 +4,9 @@ These are wolfSSL TLS 1.3 clients and servers for both wired and wireless Intern
 
 Note: wolfSSL v5.5.4 or newer is needed to use these examples with ESP-IDF v5.
 
-See the [setup scripts](https://github.com/wolfSSL/wolfssl/tree/master/IDE/Espressif/ESP-IDF) to install.
+wolfSSL can be installed from the [ESP Registry Managed Component](https://components.espressif.com/components/wolfssl/wolfssl)
+
+See the alternative [setup scripts](https://github.com/wolfSSL/wolfssl/tree/master/IDE/Espressif/ESP-IDF) to install between-release updates.
 
 
 ## ESP32 TLS 1.3 Server
