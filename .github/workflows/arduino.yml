@@ -279,4 +279,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: compiled-sketch
-          path: Arduino/sketches/template/build/*
+          path: $ARDUINO_ROOT/wolfssl/examples/template/build/*
