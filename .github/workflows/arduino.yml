@@ -434,16 +434,31 @@ jobs:
             echo "Alternative install script not needed."
           fi
 
+      - name: Create pinned Arduino CLI config
+        run: |
+          mkdir -p .ci
+          cat > .ci/arduino-cli.yaml <<'YAML'
+          board_manager:
+            additional_urls:
+              - https://www.pjrc.com/teensy/package_teensy_index.json
+              - https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          directories:
+            data: ${HOME}/.arduino15
+            downloads: ${HOME}/.arduino15/staging
+            user: ${HOME}/Arduino
+          library:
+            enable_unsafe_install: true
+          YAML
+            echo "ARDUINO_CLI_CONFIG_FILE=$GITHUB_WORKSPACE/.ci/arduino-cli.yaml" >> "$GITHUB_ENV"
+
       - name: Confirm Arduino CLI install
         run: arduino-cli version
 
       - name: Update core index
-        run: arduino-cli core update-index
+        run: arduino-cli core update-index --config-file "$ARDUINO_CLI_CONFIG_FILE"
 
       - name: Setup Arduino CLI
         run: |
-          arduino-cli config init --overwrite
-
           # wait 10 minutes for big downloads (or use 0 for no limit)
           arduino-cli config set network.connection_timeout 600s
 
@@ -457,16 +472,6 @@ jobs:
           arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
 
 
-      - name: Sanity check restored cores
-        run: |
-          echo "arduino-cli core list:"
-          arduino-cli core list || true
-          echo "Expecting AVR path:"
-          echo "$HOME/.arduino15/packages/arduino/hardware/avr" && ls -al "$HOME/.arduino15/packages/arduino/hardware" || true
-          if [ ! -d "$HOME/.arduino15/packages/arduino/hardware/avr" ]; then
-            echo "arduino:avr not found in expected path!"
-          fi
-
       - name: Ensure ARDUINO_ROOT exists
         run: |
           echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
@@ -478,7 +483,17 @@ jobs:
       - name: Install only needed core
         run: |
             CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
-            arduino-cli core install "$CORE_ID"
+            arduino-cli core install "$CORE_ID" --config-file "$ARDUINO_CLI_CONFIG_FILE"
+
+      - name: Sanity check restored cores
+        run: |
+          echo "arduino-cli core list:"
+          arduino-cli core list || true
+          echo "Expecting AVR path:"
+          echo "$HOME/.arduino15/packages/arduino/hardware/avr" && ls -al "$HOME/.arduino15/packages/arduino/hardware" || true
+          if [ ! -d "$HOME/.arduino15/packages/arduino/hardware/avr" ]; then
+            echo "arduino:avr not found in expected path!"
+          fi
 
       - name: Restore cached wolfSSL library
         uses: actions/cache/restore@v4
