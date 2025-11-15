@@ -139,7 +139,7 @@ jobs:
 
       # Get commit SHA without cloning (heads, tags, or exact)
       - name: Resolve wolfSSL SHA (no clone)
-        id: wolfsha
+        id: wolfsha-peek
         env:
           OWNER: ${{ github.repository_owner }}
         run: |
