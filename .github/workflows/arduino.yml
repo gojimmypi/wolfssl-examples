@@ -264,7 +264,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
+          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('Arduino/sketches/**') }}
+
 
       # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
       # We cache only THIS most recent install of wolfSSL (not a release)
@@ -273,7 +274,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
+          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('Arduino/sketches/**') }}
 
       - name: Install wolfSSL Arduino library
         if: steps.cache-wolfssl.outputs.cache-hit != 'true'
@@ -378,6 +379,13 @@ jobs:
 
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
+        with:
+          additional-urls: |
+            https://www.pjrc.com/teensy/package_teensy_index.json
+            https://arduino.esp8266.com/stable/package_esp8266com_index.json
+
+      - name: Update core index
+        run: arduino-cli core update-index
 
       - name: Ensure ARDUINO_ROOT exists
         run: |
@@ -400,26 +408,11 @@ jobs:
             CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
             arduino-cli core install "$CORE_ID"
 
-      - name: Configure Arduino CLI (URLs)
-        run: |
-            arduino-cli config init
-            arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
-            arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
-
-      - name: Update core index
-        run: arduino-cli core update-index
-
-      - name: Install only needed core
-        run: |
-            CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
-            arduino-cli core install "$CORE_ID"
-
-
       - name: Restore cached wolfSSL library
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ needs.prepare-cache.outputs.wolfsha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
+          key: wolfssl-lib-${{ runner.os }}-${{ needs.prepare-cache.outputs.wolfsha }}-${{ hashFiles('Arduino/sketches/**') }}
           restore-keys: |
               wolfssl-lib-${{ runner.os }}-
 
