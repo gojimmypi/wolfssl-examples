@@ -442,7 +442,7 @@ jobs:
 
       - name: Setup Arduino CLI
         run: |
-          arduino-cli config init
+          arduino-cli config init --overwrite
 
           # wait 10 minutes for big downloads (or use 0 for no limit)
           arduino-cli config set network.connection_timeout 600s
