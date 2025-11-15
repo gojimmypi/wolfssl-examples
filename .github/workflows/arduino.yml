@@ -64,8 +64,9 @@ on:
 concurrency:
   # Same branch push cancels other jobs. Other PR branches untouched
 
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
+
 # END OF COMMON SECTION
 
 jobs:
@@ -83,19 +84,18 @@ jobs:
           #   optionally compile all examples ONLY for the respective fully qualified board name.
           # See https://github.com/wolfSSL/wolfssl-examples/blob/master/Arduino/sketches/board_list.txt
           - arduino:avr:leonardoeth
+          - arduino:avr:mega
+          - arduino:avr:nano
+          - arduino:avr:uno
           - arduino:avr:yun
           - arduino:samd:mkrwifi1010
           - arduino:samd:mkr1000
           - arduino:samd:mkrfox1200
+          - arduino:mbed_edge:edge_control
           - arduino:mbed_nano:nanorp2040connect
           - arduino:mbed_portenta:envie_m7
           - arduino:mbed_portenta:portenta_x8
-          - arduino:mbed_edge:edge_control
           - arduino:renesas_uno:unor4wifi
-          - arduino:avr:mega
-          - arduino:avr:nano
-          - arduino:avr:uno
-          - arduino:avr:ethernet
           - arduino:sam:arduino_due_x
           - arduino:samd:arduino_zero_native
           - arduino:samd:tian
@@ -108,6 +108,10 @@ jobs:
           - esp8266:esp8266:generic
           - teensy:avr:teensy40
 
+          # Not yet supported, not in standard library
+          # - esp32:esp32:nano_nora
+
+          # End strategy matrix
     env:
       REPO_OWNER: ${{ github.repository_owner }}
 
@@ -172,6 +176,10 @@ jobs:
       - name: Setup Arduino CLI
         run: |
           arduino-cli config init
+
+          # wait 10 minutes for big downloads (or use 0 for no limit)
+          arduino-cli config set network.connection_timeout 600s
+
           arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
@@ -189,10 +197,13 @@ jobs:
           # arduino-cli core install arduino:mbed_nano      # nanorp2040connect
           # arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
           # arduino-cli core install arduino:mbed_edge
-          # For reference:
-          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
           # arduino-cli core install arduino:renesas_uno
 
+          # For reference:
+
+          # mbed nano not yet tested
+          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
+ 
           # Always install networking (not part of FQBN matrix)
           # The first one also creates directory: /home/runner/Arduino/libraries
           arduino-cli lib install "ArduinoJson"           # Example dependency
@@ -232,6 +243,11 @@ jobs:
           path: |
             ~/.arduino15
             ~/.cache/arduino
+            ~/.arduino15/staging
+
+            # Arduino libraries
+            # Specific to Arduino CI Build (2 of 4) Arduinbo Release wolfSSL for Local Examples
+            # Include all libraries, as the latest Arduino-wolfSSL will only change upon release.
             ~/Arduino/libraries
             # Ensure wolfssl is not cached, we're always using the latest. See separate cache.
             !~/Arduino/libraries/wolfssl

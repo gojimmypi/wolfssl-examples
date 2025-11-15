@@ -85,7 +85,10 @@ jobs:
       fail-fast: false
       matrix:
         fqbn:
-          - arduino:avr:ethernet
+          # When editing this list, be sure to also edit file: board_list.txt
+          #   The compile-all-examples.sh optionally takes a FQBN parameter to
+          #   optionally compile all examples ONLY for the respective fully qualified board name.
+          # See https://github.com/wolfSSL/wolfssl-examples/blob/master/Arduino/sketches/board_list.txt
           - arduino:avr:leonardoeth
           - arduino:avr:mega
           - arduino:avr:nano
@@ -126,7 +129,7 @@ jobs:
         run: |
           # Script to fetch and run install.sh from arduino/arduino-cli
 
-          # The install script will test to see if the recently installed apps in in the path
+          # The install script will test to see if the recently installed apps in the path
           # So set it up in advance:
           mkdir -p "${PWD}/bin"
           echo "${PWD}/bin" >> $GITHUB_PATH
@@ -137,7 +140,7 @@ jobs:
           # Ensures that BINDIR exists before the installer runs
           mkdir -p "$ROOT_BIN"
 
-          # Save as a lobal environment variable
+          # Save as a global environment variable
           echo "$ROOT_BIN" >> "$GITHUB_PATH"
 
           # Download and run install script from Arduino:
@@ -168,8 +171,13 @@ jobs:
             echo "Alternative install script not needed."
           fi
 
-      - name: Confirm Arduino CLI install
+      - name: Confirm Arduino CLI Install
         run: arduino-cli version
+
+      - name: Derive CORE_ID (vendor:arch from FQBN)
+        run: |
+          CORE_ID="$(echo '${{ matrix.fqbn }}' | cut -d: -f1-2)"
+          echo "CORE_ID=$CORE_ID" >> "$GITHUB_ENV"
 
       - name: Setup Arduino CLI
         run: |
@@ -182,29 +190,34 @@ jobs:
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
 
+          echo "CORE_ID: $CORE_ID"
+          arduino-cli core install "$CORE_ID"
+
+          # The above is instead of:
+          # arduino-cli core install esp32:esp32            # ESP32
+          # arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
+          # arduino-cli core install arduino:sam            # Arduino Due
+          # arduino-cli core install arduino:samd           # Arduino Zero
+          # arduino-cli core install teensy:avr             # PJRC Teensy
+          # arduino-cli core install esp8266:esp8266        # ESP8266
+          # arduino-cli core install arduino:mbed_nano      # nanorp2040connect
+          # arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
+          # arduino-cli core install arduino:mbed_edge
+          # arduino-cli core install arduino:renesas_uno
+
+          # For reference:
+
           # mbed nano not yet tested
           # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
-
-          # Install upported boards:
-          arduino-cli core install esp32:esp32            # ESP32
-          arduino-cli core install esp8266:esp8266        # ESP8266
-
-          arduino-cli core install teensy:avr             # PJRC Teensy
-
-          arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
-          arduino-cli core install arduino:sam            # Arduino Due
-          arduino-cli core install arduino:samd           # Arduino Zero
-          arduino-cli core install arduino:mbed_nano      # nanorp2040connect
-          arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
-          arduino-cli core install arduino:mbed_edge
-          arduino-cli core install arduino:renesas_uno
-
+ 
+          # Always install networking (not part of FQBN matrix)
+          # The first one also creates directory: /home/runner/Arduino/libraries
           arduino-cli lib install "ArduinoJson"           # Example dependency
           arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
           arduino-cli lib install "Ethernet"              # Install Ethernet library
           arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
 
-      - name: Set job environment variables
+      - name: Set Job Environment Variables
         run: |
           # Script to assign some common environment variables after everything is installed
 
@@ -230,33 +243,25 @@ jobs:
           # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
-      - name: Compute cache key parts
-        id: parts
-        shell: bash
-        run: |
-          # From FQBN "vendor:arch:board" get "vendor:arch"
-          CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
-          echo "CORE_ID=$CORE_ID" >> "$GITHUB_OUTPUT"
-
-          # Also expose vendor only for broad fallbacks
-          VENDOR="$(echo "$CORE_ID" | cut -d: -f1)"
-          echo "VENDOR=$VENDOR" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Arduino packages
+      - name: Cache Arduino Packages
         uses: actions/cache@v4
         with:
           path: |
             ~/.arduino15
+            ~/.cache/arduino
             ~/.arduino15/staging
 
             # Arduino libraries
             # Specific to Arduino CI Build (2 of 4) Arduinbo Release wolfSSL for Local Examples
             # Include all libraries, as the latest Arduino-wolfSSL will only change upon release.
             ~/Arduino/libraries
+            # Ensure wolfssl is not cached, we're always using the latest. See separate cache.
+            !~/Arduino/libraries/wolfssl
+          key: arduino-${{ runner.os }}-${{ env.CORE_ID }}-${{ hashFiles('Arduino/sketches/board_list.txt') }}
 
-          key: arduino-${{ runner.os }}-${{ hashFiles('**/arduino-cores.lock') }}
           restore-keys: |
-            arduino-${{ runner.os }}-
+               arduino-${{ runner.os }}-${{ env.CORE_ID }}-
+               arduino-${{ runner.os }}-
 
       - name: Show wolfssl-examples
         run: |
@@ -305,7 +310,7 @@ jobs:
             chmod +x ./compile-all-examples.sh
 
             # The script expects all the examples to be in the current directory.
-            # So copy from local directory to newly instlled wolfssl arduino library to compile there.
+            # So copy from local directory to newly installed wolfssl arduino library to compile there.
             cp ./compile-all-examples.sh "$ARDUINO_ROOT/wolfssl/examples/compile-all-examples.sh"
             cp ./board_list.txt          "$ARDUINO_ROOT/wolfssl/examples/board_list.txt"
 
