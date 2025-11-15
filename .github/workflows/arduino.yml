@@ -66,47 +66,51 @@ concurrency:
 
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 # END OF COMMON SECTION
 
-env:
-  ADDITIONAL_URLS: |
-    https://www.pjrc.com/teensy/package_teensy_index.json
-    https://arduino.esp8266.com/stable/package_esp8266com_index.json
-
-  PLATFORMS: |
-    - name: "esp32:esp32"
-    - name: "esp8266:esp8266"
-    - name: "teensy:avr"
-    - name: "arduino:avr"
-    - name: "arduino:sam"
-    - name: "arduino:samd"
-    - name: "arduino:mbed_nano"
-    - name: "arduino:mbed_portenta"
-    - name: "arduino:mbed_edge"
-    - name: "arduino:renesas_uno"
-
-  ARDUINO_DATA_DIR: $HOME/.arduino15
-  ARDUINO_DOWNLOADS_DIR: $HOME/.arduino15/staging
-  ARDUINO_BUILD_CACHE: $HOME/.cache/arduino
-
 jobs:
-
-  #--------------------------- Prepare and cache install ----------------------------------------------------
-  prepare-cache:
-  #----------------------------------------------------------------------------------------------------------
-    name: Prepare Arduino cache
+  build:
+    name: Compile (${{ matrix.fqbn }})
+    if: github.repository_owner == 'wolfssl'
     runs-on: ubuntu-latest
-    outputs:
-      wolfsha: ${{ steps.wolfsha.outputs.sha }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        fqbn:
+          - arduino:avr:leonardoeth
+          - arduino:avr:yun
+          - arduino:samd:mkrwifi1010
+          - arduino:samd:mkr1000
+          - arduino:samd:mkrfox1200
+          - arduino:mbed_nano:nanorp2040connect
+          - arduino:mbed_portenta:envie_m7
+          - arduino:mbed_portenta:portenta_x8
+          - arduino:mbed_edge:edge_control
+          - arduino:renesas_uno:unor4wifi
+          - arduino:avr:mega
+          - arduino:avr:nano
+          - arduino:avr:uno
+          - arduino:avr:ethernet
+          - arduino:sam:arduino_due_x
+          - arduino:samd:arduino_zero_native
+          - arduino:samd:tian
+          - esp32:esp32:esp32
+          - esp32:esp32:esp32s2
+          - esp32:esp32:esp32s3
+          - esp32:esp32:esp32c3
+          - esp32:esp32:esp32c6
+          - esp32:esp32:esp32h2
+          - esp8266:esp8266:generic
+          - teensy:avr:teensy40
+
     env:
       REPO_OWNER: ${{ github.repository_owner }}
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Arduino CLI
       - name: Install Arduino CLI
         run: |
           # Script to fetch and run install.sh from arduino/arduino-cli
@@ -158,81 +162,74 @@ jobs:
 
       - name: Setup Arduino CLI
         run: |
-          arduino-cli config init  --overwrite
-
-          # wait 10 minutes for big downloads (or use 0 for no limit)
-          arduino-cli config set network.connection_timeout 600s
-
+          arduino-cli config init
           arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
-
-          # mbed nano not yet tested
-          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
-
-          # Install upported boards:
           arduino-cli core install esp32:esp32            # ESP32
-          arduino-cli core install esp8266:esp8266        # ESP8266
-
-          arduino-cli core install teensy:avr             # PJRC Teensy
-
           arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
           arduino-cli core install arduino:sam            # Arduino Due
           arduino-cli core install arduino:samd           # Arduino Zero
+          arduino-cli core install teensy:avr             # PJRC Teensy
+          arduino-cli core install esp8266:esp8266        # ESP8266
           arduino-cli core install arduino:mbed_nano      # nanorp2040connect
           arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
           arduino-cli core install arduino:mbed_edge
+          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
           arduino-cli core install arduino:renesas_uno
-
           arduino-cli lib install "ArduinoJson"           # Example dependency
           arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
           arduino-cli lib install "Ethernet"              # Install Ethernet library
           arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
 
-      - name: Ensure ARDUINO_ROOT exists
+      - name: Set job environment variables
         run: |
-          echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
-          mkdir -p "$HOME/Arduino/libraries"
+          # Script to assign some common environment variables after everything is installed
 
-      # Optionally let callers set a ref; fallback to master
-      - name: Resolve wolfSSL ref
-        id: wolfref
+          ICON_OK=$(printf "\xE2\x9C\x85")
+          ICON_FAIL=$(printf "\xE2\x9D\x8C")
+
+          echo "GITHUB_WORK=$(realpath           "$GITHUB_WORKSPACE/../..")"  >> "$GITHUB_ENV"
+          echo "ARDUINO_ROOT=$(realpath          "$HOME/Arduino/libraries")"  >> "$GITHUB_ENV"
+
+          # Show repo-specific location of examples:
+          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV"
+
+          # Show predefined summary:
+          echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
+
+          # Show assigned build:env values (e.g. "wolfssl", "gojimmpi" or other owners):
+          echo "REPO_OWNER            = $REPO_OWNER"
+
+          # Show our custom values:
+          echo "GITHUB_WORK           = $GITHUB_WORK"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+
+          # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+
+      - name: Cache Arduino packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15
+            ~/Arduino/libraries
+            !~/Arduino/libraries/wolfssl
+          key: arduino-${{ runner.os }}-${{ hashFiles('Arduino/sketches/board_list.txt') }}-${{ matrix.fqbn }}
+          restore-keys: |
+            arduino-${{ runner.os }}-
+
+      - name: Show wolfssl-examples
         run: |
-          REF="${WOLFSSL_REF:-master}"
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          # The examples are local in this wolfssl-example repo, but should have been copied to library, above
+          ls ./Arduino/sketches
 
-      # Get commit SHA without cloning (heads, tags, or exact)
-      - name: Resolve wolfSSL SHA (no clone)
-        id: wolfsha-peek
-        env:
-          OWNER: ${{ github.repository_owner }}
-        run: |
-          set -e
-          REF="${{ steps.wolfref.outputs.ref }}"
-          URL="https://github.com/${OWNER}/wolfssl.git"
+          # end Show wolfssl-examples
 
-          # Try exact ref first; then heads; then tags; then annotated tag deref
-          sha="$(git ls-remote "$URL" "$REF"           | awk '{print $1}')"
-          [ -z "$sha" ] && sha="$(git ls-remote "$URL" "refs/heads/$REF" | awk '{print $1}')"
-          [ -z "$sha" ] && sha="$(git ls-remote "$URL" "refs/tags/$REF"  | awk '{print $1}')"
-          [ -z "$sha" ] && sha="$(git ls-remote "$URL" "refs/tags/$REF^{}" | awk '{print $1}')"
-
-          if [ -z "$sha" ]; then
-            echo "Could not resolve ref '$REF' in ${OWNER}/wolfssl" >&2
-            exit 1
-          fi
-
-          echo "sha=${sha:0:7}" >> "$GITHUB_OUTPUT"
-          echo "full_sha=$sha"  >> "$GITHUB_OUTPUT"
-          echo "sha=${sha:0:7}"
-          echo "full_sha=$sha"
-
-      # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
       - name: Shallow clone wolfssl
         run: |
           # Clone the wolfssl to use for example build
 
-          rm -rf "./wolfssl"
           git clone --depth 1 https://github.com/$REPO_OWNER/wolfssl.git
 
           # Assign your PR branch for testing here:
@@ -253,28 +250,16 @@ jobs:
           fi
           # end wolfssl source
 
-      # Get the SHA value of the latest version of wolfSSL for cache
       - name: Get wolfSSL commit
         id: wolfsha
         run: echo "sha=$(git -C wolfssl rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
-      # Attempt to restore the Arduino wolfssl library
-      - name: Restore cached wolfSSL library
-        id: restore-wolfssl
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('Arduino/sketches/**') }}
-
-
-      # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
-      # We cache only THIS most recent install of wolfSSL (not a release)
       - name: Cache wolfSSL Arduino library
         id: cache-wolfssl
         uses: actions/cache@v4
         with:
           path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('Arduino/sketches/**') }}
+          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
 
       - name: Install wolfSSL Arduino library
         if: steps.cache-wolfssl.outputs.cache-hit != 'true'
@@ -311,242 +296,6 @@ jobs:
           ls "$ARDUINO_ROOT/wolfssl/examples" -al
 
           # End Install wolfSSL Arduino library
-
-      - name: Freeze core and library versions for cache key
-        run: |
-          mkdir -p .ci
-          arduino-cli core list --format json > .ci/arduino-cores.lock
-          arduino-cli lib list --format json > .ci/arduino-libs.lock
-
-      - name: Save Arduino caches
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            ${{ env.ARDUINO_DATA_DIR }}
-            ${{ env.ARDUINO_DOWNLOADS_DIR }}
-            ${{ env.ARDUINO_BUILD_CACHE }}
-          key: arduino-${{ runner.os }}-${{ hashFiles('.ci/arduino-cores.lock', '.ci/arduino-libs.lock') }}
-
-  #----------------------------------------------------------------------------------------------------------
-  build:
-  #----------------------------------------------------------------------------------------------------------
-    name: Latest Compile (${{ matrix.fqbn }})
-#    if: github.repository_owner == 'wolfssl'
-    needs: prepare-cache
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      max-parallel: 6
-      matrix:
-        fqbn:
-          - arduino:avr:ethernet
-          - arduino:avr:leonardoeth
-          - arduino:avr:mega
-          - arduino:avr:nano
-          - arduino:avr:uno
-          - arduino:avr:yun
-          - arduino:samd:mkrwifi1010
-          - arduino:samd:mkr1000
-          - arduino:samd:mkrfox1200
-          - arduino:mbed_edge:edge_control
-          - arduino:mbed_nano:nanorp2040connect
-          - arduino:mbed_portenta:envie_m7
-          - arduino:mbed_portenta:portenta_x8
-          - arduino:renesas_uno:unor4wifi
-          - arduino:sam:arduino_due_x
-          - arduino:samd:arduino_zero_native
-          - arduino:samd:tian
-          - esp32:esp32:esp32
-          - esp32:esp32:esp32s2
-          - esp32:esp32:esp32s3
-          - esp32:esp32:esp32c3
-          - esp32:esp32:esp32c6
-          - esp32:esp32:esp32h2
-          - esp8266:esp8266:generic
-          - teensy:avr:teensy40
-
-          # Not yet supported, not in standard library
-          # - esp32:esp32:nano_nora
-
-          # End strategy matrix
-    env:
-      REPO_OWNER: ${{ github.repository_owner }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Restore Arduino caches
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ${{ env.ARDUINO_DATA_DIR }}
-            ${{ env.ARDUINO_DOWNLOADS_DIR }}
-            ${{ env.ARDUINO_BUILD_CACHE }}
-          key: arduino-${{ runner.os }}-${{ hashFiles('.ci/arduino-cores.lock', '.ci/arduino-libs.lock') }}
-          restore-keys: |
-            arduino-${{ runner.os }}-
-
-      - name: Install Arduino CLI
-        run: |
-          # Script to fetch and run install.sh from arduino/arduino-cli
-
-          # The install script will test to see if the recently installed apps in in the path
-          # So set it up in advance:
-          mkdir -p "${PWD}/bin"
-          echo "${PWD}/bin" >> $GITHUB_PATH
-
-          # Sets the install directory to a consistent path at the repo root.
-          ROOT_BIN="$GITHUB_WORKSPACE/bin"
-
-          # Ensures that BINDIR exists before the installer runs
-          mkdir -p "$ROOT_BIN"
-
-          # Save as a lobal environment variable
-          echo "$ROOT_BIN" >> "$GITHUB_PATH"
-
-          # Download and run install script from Arduino:
-          # -S show errors; -L follow redirects; -v Verbose
-          set +e                 # don't abort on error
-          set -o pipefail
-
-          curl -vSL --retry 5 --retry-delay 10 \
-             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh  \
-             | sh -x
-          rc=$?
-          c_rc=${PIPESTATUS[0]}  # curl's exit code
-          s_rc=${PIPESTATUS[1]}  # sh's  exit code
-
-          set -e                 # restore default abort-on-error
-
-          # If there was a curl error, we have our own local copy that is more reliable and can add our own debugging
-          if [ "$rc" -ne 0 ]; then
-            echo "Primary install failed: curl=$c_rc, sh=$s_rc. Falling back..." >&2
-            echo "Using local copy of arduino_install.sh"
-            pushd ./Arduino/sketches
-              chmod +x ./arduino_install.sh
-
-              # Mimic curl install, does not use current directory:
-              BINDIR="$ROOT_BIN" sh -x ./arduino_install.sh
-            popd
-          else
-            echo "Alternative install script not needed."
-          fi
-
-      - name: Create pinned Arduino CLI config
-        run: |
-          mkdir -p .ci
-          cat > .ci/arduino-cli.yaml <<'YAML'
-          board_manager:
-            additional_urls:
-              - https://www.pjrc.com/teensy/package_teensy_index.json
-              - https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          directories:
-            data: ${HOME}/.arduino15
-            downloads: ${HOME}/.arduino15/staging
-            user: ${HOME}/Arduino
-          library:
-            enable_unsafe_install: true
-          YAML
-            echo "ARDUINO_CLI_CONFIG_FILE=$GITHUB_WORKSPACE/.ci/arduino-cli.yaml" >> "$GITHUB_ENV"
-
-      - name: Confirm Arduino CLI install
-        run: arduino-cli version
-
-      - name: Update core index
-        run: arduino-cli core update-index --config-file "$ARDUINO_CLI_CONFIG_FILE"
-
-      - name: Setup Arduino CLI
-        run: |
-          # wait 10 minutes for big downloads (or use 0 for no limit)
-          arduino-cli config set network.connection_timeout 600s
-
-          arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
-          arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          arduino-cli core update-index
-
-          arduino-cli lib install "ArduinoJson"           # Example dependency
-          arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
-          arduino-cli lib install "Ethernet"              # Install Ethernet library
-          arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
-
-
-      - name: Ensure ARDUINO_ROOT exists
-        run: |
-          echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
-          mkdir -p "$HOME/Arduino/libraries"
-
-      - name: Update core index
-        run: arduino-cli core update-index
-
-      - name: Install only needed core
-        run: |
-            CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
-            arduino-cli core install "$CORE_ID" --config-file "$ARDUINO_CLI_CONFIG_FILE"
-
-      - name: Sanity check restored cores
-        run: |
-          echo "arduino-cli core list:"
-          arduino-cli core list || true
-          echo "Expecting AVR path:"
-          echo "$HOME/.arduino15/packages/arduino/hardware/avr" && ls -al "$HOME/.arduino15/packages/arduino/hardware" || true
-          if [ ! -d "$HOME/.arduino15/packages/arduino/hardware/avr" ]; then
-            echo "arduino:avr not found in expected path!"
-          fi
-
-      - name: Restore cached wolfSSL library
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ needs.prepare-cache.outputs.wolfsha }}-${{ hashFiles('Arduino/sketches/**') }}
-          restore-keys: |
-              wolfssl-lib-${{ runner.os }}-
-
-      - name: Set job environment variables
-        run: |
-          # Script to assign some common environment variables after everything is installed
-
-          ICON_OK=$(printf "\xE2\x9C\x85")
-          ICON_FAIL=$(printf "\xE2\x9D\x8C")
-
-          echo "GITHUB_WORK=$(realpath $GITHUB_WORKSPACE/../..)" >> "$GITHUB_ENV"
-          echo "ARDUINO_ROOT=$(realpath $HOME/Arduino/libraries)" >> "$GITHUB_ENV"
-
-          # Show repo-specific location of examples:
-          echo "WOLFSSL_EXAMPLES_ROOT=$(realpath "./Arduino/sketches")"       >> "$GITHUB_ENV"
-
-          # Show predefined summary:
-          echo "GITHUB_WORKSPACE      = $GITHUB_WORKSPACE"
-
-          # Show assigned build:env values (e.g. "wolfssl", "gojimmpi" or other owners):
-          echo "REPO_OWNER            = $REPO_OWNER"
-
-          # Show our custom values:
-          echo "GITHUB_WORK           = $GITHUB_WORK"
-          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
-
-          # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
-          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
-
-      - name: Compute cache key parts
-        id: parts
-        shell: bash
-        run: |
-          # From FQBN "vendor:arch:board" get "vendor:arch"
-          CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
-          echo "CORE_ID=$CORE_ID" >> "$GITHUB_OUTPUT"
-
-          # Also expose vendor only for broad fallbacks
-          VENDOR="$(echo "$CORE_ID" | cut -d: -f1)"
-          echo "VENDOR=$VENDOR" >> "$GITHUB_OUTPUT"
-
-      - name: Show wolfssl-examples
-        run: |
-          # The examples are local in this wolfssl-example repo, but should have been copied to library, above
-          ls ./Arduino/sketches
-
-          # end Show wolfssl-examples
 
       - name: List installed Arduino libraries
         run: arduino-cli lib list
