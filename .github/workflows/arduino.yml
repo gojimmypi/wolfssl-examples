@@ -158,7 +158,7 @@ jobs:
 
       - name: Setup Arduino CLI
         run: |
-          arduino-cli config init
+          arduino-cli config init  --overwrite
 
           # wait 10 minutes for big downloads (or use 0 for no limit)
           arduino-cli config set network.connection_timeout 600s
@@ -387,6 +387,17 @@ jobs:
       - name: Update core index
         run: arduino-cli core update-index
 
+      - name: Sanity check restored cores
+        run: |
+          echo "arduino-cli core list:"
+          arduino-cli core list || true
+          echo "Expecting AVR path:"
+          echo "$HOME/.arduino15/packages/arduino/hardware/avr" && ls -al "$HOME/.arduino15/packages/arduino/hardware" || true
+          if [ ! -d "$HOME/.arduino15/packages/arduino/hardware/avr" ]; then
+            echo "arduino:avr not found in expected path; installing..."
+            arduino-cli core install arduino:avr
+          fi
+
       - name: Ensure ARDUINO_ROOT exists
         run: |
           echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
@@ -402,6 +413,9 @@ jobs:
           key: arduino-${{ runner.os }}-${{ hashFiles('.ci/arduino-cores.lock', '.ci/arduino-libs.lock') }}
           restore-keys: |
             arduino-${{ runner.os }}-
+
+      - name: Update core index
+        run: arduino-cli core update-index
 
       - name: Install only needed core
         run: |
