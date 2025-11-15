@@ -160,27 +160,36 @@ jobs:
       - name: Confirm Arduino CLI install
         run: arduino-cli version
 
+      - name: Derive CORE_ID (vendor:arch from FQBN)
+        run: |
+          CORE_ID="$(echo '${{ matrix.fqbn }}' | cut -d: -f1-2)"
+          echo "CORE_ID=$CORE_ID" >> "$GITHUB_ENV"
+
       - name: Setup Arduino CLI
         run: |
           arduino-cli config init
           arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
-          arduino-cli core install esp32:esp32            # ESP32
-          arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
-          arduino-cli core install arduino:sam            # Arduino Due
-          arduino-cli core install arduino:samd           # Arduino Zero
-          arduino-cli core install teensy:avr             # PJRC Teensy
-          arduino-cli core install esp8266:esp8266        # ESP8266
-          arduino-cli core install arduino:mbed_nano      # nanorp2040connect
-          arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
-          arduino-cli core install arduino:mbed_edge
-          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
-          arduino-cli core install arduino:renesas_uno
-          arduino-cli lib install "ArduinoJson"           # Example dependency
-          arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
-          arduino-cli lib install "Ethernet"              # Install Ethernet library
-          arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
+
+          echo "CORE_ID: $CORE_ID"
+          arduino-cli core install "$CORE_ID"
+
+          # arduino-cli core install esp32:esp32            # ESP32
+          # arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
+          # arduino-cli core install arduino:sam            # Arduino Due
+          # arduino-cli core install arduino:samd           # Arduino Zero
+          # arduino-cli core install teensy:avr             # PJRC Teensy
+          # arduino-cli core install esp8266:esp8266        # ESP8266
+          # arduino-cli core install arduino:mbed_nano      # nanorp2040connect
+          # arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
+          # arduino-cli core install arduino:mbed_edge
+          # # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
+          # arduino-cli core install arduino:renesas_uno
+          # arduino-cli lib install "ArduinoJson"           # Example dependency
+          # arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
+          # arduino-cli lib install "Ethernet"              # Install Ethernet library
+          # arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
 
       - name: Set job environment variables
         run: |
@@ -213,11 +222,14 @@ jobs:
         with:
           path: |
             ~/.arduino15
+            ~/.cache/arduino
             ~/Arduino/libraries
             !~/Arduino/libraries/wolfssl
-          key: arduino-${{ runner.os }}-${{ hashFiles('Arduino/sketches/board_list.txt') }}-${{ matrix.fqbn }}
+          key: arduino-${{ runner.os }}-${{ env.CORE_ID }}-${{ hashFiles('Arduino/sketches/board_list.txt') }}
+
           restore-keys: |
-            arduino-${{ runner.os }}-
+               arduino-${{ runner.os }}-${{ env.CORE_ID }}-
+               arduino-${{ runner.os }}-
 
       - name: Show wolfssl-examples
         run: |
