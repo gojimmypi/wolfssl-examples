@@ -382,28 +382,28 @@ jobs:
       # as the examples moved. See https://github.com/wolfSSL/wolfssl/pull/8514
       #
       - name: Compile Arduino Sketches for Various Boards
-        uses: arduino/compile-sketches@v1
-        with:
-          cli-version: "latest"
-          fqbn: "${{ matrix.fqbn }}"
-          platforms: ${{ env.PLATFORMS }}
-          additional-urls: ${{ env.ADDITIONAL_URLS }}
-          libraries: |
-            - name: ArduinoJson
-            - name: WiFiNINA
-            - name: Ethernet
-            - name: Bridge
-            # To compile against a local wolfssl library copy, uncomment:
-            # - source-path: "./Arduino/libraries/wolfssl"
-          sketch-paths: |
-            ./Arduino/sketches
-          verbose: true
-          sketches-report-path: sketches-reports
+        run: |
+          # Call the compile-all-examples.sh script to compile all the examples for each of the fqbn names in the local copy of board_list.txt
+
+          echo "Current directory     = $PWD"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+          echo "FQBN                  = ${{ matrix.fqbn }}"
+
+          echo "Change directory to Arduino examples..."
+          pushd ./Arduino/sketches
+            chmod +x ./compile-all-examples.sh
+
+            # The script expects all the examples to be in the current directory.
+            # So copy from local directory to newly instlled wolfssl arduino library to compile there.
+            cp ./compile-all-examples.sh "$ARDUINO_ROOT/wolfssl/examples/compile-all-examples.sh"
+            cp ./board_list.txt          "$ARDUINO_ROOT/wolfssl/examples/board_list.txt"
+
+            # Compile the Arduino library examples in-place
+            pushd "$ARDUINO_ROOT/wolfssl/examples/"
+              echo "PWD=$PWD"
+              ./compile-all-examples.sh ./board_list.txt "${{ matrix.fqbn }}"
+            popd
+          popd
 
           # End Compile Arduino Sketches for Various Boards
-
-      - name: Upload compile report
-        uses: actions/upload-artifact@v4
-        with:
-          name: sketches-reports-${{ matrix.fqbn }}
-          path: sketches-reports
