@@ -92,9 +92,15 @@ env:
 
 jobs:
 
+  # Prepare and cache install
   prepare-cache:
     name: Prepare Arduino cache
     runs-on: ubuntu-latest
+    outputs:
+      wolfsha: ${{ steps.wolfsha.outputs.sha }}
+    env:
+      REPO_OWNER: ${{ github.repository_owner }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -118,6 +124,129 @@ jobs:
           for p in $names; do
             arduino-cli core install "$p"
           done
+
+      - name: Ensure ARDUINO_ROOT exists
+        run: |
+          echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
+          mkdir -p "$HOME/Arduino/libraries"
+
+      # Optionally let callers set a ref; fallback to master
+      - name: Resolve wolfSSL ref
+        id: wolfref
+        run: |
+          REF="${WOLFSSL_REF:-master}"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+      # Get commit SHA without cloning (heads, tags, or exact)
+      - name: Resolve wolfSSL SHA (no clone)
+        id: wolfsha
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -e
+          REF="${{ steps.wolfref.outputs.ref }}"
+          URL="https://github.com/${OWNER}/wolfssl.git"
+
+          # Try exact ref first; then heads; then tags; then annotated tag deref
+          sha="$(git ls-remote "$URL" "$REF"           | awk '{print $1}')"
+          [ -z "$sha" ] && sha="$(git ls-remote "$URL" "refs/heads/$REF" | awk '{print $1}')"
+          [ -z "$sha" ] && sha="$(git ls-remote "$URL" "refs/tags/$REF"  | awk '{print $1}')"
+          [ -z "$sha" ] && sha="$(git ls-remote "$URL" "refs/tags/$REF^{}" | awk '{print $1}')"
+
+          if [ -z "$sha" ]; then
+            echo "Could not resolve ref '$REF' in ${OWNER}/wolfssl" >&2
+            exit 1
+          fi
+
+          echo "sha=${sha:0:7}" >> "$GITHUB_OUTPUT"
+          echo "full_sha=$sha"  >> "$GITHUB_OUTPUT"
+          echo "sha=${sha:0:7}"
+          echo "full_sha=$sha"
+
+      # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
+      - name: Shallow clone wolfssl
+        run: |
+          # Clone the wolfssl to use for example build
+
+          rm -rf "./wolfssl"
+          git clone --depth 1 https://github.com/$REPO_OWNER/wolfssl.git
+
+          # Assign your PR branch for testing here:
+          THIS_PR_BRANCH=""
+
+          echo "REPO_OWNER=$REPO_OWNER"
+
+          # If a branch is assigned for current repo user, checkout
+          if [ -z "$THIS_PR_BRANCH" ]; then
+            echo "Assign your PR branch name for testing"
+          else
+              # fetch open PR changes
+              pushd wolfssl
+              git remote add $REPO_OWNER https://github.com/$REPO_OWNER/wolfssl.git
+              git fetch --depth 1 "$REPO_OWNER" "$THIS_PR_BRANCH"
+            git checkout "$THIS_PR_BRANCH"
+            popd
+          fi
+          # end wolfssl source
+
+      # Get the SHA value of the latest version of wolfSSL for cache
+      - name: Get wolfSSL commit
+        id: wolfsha
+        if: steps.restore-wolfssl.outputs.cache-hit != 'true'
+        run: echo "sha=$(git -C wolfssl rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Attempt to restore the Arduino wolfssl library
+      - name: Restore cached wolfSSL library
+        id: restore-wolfssl
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ARDUINO_ROOT }}/wolfssl
+          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
+
+      # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
+      # We cache only THIS most recent install of wolfSSL (not a release)
+      - name: Cache wolfSSL Arduino library
+        id: cache-wolfssl
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ARDUINO_ROOT }}/wolfssl
+          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
+
+      - name: Install wolfSSL Arduino library
+        if: steps.cache-wolfssl.outputs.cache-hit != 'true'
+        run: |
+          # Install wolfssl via wolfssl-arduino.sh install script
+
+          echo "Installing wolfSSL Arduino library (no cache hit)."
+          rm -rf "$ARDUINO_ROOT/wolfssl"
+
+          # Even though the examples are in this library, we'll test as installed for library publishing.
+          # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
+          # WOLFSSL_EXAMPLES_ROOT is the repo root, not example directory location (./Arduino/sketches) within.
+          export WOLFSSL_EXAMPLES_ROOT=$(realpath "./")
+
+          # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
+          echo "PWD                   = $PWD"
+          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
+          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+          ls ./Arduino/sketches
+
+          if [ -z "$WOLFSSL_EXAMPLES_ROOT" ]; then
+            echo "$ICON_FAIL ERROR: Tests should be performed on in-place examples. WOLFSSL_EXAMPLES_ROOT is blank"
+          fi
+
+          # The install script is in the wolfssl repo, in /IDE/ARDUINO directory.
+          # Only explicit source code is copied to the Arduino library.
+          # Edit wolfssl-arduino.sh as needed for new examples.
+          pushd ./wolfssl/IDE/ARDUINO
+            chmod +x ./wolfssl-arduino.sh
+            bash     ./wolfssl-arduino.sh INSTALL  # Install wolfSSL as Arduino library in ARDUINO_ROOT
+          popd
+
+          echo "Examples installed in $ARDUINO_ROOT/wolfssl/examples"
+          ls "$ARDUINO_ROOT/wolfssl/examples" -al
+
+          # End Install wolfSSL Arduino library
 
       - name: Freeze core and library versions for cache key
         run: |
@@ -245,80 +374,6 @@ jobs:
           ls ./Arduino/sketches
 
           # end Show wolfssl-examples
-
-      # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
-      - name: Shallow clone wolfssl
-        run: |
-          # Clone the wolfssl to use for example build
-
-          git clone --depth 1 https://github.com/$REPO_OWNER/wolfssl.git
-
-          # Assign your PR branch for testing here:
-          THIS_PR_BRANCH=""
-
-          echo "REPO_OWNER=$REPO_OWNER"
-
-          # If a branch is assigned for current repo user, checkout
-          if [ -z "$THIS_PR_BRANCH" ]; then
-            echo "Assign your PR branch name for testing"
-          else
-              # fetch open PR changes
-              pushd wolfssl
-              git remote add $REPO_OWNER https://github.com/$REPO_OWNER/wolfssl.git
-              git fetch --depth 1 "$REPO_OWNER" "$THIS_PR_BRANCH"
-            git checkout "$THIS_PR_BRANCH"
-            popd
-          fi
-          # end wolfssl source
-
-      - name: Get wolfSSL commit
-        id: wolfsha
-        run: echo "sha=$(git -C wolfssl rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-
-        # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
-        # We cache only THIS most recent install of wolfSSL (not a release)
-      - name: Cache wolfSSL Arduino library
-        id: cache-wolfssl
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.ARDUINO_ROOT }}/wolfssl
-          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
-
-      - name: Install wolfSSL Arduino library
-        if: steps.cache-wolfssl.outputs.cache-hit != 'true'
-        run: |
-          # Install wolfssl via wolfssl-arduino.sh install script
-
-          echo "Installing wolfSSL Arduino library (no cache hit)."
-          rm -rf "$ARDUINO_ROOT/wolfssl"
-
-          # Even though the examples are in this library, we'll test as installed for library publishing.
-          # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
-          # WOLFSSL_EXAMPLES_ROOT is the repo root, not example directory location (./Arduino/sketches) within.
-          export WOLFSSL_EXAMPLES_ROOT=$(realpath "./")
-
-          # Confirm ARDUINO_ROOT to install the wolfSSL library, see above "Set job environment variables"
-          echo "PWD                   = $PWD"
-          echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
-          echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
-          ls ./Arduino/sketches
-
-          if [ -z "$WOLFSSL_EXAMPLES_ROOT" ]; then
-            echo "$ICON_FAIL ERROR: Tests should be performed on in-place examples. WOLFSSL_EXAMPLES_ROOT is blank"
-          fi
-
-          # The install script is in the wolfssl repo, in /IDE/ARDUINO directory.
-          # Only explicit source code is copied to the Arduino library.
-          # Edit wolfssl-arduino.sh as needed for new examples.
-          pushd ./wolfssl/IDE/ARDUINO
-            chmod +x ./wolfssl-arduino.sh
-            bash     ./wolfssl-arduino.sh INSTALL  # Install wolfSSL as Arduino library in ARDUINO_ROOT
-          popd
-
-          echo "Examples installed in $ARDUINO_ROOT/wolfssl/examples"
-          ls "$ARDUINO_ROOT/wolfssl/examples" -al
-
-          # End Install wolfSSL Arduino library
 
       - name: List installed Arduino libraries
         run: arduino-cli lib list
