@@ -78,6 +78,10 @@ jobs:
       fail-fast: false
       matrix:
         fqbn:
+          # When editing this list, be sure to also edit file: board_list.txt
+          #   The compile-all-examples.sh optionally takes a FQBN parameter to
+          #   optionally compile all examples ONLY for the respective fully qualified board name.
+          # See https://github.com/wolfSSL/wolfssl-examples/blob/master/Arduino/sketches/board_list.txt
           - arduino:avr:leonardoeth
           - arduino:avr:yun
           - arduino:samd:mkrwifi1010
@@ -157,7 +161,7 @@ jobs:
             echo "Alternative install script not needed."
           fi
 
-      - name: Confirm Arduino CLI install
+      - name: Confirm Arduino CLI Install
         run: arduino-cli version
 
       - name: Derive CORE_ID (vendor:arch from FQBN)
@@ -175,6 +179,7 @@ jobs:
           echo "CORE_ID: $CORE_ID"
           arduino-cli core install "$CORE_ID"
 
+          # The above is instead of:
           # arduino-cli core install esp32:esp32            # ESP32
           # arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
           # arduino-cli core install arduino:sam            # Arduino Due
@@ -184,7 +189,8 @@ jobs:
           # arduino-cli core install arduino:mbed_nano      # nanorp2040connect
           # arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
           # arduino-cli core install arduino:mbed_edge
-          # # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
+          # For reference:
+          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
           # arduino-cli core install arduino:renesas_uno
 
           # Always install networking (not part of FQBN matrix)
@@ -194,7 +200,7 @@ jobs:
           arduino-cli lib install "Ethernet"              # Install Ethernet library
           arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
 
-      - name: Set job environment variables
+      - name: Set Job Environment Variables
         run: |
           # Script to assign some common environment variables after everything is installed
 
@@ -220,13 +226,14 @@ jobs:
           # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
-      - name: Cache Arduino packages
+      - name: Cache Arduino Packages
         uses: actions/cache@v4
         with:
           path: |
             ~/.arduino15
             ~/.cache/arduino
             ~/Arduino/libraries
+            # Ensure wolfssl is not cached, we're always using the latest. See separate cache.
             !~/Arduino/libraries/wolfssl
           key: arduino-${{ runner.os }}-${{ env.CORE_ID }}-${{ hashFiles('Arduino/sketches/board_list.txt') }}
 
@@ -241,9 +248,9 @@ jobs:
 
           # end Show wolfssl-examples
 
-      - name: Shallow clone wolfssl
+      - name: Shallow Clone wolfssl
         run: |
-          # Clone the wolfssl to use for example build
+          # Clone the latest wolfssl to use for building examples
 
           git clone --depth 1 https://github.com/$REPO_OWNER/wolfssl.git
 
@@ -265,7 +272,7 @@ jobs:
           fi
           # end wolfssl source
 
-      - name: Get wolfSSL commit
+      - name: Get wolfSSL Commit
         id: wolfsha
         run: echo "sha=$(git -C wolfssl rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
@@ -332,11 +339,12 @@ jobs:
             chmod +x ./compile-all-examples.sh
 
             # The script expects all the examples to be in the current directory.
-            # So copy from local directory to newly instlled wolfssl arduino library to compile there.
+            # So copy from local directory to newly installed wolfssl arduino library to compile there.
             cp ./compile-all-examples.sh "$ARDUINO_ROOT/wolfssl/examples/compile-all-examples.sh"
             cp ./board_list.txt          "$ARDUINO_ROOT/wolfssl/examples/board_list.txt"
 
-            # Compile the Arduino library examples in-place
+            # Compile the Arduino library examples in-place. All examples compiled for FQBN
+            # The respective FQBN board, examples, and optional exclusions must be in board_list.txt
             pushd "$ARDUINO_ROOT/wolfssl/examples/"
               echo "PWD=$PWD"
               ./compile-all-examples.sh ./board_list.txt "${{ matrix.fqbn }}"
