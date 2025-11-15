@@ -71,7 +71,7 @@ concurrency:
 jobs:
   build:
     name: Compile (${{ matrix.fqbn }})
-    if: github.repository_owner == 'wolfssl'
+    # if: github.repository_owner == 'wolfssl'
     runs-on: ubuntu-latest
 
     strategy:
