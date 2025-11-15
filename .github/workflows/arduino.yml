@@ -38,7 +38,7 @@ name: Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
 #
 # To test locally:
 # cd [your WOLFSSL_ROOT], e.g. cd /mnt/c/workspace/wolfssl-$USER
-# [optional checkout]     e.g. git checkout tags/v5.8.2-stable
+# [optional checkout]     e.g. git checkout tags/v5.8.4-stable
 # pushd ./IDE/ARDUINO
 # export ARDUINO_ROOT="$HOME/Arduino/libraries"
 # ./wolfssl-arduino.sh INSTALL
@@ -50,28 +50,68 @@ on:
   push:
     branches: [ '**', 'master', 'main', 'release/**' ]
     paths:
+      # Specific to this Arduino CI Build (3 of 4)
       - 'Arduino/**'
-      - '!Arduino/sketches/board_list_v5.8.2.txt' # Not triggered on arduino-release.yml file. TODO remove this line after next Arduino wolfssl release
       - '.github/workflows/arduino.yml'
   pull_request:
     branches: [ '**' ]
     paths:
+      # Specific to this Arduino CI Build (3 of 4)
       - 'Arduino/**'
-      - '!Arduino/sketches/board_list_v5.8.2.txt' # Not triggered on arduino-release.yml file. TODO remove this line after next Arduino wolfssl release
       - '.github/workflows/arduino.yml'
   workflow_dispatch:
 
 concurrency:
+  # Same branch push cancels other jobs. Other PR branches untouched
+
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 # END OF COMMON SECTION
 
 jobs:
   build:
-    # if: github.repository_owner == 'wolfssl'
+    name: Latest Compile (${{ matrix.fqbn }})
+#    if: github.repository_owner == 'wolfssl'
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        fqbn:
+          - arduino:avr:ethernet
+          - arduino:avr:leonardoeth
+          - arduino:avr:mega
+          - arduino:avr:nano
+          - arduino:avr:uno
+          - arduino:avr:yun
+          - arduino:samd:mkrwifi1010
+          - arduino:samd:mkr1000
+          - arduino:samd:mkrfox1200
+          - arduino:mbed_edge:edge_control
+          - arduino:mbed_nano:nanorp2040connect
+          - arduino:mbed_portenta:envie_m7
+          - arduino:mbed_portenta:portenta_x8
+          - arduino:renesas_uno:unor4wifi
+          - arduino:sam:arduino_due_x
+          - arduino:samd:arduino_zero_native
+          - arduino:samd:tian
+          - esp32:esp32:esp32
+          - esp32:esp32:esp32s2
+          - esp32:esp32:esp32s3
+          - esp32:esp32:esp32c3
+          - esp32:esp32:esp32c6
+          - esp32:esp32:esp32h2
+          - esp8266:esp8266:generic
+          - teensy:avr:teensy40
+
+          # Not yet supported, not in standard library
+          # - esp32:esp32:nano_nora
+
+          # End strategy matrix
     env:
       REPO_OWNER: ${{ github.repository_owner }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -128,22 +168,31 @@ jobs:
       - name: Setup Arduino CLI
         run: |
           arduino-cli config init
-          arduino-cli core update-index
+
+          # wait 10 minutes for big downloads (or use 0 for no limit)
+          arduino-cli config set network.connection_timeout 600s
+
           arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
-          arduino-cli core update-index
           arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
           arduino-cli core update-index
+
+          # mbed nano not yet tested
+          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
+
+          # Install upported boards:
           arduino-cli core install esp32:esp32            # ESP32
+          arduino-cli core install esp8266:esp8266        # ESP8266
+
+          arduino-cli core install teensy:avr             # PJRC Teensy
+
           arduino-cli core install arduino:avr            # Arduino Uno, Mega, Nano
           arduino-cli core install arduino:sam            # Arduino Due
           arduino-cli core install arduino:samd           # Arduino Zero
-          arduino-cli core install teensy:avr             # PJRC Teensy
-          arduino-cli core install esp8266:esp8266        # ESP8266
           arduino-cli core install arduino:mbed_nano      # nanorp2040connect
           arduino-cli core install arduino:mbed_portenta  # portenta_h7_m7
           arduino-cli core install arduino:mbed_edge
-          # sudo "/home/$USER/.arduino15/packages/arduino/hardware/mbed_nano/4.2.4/post_install.sh"
           arduino-cli core install arduino:renesas_uno
+
           arduino-cli lib install "ArduinoJson"           # Example dependency
           arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
           arduino-cli lib install "Ethernet"              # Install Ethernet library
@@ -175,6 +224,37 @@ jobs:
           # WOLFSSL_EXAMPLES_ROOT is the report root, not example location
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
 
+      - name: Compute cache key parts
+        id: parts
+        shell: bash
+        run: |
+          # From FQBN "vendor:arch:board" get "vendor:arch"
+          CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
+          echo "CORE_ID=$CORE_ID" >> "$GITHUB_OUTPUT"
+
+          # Also expose vendor only for broad fallbacks
+          VENDOR="$(echo "$CORE_ID" | cut -d: -f1)"
+          echo "VENDOR=$VENDOR" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Arduino packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15
+            ~/.arduino15/staging
+
+            # Arduino libraries
+            # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
+            # Include only explicit libraries, but NOT wolfssl as we are installing latest here (cache by SHA, see below)
+            ~/Arduino/libraries/ArduinoJson
+            ~/Arduino/libraries/WiFiNINA
+            ~/Arduino/libraries/Ethernet
+            ~/Arduino/libraries/Bridge
+
+          key: arduino-${{ runner.os }}-${{ hashFiles('**/arduino-cores.lock') }}
+          restore-keys: |
+            arduino-${{ runner.os }}-
+
       - name: Show wolfssl-examples
         run: |
           # The examples are local in this wolfssl-example repo, but should have been copied to library, above
@@ -182,6 +262,7 @@ jobs:
 
           # end Show wolfssl-examples
 
+      # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
       - name: Shallow clone wolfssl
         run: |
           # Clone the wolfssl to use for example build
@@ -206,9 +287,26 @@ jobs:
           fi
           # end wolfssl source
 
+      - name: Get wolfSSL commit
+        id: wolfsha
+        run: echo "sha=$(git -C wolfssl rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+        # Specific to Arduino CI Build (3 of 4) Latest wolfSSL for Local Examples
+        # We cache only THIS most recent install of wolfSSL (not a release)
+      - name: Cache wolfSSL Arduino library
+        id: cache-wolfssl
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ARDUINO_ROOT }}/wolfssl
+          key: wolfssl-lib-${{ runner.os }}-${{ steps.wolfsha.outputs.sha }}-${{ hashFiles('wolfssl/IDE/ARDUINO/wolfssl-arduino.sh') }}-${{ hashFiles('Arduino/sketches/**') }}
+
       - name: Install wolfSSL Arduino library
+        if: steps.cache-wolfssl.outputs.cache-hit != 'true'
         run: |
           # Install wolfssl via wolfssl-arduino.sh install script
+
+          echo "Installing wolfSSL Arduino library (no cache hit)."
+          rm -rf "$ARDUINO_ROOT/wolfssl"
 
           # Even though the examples are in this library, we'll test as installed for library publishing.
           # When WOLFSSL_EXAMPLES_ROOT is set, the examples will be copied from that path to the published library.
@@ -251,7 +349,9 @@ jobs:
           echo "Current directory     = $PWD"
           echo "ARDUINO_ROOT          = $ARDUINO_ROOT"
           echo "WOLFSSL_EXAMPLES_ROOT = $WOLFSSL_EXAMPLES_ROOT"
+          echo "FQBN                  = ${{ matrix.fqbn }}"
 
+          echo "Change directory to Arduino examples..."
           pushd ./Arduino/sketches
             chmod +x ./compile-all-examples.sh
 
@@ -263,7 +363,7 @@ jobs:
             # Compile the Arduino library examples in-place
             pushd "$ARDUINO_ROOT/wolfssl/examples/"
               echo "PWD=$PWD"
-              ./compile-all-examples.sh ./board_list.txt
+              ./compile-all-examples.sh ./board_list.txt "${{ matrix.fqbn }}"
             popd
           popd
 
