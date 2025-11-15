@@ -377,32 +377,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Arduino CLI
-        uses: arduino/setup-arduino-cli@v2
-        with:
-          additional-urls: |
-            https://www.pjrc.com/teensy/package_teensy_index.json
-            https://arduino.esp8266.com/stable/package_esp8266com_index.json
-
-      - name: Update core index
-        run: arduino-cli core update-index
-
-      - name: Sanity check restored cores
-        run: |
-          echo "arduino-cli core list:"
-          arduino-cli core list || true
-          echo "Expecting AVR path:"
-          echo "$HOME/.arduino15/packages/arduino/hardware/avr" && ls -al "$HOME/.arduino15/packages/arduino/hardware" || true
-          if [ ! -d "$HOME/.arduino15/packages/arduino/hardware/avr" ]; then
-            echo "arduino:avr not found in expected path; installing..."
-            arduino-cli core install arduino:avr
-          fi
-
-      - name: Ensure ARDUINO_ROOT exists
-        run: |
-          echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
-          mkdir -p "$HOME/Arduino/libraries"
-
       - name: Restore Arduino caches
         uses: actions/cache/restore@v4
         with:
@@ -413,6 +387,90 @@ jobs:
           key: arduino-${{ runner.os }}-${{ hashFiles('.ci/arduino-cores.lock', '.ci/arduino-libs.lock') }}
           restore-keys: |
             arduino-${{ runner.os }}-
+
+      - name: Install Arduino CLI
+        run: |
+          # Script to fetch and run install.sh from arduino/arduino-cli
+
+          # The install script will test to see if the recently installed apps in in the path
+          # So set it up in advance:
+          mkdir -p "${PWD}/bin"
+          echo "${PWD}/bin" >> $GITHUB_PATH
+
+          # Sets the install directory to a consistent path at the repo root.
+          ROOT_BIN="$GITHUB_WORKSPACE/bin"
+
+          # Ensures that BINDIR exists before the installer runs
+          mkdir -p "$ROOT_BIN"
+
+          # Save as a lobal environment variable
+          echo "$ROOT_BIN" >> "$GITHUB_PATH"
+
+          # Download and run install script from Arduino:
+          # -S show errors; -L follow redirects; -v Verbose
+          set +e                 # don't abort on error
+          set -o pipefail
+
+          curl -vSL --retry 5 --retry-delay 10 \
+             https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh  \
+             | sh -x
+          rc=$?
+          c_rc=${PIPESTATUS[0]}  # curl's exit code
+          s_rc=${PIPESTATUS[1]}  # sh's  exit code
+
+          set -e                 # restore default abort-on-error
+
+          # If there was a curl error, we have our own local copy that is more reliable and can add our own debugging
+          if [ "$rc" -ne 0 ]; then
+            echo "Primary install failed: curl=$c_rc, sh=$s_rc. Falling back..." >&2
+            echo "Using local copy of arduino_install.sh"
+            pushd ./Arduino/sketches
+              chmod +x ./arduino_install.sh
+
+              # Mimic curl install, does not use current directory:
+              BINDIR="$ROOT_BIN" sh -x ./arduino_install.sh
+            popd
+          else
+            echo "Alternative install script not needed."
+          fi
+
+      - name: Confirm Arduino CLI install
+        run: arduino-cli version
+
+      - name: Update core index
+        run: arduino-cli core update-index
+
+      - name: Setup Arduino CLI
+        run: |
+          arduino-cli config init
+
+          # wait 10 minutes for big downloads (or use 0 for no limit)
+          arduino-cli config set network.connection_timeout 600s
+
+          arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
+          arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          arduino-cli core update-index
+
+          arduino-cli lib install "ArduinoJson"           # Example dependency
+          arduino-cli lib install "WiFiNINA"              # ARDUINO_SAMD_NANO_33_IOT
+          arduino-cli lib install "Ethernet"              # Install Ethernet library
+          arduino-cli lib install "Bridge"                # Pseudo-network for things like arduino:samd:tian
+
+
+      - name: Sanity check restored cores
+        run: |
+          echo "arduino-cli core list:"
+          arduino-cli core list || true
+          echo "Expecting AVR path:"
+          echo "$HOME/.arduino15/packages/arduino/hardware/avr" && ls -al "$HOME/.arduino15/packages/arduino/hardware" || true
+          if [ ! -d "$HOME/.arduino15/packages/arduino/hardware/avr" ]; then
+            echo "arduino:avr not found in expected path!"
+          fi
+
+      - name: Ensure ARDUINO_ROOT exists
+        run: |
+          echo "ARDUINO_ROOT=$HOME/Arduino/libraries" >> "$GITHUB_ENV"
+          mkdir -p "$HOME/Arduino/libraries"
 
       - name: Update core index
         run: arduino-cli core update-index
