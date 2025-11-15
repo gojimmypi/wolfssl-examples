@@ -400,6 +400,21 @@ jobs:
             CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
             arduino-cli core install "$CORE_ID"
 
+      - name: Configure Arduino CLI (URLs)
+        run: |
+            arduino-cli config init
+            arduino-cli config add board_manager.additional_urls https://www.pjrc.com/teensy/package_teensy_index.json
+            arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
+
+      - name: Update core index
+        run: arduino-cli core update-index
+
+      - name: Install only needed core
+        run: |
+            CORE_ID="$(echo "${{ matrix.fqbn }}" | awk -F: '{print $1 ":" $2}')"
+            arduino-cli core install "$CORE_ID"
+
+
       - name: Restore cached wolfSSL library
         uses: actions/cache/restore@v4
         with:
